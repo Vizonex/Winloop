@@ -13,7 +13,7 @@ The main differences will be some name changes incase there's any problems and t
 
 This has not been finished yet but as of right now I have done all the followings to try and get this to work 
 - disabled epoll because Windows cannot truely fork proccesses. 
-- disabled pthreads due to the same problem. and infact the api called pthread_atfork() so __install_atfork() is not there anymore...
+- disabled pthreads due to the same problem and infact the C function called pthread_atfork() is not avalible on Windows so __install_atfork() is not there anymore...
 
 Luckily managed to get the library to compile by invoking the following libraries 
 - uv_a.lib (dlls are slow, so I'm going static)
