@@ -23,3 +23,11 @@ Luckily managed to get the library to compile by invoking the following librarie
 - WSock32.lib
 - Userenv.lib
 - User32.lib
+
+
+
+Made my own socketpair function in C inspired by libcurl's version for winloop to use so that the current ways that the library does polling wouldn't break.
+I also replaced uv_poll_init with uv_pool_init_socket as a temporary monkey_patch/solution.  
+
+
+As of May 18th 2023 I have gotten winloop finally working but it will require some tests , I plan to do those within a couple of days...
