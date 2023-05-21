@@ -83,7 +83,7 @@ cdef extern from "includes/nfork_handler.h":
 # socketpair.h by Vizonex 
 cdef extern from "socketpair.h" nogil:
     # I implemented this for windows because I wasn't 
-    # going to let it stop me from making Winloop not possible...
+    # going to let it stop me from making Winloop impossible to put together...
     int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2])
     SOCKET get_socket_descriptor()
     
