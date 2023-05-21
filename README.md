@@ -7,7 +7,7 @@ It always felt dissapointing when libuv is avalible on windows but doesn't have 
 So I went ahead and downloaded the uvloop source code and I'm currently modifying alot of parts to make it windows compatable. 
 
 This library is still being worked on but I wanted to make sure for right now that the name of this library has been claimed by me. 
-I will not be posting any code yet until I have resolved licensing with the uvloop devs. 
+I will not be posting any code yet until I have resolved licensing with the uvloop devs (No Longer required see bottom paragraph in updates).
 
 The main differences will be some name changes incase there's any problems and the disabling of non-windows compatable apis...
 
