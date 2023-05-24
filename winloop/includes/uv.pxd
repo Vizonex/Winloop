@@ -520,7 +520,7 @@ cdef extern from "vendor/include/uv.h" nogil:
 
     # TODO (Vizonex) maybe switch to using this function for soketparing isntead of my own code for stability sake?...
     int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
-    int UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS 
+    
     
 cdef extern from "winsock2.h":
     cdef int SO_REUSEADDR
