@@ -512,8 +512,15 @@ cdef extern from "vendor/include/uv.h" nogil:
 
     unsigned int uv_version()
 
-
     uv_loop_t* uv_default_loop()
+    
+    # This will be an experimental replacement for the loss of pthread_atfork()
+    # see here for more details: https://docs.libuv.org/en/v1.x/process.html#c.uv_disable_stdio_inheritance
+    void uv_disable_stdio_inheritance()
+
+    # TODO (Vizonex) maybe switch to using this function for soketparing isntead of my own code for stability sake?...
+    int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
+    int UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS 
     
 cdef extern from "winsock2.h":
     cdef int SO_REUSEADDR
