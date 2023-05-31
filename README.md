@@ -47,3 +47,5 @@ I also replaced `uv_poll_init` with `uv_pool_init_socket` as a temporary monkey_
 - After a long time of digging I accidently came accross pyuv https://github.com/saghul/pyuv which is pefrect we should be able to find out alot of ways to implement this code now, THANK YOU FOR EXISTING, I APPRECIATE IT! I'll be downloading this library since it has windows support but mainly will be using it for figuring out how to implement the rest of these things that I have questions about for figuring how how we should come in and approch the rest of these problems...
 
 - Update it works but the reason why it gave me a `-4058` is because it wants a `File`! Apparently the shell commands are not files but `rundll32` is. Someone is going to have to explain to me why this is the case and why we cannot normally invoke shell commands and what our workaround for this issue is going to be.  
+
+- 5/31/2023 I FIXED IT I'll now move onto TCP Connections or other parts that need checking. All I can say is that figuring this all out was HELL! 
