@@ -2837,11 +2837,13 @@ cdef class Loop:
         if not shell:
             raise ValueError("shell must be True")
 
-        args = [cmd]
-        # Were not linux or APPLE so I got rid of this...
-        # if shell:
-        #     args = [b'/bin/sh', b'-c'] + args
-
+        
+         
+        if shell:
+            # I knew this may be the hardest one to solve so I wanted to tackle it first
+            # CHANGED WINDOWS SHELL see : https://github.com/libuv/libuv/pull/2627 for more details... 
+            args = [b"cmd", b"/s /c", cmd] 
+        
         return await self.__subprocess_run(protocol_factory, args, shell=True,
                                            **kwargs)
 
