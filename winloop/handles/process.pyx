@@ -1,6 +1,7 @@
 from libc.string cimport memset, memcpy
 from cpython.bytes cimport PyBytes_AsString
 from .includes._python cimport PyUnicode_FromString
+
 @cython.no_gc_clear
 cdef class UVProcess(UVHandle):
     """Abstract class; wrapper over uv_process_t handle."""
@@ -30,16 +31,15 @@ cdef class UVProcess(UVHandle):
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
                pass_fds, debug_flags, preexec_fn, restore_signals):
 
-        global __forking
-        global __forking_loop
-        global __forkHandler
+        # global __forking
+        # global __forking_loop
+        # global __forkHandler
 
         cdef int err
 
         self._start_init(loop)
 
-        self._handle = <uv.uv_handle_t*>PyMem_RawMalloc(
-            sizeof(uv.uv_process_t))
+        self._handle = <uv.uv_handle_t*>PyMem_RawMalloc(sizeof(uv.uv_process_t))
         if self._handle is NULL:
             self._abort_init()
             raise MemoryError()
@@ -63,7 +63,8 @@ cdef class UVProcess(UVHandle):
             self._abort_init()
             raise
 
-        if __forking or loop.active_process_handler is not None:
+        # NOTE GOT RID OF __forking parameter...
+        if loop.active_process_handler is not None:
             # Our pthread_atfork handlers won't work correctly when
             # another loop is forking in another thread (even though
             # GIL should help us to avoid that.)
@@ -84,20 +85,28 @@ cdef class UVProcess(UVHandle):
             self._restore_signals = restore_signals
 
             loop.active_process_handler = self
-
-            # TODO Vizonex Change all of this , I think with Nogil could work here if were lucky...
-            __forking = 1
-            __forking_loop = loop
+        
+            # __forking = 1
+            # __forking_loop = loop
             # system.setForkHandler(<system.OnForkHandler>&__get_fork_handler)
-            
             # PyOS_BeforeFork()
+
+            # Also Important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
+            # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
+            # This means that we cannot use any flags with this setup 
+            # Finding examples of how uv_spawn is used will be helful as well...
+            # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
+
+            # TODO (Vizonex) check or disable options depending on what is considered default otherwise replace options with NULL... 
+            # Maybe these macros could sufice?
+            self.py_gil_state = PyGILState_Ensure()
+            
+            # This might be our answer...
+            # https://github.com/saghul/pyuv/blob/39342fc2fd688f2fb2120d3092dd9cf52f537de2/src/process.c
 
             err = uv.uv_spawn(loop.uvloop,
                               <uv.uv_process_t*>self._handle,
                               &self.options)
-
-            __forking = 0
-            __forking_loop = None
     
             loop.active_process_handler = None
 
@@ -173,11 +182,15 @@ cdef class UVProcess(UVHandle):
         if self._restore_signals:
             _Py_RestoreSignals()
 
+       
         # PyOS_AfterFork_Child()
+        PyGILState_Release(self.py_gil_state)
+        # err = uv.uv_loop_fork(self._loop.uvloop)
+        # if err < 0:
+        #     raise convert_error(err)
 
-        err = uv.uv_loop_fork(self._loop.uvloop)
-        if err < 0:
-            raise convert_error(err)
+        # we're finished under the freed up gil and we can now release it...
+        # PyGILState_Release(self.py_gil_state)
 
         if self._preexec_fn is not None:
             try:
@@ -248,6 +261,17 @@ cdef class UVProcess(UVHandle):
 
         if start_new_session:
             self.options.flags |= uv.UV_PROCESS_DETACHED
+
+            # TODO Forget these flags for right now until we have figured out/diagnosed the real issue...
+            # "All of these flags have been set because they're all meaningful on windows systems...
+            # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
+            # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
+            # self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE 
+            # self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_GUI 
+            # self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_CONSOLE 
+            # enabiling VERBATIM_ARGUMENTS is helpful here because we're not enabiling children...
+            self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS 
+
 
         if cwd is not None:
             cwd = os_fspath(cwd)
