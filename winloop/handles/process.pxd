@@ -1,5 +1,5 @@
 from libc.stdint cimport int64_t
-# from .includes cimport uv 
+from cpython.pystate cimport PyGILState_STATE
 
 cdef class UVProcess(UVHandle):
     cdef:
@@ -12,7 +12,7 @@ cdef class UVProcess(UVHandle):
         bint _restore_signals
 
         list _fds_to_close
-
+        
         # Attributes used to compose uv_process_options_t:
         uv.uv_process_options_t options
         uv.uv_stdio_container_t[3] iocnt
@@ -22,6 +22,8 @@ cdef class UVProcess(UVHandle):
         char **uv_opt_args
         char *uv_opt_file
         bytes __cwd
+
+        PyGILState_STATE py_gil_state
 
     cdef _close_process_handle(self)
 
@@ -61,6 +63,9 @@ cdef class UVProcessTransport(UVProcess):
         object stdin_proto
         object stdout_proto
         object stderr_proto
+        
+       
+
 
     cdef _file_redirect_stdio(self, int fd)
     cdef _file_devnull(self)
