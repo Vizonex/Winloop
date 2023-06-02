@@ -49,3 +49,5 @@ I also replaced `uv_poll_init` with `uv_pool_init_socket` as a temporary monkey_
 - Update it works but the reason why it gave me a `-4058` is because it wants a `File`! Apparently the shell commands are not files but `rundll32` is. Someone is going to have to explain to me why this is the case and why we cannot normally invoke shell commands and what our workaround for this issue is going to be.  
 
 - 5/31/2023 I FIXED IT I'll now move onto TCP Connections or other parts that need checking. All I can say is that figuring this all out was HELL! 
+
+- As of now 6/2/2023 I have figure our that tcp connections currently are giving me bad file descriptor errors so that will need to be fixed escpecially in `streams.pyx`. I have now uploaded a video to my youtube channel in the hopes to get others intrested in contributing to something this incredible and big https://youtu.be/tz9RYJ6aBZ8 
