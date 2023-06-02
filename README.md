@@ -50,4 +50,4 @@ I also replaced `uv_poll_init` with `uv_pool_init_socket` as a temporary monkey_
 
 - 5/31/2023 I FIXED IT I'll now move onto TCP Connections or other parts that need checking. All I can say is that figuring this all out was HELL! 
 
-- As of now 6/2/2023 I have figure our that tcp connections currently are giving me bad file descriptor errors so that will need to be fixed escpecially in `streams.pyx`. I have now uploaded a video to my youtube channel in the hopes to get others intrested in contributing to something this incredible and big https://youtu.be/tz9RYJ6aBZ8 
+- As of now 6/2/2023 I have figured out that tcp connections currently are giving me bad file descriptor errors so that will need to be fixed escpecially in `streams.pyx`. I have now uploaded a video to my youtube channel in the hopes to get others intrested in contributing to something this incredible and big https://youtu.be/tz9RYJ6aBZ8 
