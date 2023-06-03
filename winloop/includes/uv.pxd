@@ -3,6 +3,7 @@ from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
 from . cimport system
 
 cdef enum:
+
     UV_INTERNAL_HANDLE_READABLE = 0x00004000
 
 cdef extern from "vendor/include/uv.h" nogil:
@@ -11,6 +12,7 @@ cdef extern from "vendor/include/uv.h" nogil:
     # NOTE: This is from errno.h as well...
     cdef int EACCES
     cdef int EAGAIN
+    cdef int UV_EAGAIN
     cdef int EALREADY
     cdef int EBUSY
     cdef int ECONNABORTED
@@ -21,6 +23,7 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int EINTR
     cdef int EINVAL
     cdef int EISDIR
+    cdef int UV__ENOENT
     cdef int ENOENT
     cdef int EOF
     cdef int EPERM
@@ -78,6 +81,28 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int SIGKILL
     cdef int SIGTERM
 
+    ctypedef enum uv_handle_type:
+        UV_UNKNOWN_HANDLE = 0,
+        UV_ASYNC,
+        UV_CHECK,
+        UV_FS_EVENT,
+        UV_FS_POLL,
+        UV_HANDLE,
+        UV_IDLE,
+        UV_NAMED_PIPE,
+        UV_POLL,
+        UV_PREPARE,
+        UV_PROCESS,
+        UV_STREAM,
+        UV_TCP,
+        UV_TIMER,
+        UV_TTY,
+        UV_UDP,
+        UV_SIGNAL,
+        UV_FILE,
+        UV_HANDLE_TYPE_MAX
+        # int UV_TCP
+
     # uv_poll_init() has problems on windows luckily uv_os_sock_t saves the day...
     ctypedef int uv_os_sock_t
     ctypedef int uv_file
@@ -126,7 +151,15 @@ cdef extern from "vendor/include/uv.h" nogil:
         void* data
         size_t write_queue_size
         uv_loop_t* loop
+
+        # NOTE Introduced flags and type into uv_stream so that 
+        # we can implement a faster / more direct version of uv_try_write
+        unsigned int flags
+        uv_handle_type type
+
         # ...
+
+
 
     ctypedef struct uv_tcp_t:
         void* data
@@ -478,7 +511,10 @@ cdef extern from "vendor/include/uv.h" nogil:
         UV_INHERIT_FD = 0x02,
         UV_INHERIT_STREAM = 0x04,
         UV_READABLE_PIPE = 0x10,
-        UV_WRITABLE_PIPE = 0x20
+        UV_WRITABLE_PIPE = 0x20,
+        # NOTE Added in UV_NONBLOCK_PIPE for stability reasons... - Vizonex 
+        UV_NONBLOCK_PIPE  = 0x40
+
 
     ctypedef union uv_stdio_container_data_u:
         uv_stream_t* stream
@@ -513,15 +549,24 @@ cdef extern from "vendor/include/uv.h" nogil:
     unsigned int uv_version()
 
     uv_loop_t* uv_default_loop()
-    
+
     # This will be an experimental replacement for the loss of pthread_atfork()
     # see here for more details: https://docs.libuv.org/en/v1.x/process.html#c.uv_disable_stdio_inheritance
     void uv_disable_stdio_inheritance()
 
-    # TODO (Vizonex) maybe switch to using this function for soketparing isntead of my own code for stability sake?...
+
     int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
     
-    
+    uv_handle_type uv_guess_handle(uv_file)
+
+
 cdef extern from "winsock2.h":
     cdef int SO_REUSEADDR
     cdef int SO_BROADCAST
+
+# NOTE This will be added later when the library is finally stable 
+# Since we already have system imported into here and To Prevent Looped imports 
+# I'll just put try_tcp_write right here - Vizonex 
+# cdef extern from "includes/tcp.h":
+#     # incase anyone is like "try_tcp_write doesn't exitst in libuv!" I'll put another note into stream.pyx about this function
+#     int try_tcp_write(uv_tcp_t* handle, system.WSABUF bufs)
