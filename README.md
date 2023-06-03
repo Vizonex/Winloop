@@ -51,3 +51,20 @@ I also replaced `uv_poll_init` with `uv_pool_init_socket` as a temporary monkey_
 - 5/31/2023 I FIXED IT I'll now move onto TCP Connections or other parts that need checking. All I can say is that figuring this all out was HELL! 
 
 - As of now 6/2/2023 I have figured out that tcp connections currently are giving me bad file descriptor errors so that will need to be fixed escpecially in `streams.pyx`. I have now uploaded a video to my youtube channel in the hopes to get others intrested in contributing to something this incredible and big https://youtu.be/tz9RYJ6aBZ8 
+
+- 6/3/2023 , I've fixed TCP Connections and it seems to be working ok as well as SSL for now... I did the following once I've used `install()`
+```python
+from winloop import install
+import aiohttp
+import asyncio 
+# Seems to work just fine with ssl as well. Didn't expect for ssl to also work at all along side tcp connections so that's nice :)
+# Less code to have to be changed is always a pleasent thing.
+async def main():
+    async with aiohttp.ClientSession("https://httpbin.org") as client:
+        async with client.get("/ip") as resp:
+            print(await resp.json())
+if __name__ == "__main__"
+    install()
+    asyncio.run(main())
+  ```
+  No doubt that this will still require some heavy stress tests before we can just call it good but glad to see that progress is coming along so greatly :) 
