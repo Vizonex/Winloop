@@ -774,15 +774,24 @@ cdef void __uvprocess_on_exit_callback(uv.uv_process_t *handle,
 
 cdef __socketpair():
     cdef:
-        # I fixed this by making my own function for it and renaming the fds from int to system.SOCKET
-        system.SOCKET fds[2]
+        # Using uv.uv_os_sock_t for stability reasons...
+        uv.uv_os_sock_t fds[2]
         int err
-    # This is also written by me (see includes/socketpair.h...)
-    err = system.socketpair(uv.AF_UNIX, uv.SOCK_STREAM, 0, fds)
+    
+    # Added uv_socketpair instead my function for now since we kept seeing a bad file descriptor
+    err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
+    
+    # See https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c 
+    # in libuv... 
+    # libuv doesn't detect the fact that were a named PIPE so we're doing the same check in here 
+    assert uv.uv_guess_handle(<uv.uv_file>fds[0]) == uv.UV_NAMED_PIPE
+    assert uv.uv_guess_handle(<uv.uv_file>fds[1]) == uv.UV_NAMED_PIPE
+
     if err:
         # TODO See if this is still correctly done or not...
         exc = convert_error(-err)
         raise exc
+
 
     os_set_inheritable(fds[0], False)
     os_set_inheritable(fds[1], False)
@@ -792,3 +801,4 @@ cdef __socketpair():
 
 cdef void __uv_close_process_handle_cb(uv.uv_handle_t* handle) with gil:
     PyMem_RawFree(handle)
+
