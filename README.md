@@ -63,7 +63,7 @@ async def main():
     async with aiohttp.ClientSession("https://httpbin.org") as client:
         async with client.get("/ip") as resp:
             print(await resp.json())
-if __name__ == "__main__"
+if __name__ == "__main__":
     install()
     asyncio.run(main())
   ```
