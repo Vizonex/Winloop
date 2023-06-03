@@ -1,6 +1,6 @@
 # cython:language_level = 3,embedsignature=True
 # cython: embedsignature = True
-# distutils: include_dirs = lib/include/
+# distutils: include_dirs = lib/include/ , includes/
 
 from __future__ import absolute_import
 from libc.string cimport memset
@@ -24,6 +24,8 @@ from cpython.buffer cimport (
     Py_buffer, 
     PyObject_GetBuffer
 )
+
+from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
 
 from . import _noop
 
@@ -138,6 +140,8 @@ _unset = object()
 cdef class Loop:
     
     def __cinit__(self):
+        # disable stdio_inheritence...
+        __install_disable_stdio_inheritence()
         
         # Install PyMem* memory allocators if they aren't installed yet.
         __install_pymem()
@@ -1926,6 +1930,7 @@ cdef class Loop:
             object protocol
             object ssl_waiter
 
+        
         if sock is not None and sock.family == uv.AF_UNIX:
             if host is not None or port is not None:
                 raise ValueError(
@@ -2838,10 +2843,9 @@ cdef class Loop:
             raise ValueError("shell must be True")
 
         
-         
+        # fixed to the actual solution
         if shell:
-            # I knew this may be the hardest one to solve so I wanted to tackle it first
-            # CHANGED WINDOWS SHELL see : https://github.com/libuv/libuv/pull/2627 for more details... 
+            # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
             args = [b"cmd", b"/s /c", cmd] 
         
         return await self.__subprocess_run(protocol_factory, args, shell=True,
@@ -3395,6 +3399,13 @@ cdef __install_pymem():
         __mem_installed = 0
         raise convert_error(err)
 
+cdef vint __os_stdio_installed = 0
+cdef __install_disable_stdio_inheritence():
+    global __os_stdio_installed
+    if __os_stdio_installed:
+        return
+    uv.uv_disable_stdio_inheritance()
+    __os_stdio_installed = 1
 # Helps for tests...
 
 @cython.iterable_coroutine
