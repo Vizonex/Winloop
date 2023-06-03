@@ -260,6 +260,7 @@ cdef class UVStream(UVBaseTransport):
                              <uv.uv_stream_t*> self._handle,
                              __uv_stream_on_shutdown)
         if err < 0:
+
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
@@ -335,6 +336,7 @@ cdef class UVStream(UVBaseTransport):
         #    called on a stopped stream.
         err = uv.uv_read_stop(<uv.uv_stream_t*>self._handle)
         if err < 0:
+
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
@@ -343,55 +345,93 @@ cdef class UVStream(UVBaseTransport):
 
     cdef inline _try_write(self, object data):
         cdef:
+
+            # NOTE Disabled some parts until we can fix stability so we're falling back to uv_try_write() until everything works ok.
+
             ssize_t written
             bint used_buf = 0
             Py_buffer py_buf
-            void* buf
-            size_t blen
+            # void* buf
+            # size_t blen
             int saved_errno
             int fd
+
+            uv.uv_buf_t _buf
+
+            
+            # NEW added WSABUF Brought over from "winsock2.h"
+            # system.WSABUF wsa 
+        
 
         if (<uv.uv_stream_t*>self._handle).write_queue_size != 0:
             raise RuntimeError(
                 'UVStream._try_write called with data in uv buffers')
-
+      
         if PyBytes_CheckExact(data):
             # We can only use this hack for bytes since it's
             # immutable.  For everything else it is only safe to
             # use buffer protocol.
-            buf = <void*>PyBytes_AS_STRING(data)
-            blen = Py_SIZE(data)
+            _buf.base = <char*>PyBytes_AS_STRING(data)
+            _buf.len = Py_SIZE(data)
+
         else:
             PyObject_GetBuffer(data, &py_buf, PyBUF_SIMPLE)
             used_buf = 1
-            buf = py_buf.buf
-            blen = py_buf.len
 
-        if blen == 0:
+            _buf.base = <char*>py_buf.buf
+            _buf.len = py_buf.len
+
+        if _buf.len == 0:
             # Empty data, do nothing.
             return 0
 
-        fd = self._fileno()
-        # Use `unistd.h/write` directly, it's faster than
-        # uv_try_write -- less layers of code.  The error
-        # checking logic is copied from libuv.
-        written = system._write(fd, buf, blen)
-        while written == -1 and (errno.errno == errno.EPROTOTYPE):
-            # From libuv code (unix/stream.c):
-            #   Due to a possible kernel bug at least in OS X 10.10 "Yosemite",
-            #   EPROTOTYPE can be returned while trying to write to a socket
-            #   that is shutting down. If we retry the write, we should get
-            #   the expected EPIPE instead.
-            written = system._write(fd, buf, blen)
+        # IGNORE FOR NOW, This is currently disabled until someone can come up with an actual fix for the bad file descriptors issues.
+
+        # NOTE Replaced System.write for tcp to have direct access to windows API see libuv/src/win/stream.c ...
+       
+        # if (<uv.uv_stream_t*>self._handle).type == uv.UV_TCP:
+        #     This is a debug message I'll get rid of it when I've found a solution for this problem.         
+        #     print("Sending TCP") 
+        #     (&wsa).buf = <char*>buf 
+        #     (&wsa).len = <unsigned long>blen
+
+        #     # NOTE I had a strange import situtaion with uv.pxd, which is why it has the uv prefix...
+        #     # try_tcp_write when it is actually a custom function I made to be faster than uv_try_write
+        #     written = uv.try_tcp_write((<uv.uv_tcp_t*>self._handle), wsa)
+
+        # else:
+            
+        #     print("Doing FALLBACK!") 
+
+        #     # NOTE I kept this chunk incase we absolutely must fallback. 
+        #     # because at this point it would have to do tty which 
+        #     # seems to be related to shell stuff so it wouldn't screw around with yet
+        #     # Also Same code as before is kept incase I missed something - Vizonex
+        #     fd = self._fileno()
+
+        #     # Use `unistd.h/write` directly, it's faster than
+        #     # uv_try_write -- less layers of code.  The error
+        #     # checking logic is copied from libuv.
+        #     written = system._write(fd, buf, blen)
+            
+        #     while written == -1 and errno.errno == errno.EPROTOTYPE:
+        #         written = system._write(fd, buf, blen)
+
+        # NOTE Fallen back to uv_try_write until we can come up with a better solution.
+        written = uv.uv_try_write(<uv.uv_stream_t*>self._handle, &_buf, 1)
+
+        
         saved_errno = errno.errno
 
         if used_buf:
             PyBuffer_Release(&py_buf)
 
         if written < 0:
-            if saved_errno == errno.EAGAIN:
-                    # saved_errno == system.EWOULDBLOCK:
+
+            if saved_errno == errno.EAGAIN or written == uv.UV_EAGAIN:
+                # return -1 beacuse we need to wait for handle.stream.conn.write_reqs_pending to actually be done...
                 return -1
+        
             else:
                 exc = convert_error(-saved_errno)
                 self._fatal_error(exc, True)
@@ -400,7 +440,7 @@ cdef class UVStream(UVBaseTransport):
         if UVLOOP_DEBUG:
             self._loop._debug_stream_write_tries += 1
 
-        if <size_t>written == blen:
+        if <size_t>written == _buf.len:
             return 0
 
         return written
@@ -544,6 +584,7 @@ cdef class UVStream(UVBaseTransport):
 
                 elif err != uv.EAGAIN:
                     ctx.close()
+                    # print("Something failed in line 519 uv.uv_try_write")
                     exc = convert_error(err)
                     self._fatal_error(exc, True)
                     self._buffer.clear()
@@ -569,7 +610,7 @@ cdef class UVStream(UVBaseTransport):
         if err < 0:
             # close write context
             ctx.close()
-
+            # print("something failed on line 562")
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
@@ -742,7 +783,7 @@ cdef void __uv_stream_on_shutdown(uv.uv_shutdown_t* req,
 
         if UVLOOP_DEBUG:
             stream._loop._debug_stream_shutdown_errors_total += 1
-
+        # print("something failed and caused __uv_stream_on_shutdown (line 727) to be invoked")
         exc = convert_error(status)
         stream._fatal_error(
             exc, False, "error status in uv_stream_t.shutdown callback")
@@ -800,7 +841,6 @@ cdef inline bint __uv_stream_on_read_common(UVStream sc, Loop loop,
             # See WriteUnixTransport for the explanation.
             sc._on_eof()
             return True
-
         exc = convert_error(nread)
         sc._fatal_error(
             exc, False, "error status in uv_stream_t.read callback")
@@ -855,7 +895,7 @@ cdef inline void __uv_stream_on_write_impl(uv.uv_write_t* req, int status):
     if status < 0:
         if UVLOOP_DEBUG:
             stream._loop._debug_stream_write_errors_total += 1
-
+  
         exc = convert_error(status)
         stream._fatal_error(
             exc, False, "error status in uv_stream_t.write callback")
