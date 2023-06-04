@@ -68,3 +68,5 @@ if __name__ == "__main__":
     asyncio.run(main())
   ```
   No doubt that this will still require some heavy stress tests before we can just call it good but glad to see that progress is coming along so greatly :) 
+ 
+ - 6/4/2023 Everything seems to be in order now including servers (Except for UDP because I haven't check that yet (It might work actually) but TCP works!) and I also fixed some other smaller details like signal functions. I'll try to turn this library into a python package shortly when I've added a few more commits. Once it has become a library I'll Modify this entire readme into learning how to install it using pip. I have no doubt that this is better than chat gpt or all those other inventions. Really Winloop is the future! I guess the most staisfying part of all is fixing things on your own. You will struggle but eventually you will make something useful. I hope this incredible month long journey has taught you that you can accomplish great things. - Vizonex
