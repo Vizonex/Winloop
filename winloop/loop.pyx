@@ -2918,7 +2918,7 @@ cdef class Loop:
         return transp, proto
 
     def add_signal_handler(self, sig, callback, *args):
-        """Add a handler for a signal.  UNIX only.
+        """Add a handler for a signal.
 
         Raise ValueError if the signal number is invalid or uncatchable.
         Raise RuntimeError if there is a problem setting up the handler.
@@ -2976,7 +2976,7 @@ cdef class Loop:
             # signal_siginterrupt(sig, False)
 
             # XXX "WINDOWS DOESN'T Have a signal_siginterrupt so I'll do this until someone smarter than me wants a tackle at it" - Vizonex
-            signal.signal(signal.SIGINT, self.__sighandler)
+            signal_signal(signal_SIGINT, self.__sighandler)
 
         except OSError as exc:
             del self._signal_handlers[sig]
@@ -2992,7 +2992,7 @@ cdef class Loop:
                 raise
 
     def remove_signal_handler(self, sig):
-        """Remove a handler for a signal.  UNIX only.
+        """Remove a handler for a signal. 
 
         Return True if a signal handler was removed, False if not.
         """
