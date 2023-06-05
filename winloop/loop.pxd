@@ -223,3 +223,4 @@ include "handles/fsevent.pxd"
 
 
 cdef __install_pymem()
+cdef __install_disable_stdio_inheritence()
