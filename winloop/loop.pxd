@@ -219,7 +219,7 @@ include "handles/tcp.pxd"
 include "handles/pipe.pxd"
 include "handles/process.pxd"
 include "handles/fsevent.pxd"
-
+include "handles/udp.pxd"
 
 
 cdef __install_pymem()
