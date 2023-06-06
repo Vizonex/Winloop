@@ -70,3 +70,21 @@ if __name__ == "__main__":
   No doubt that this will still require some heavy stress tests before we can just call it good but glad to see that progress is coming along so greatly :) 
  
  - 6/4/2023 Everything seems to be in order now including servers (Except for UDP because I haven't check that yet (It might work actually) but TCP works!) and I also fixed some other smaller details like signal functions. I'll try to turn this library into a python package shortly when I've added a few more commits. Once it has become a library I'll Modify this entire readme into learning how to install it using pip. I have no doubt that this is better than chat gpt or all those other inventions. Really Winloop is the future! I guess the most staisfying part of all is fixing things on your own. You will struggle but eventually you will make something useful. I hope this incredible month long journey has taught you that you can accomplish great things. - Vizonex
+
+- 6/5/2023 Currently Running tests on All possible to run testsuites and I'm seeing really promising results escpecially with aiohttp. 
+I made a new test to cover UDP due to the Unix Heavy testsuite and here is what I've tested so far. (also I disabed childwatcher because windows doesn't have those features)
+- [x] test_base.py (All Passed Yes all 87 Passed 1 skipped because I don't have `fcntl` yet...)
+- [x] test_fastapi.py (Works but it is not a unittest I'll upload this snippet of this code as a gist)
+- [] test_pipes.py (Might be skipped , Seems very Unix Heavy)
+- [] test_process_spawning.py (We know that Processes appear to work so I might skip this one because some of it is exteremely Unix heavy)
+- [x] test_http.py (All Passed)
+- [] test_signals.py (Haven't done yet but likely could be incompatable as well)
+- [] test_sockets.py (Haven't ran it yet)
+- [] test_sourcecode.py (Might Pass on this one just because not much was changed other than some names here and there...)
+- [] test_fs_event.py (Haven't ran it yet but it could be incompatable)
+- [] test_executors.py (Haven't ran it yet)
+- [] test_unix.py (Obviously we can't do that so I'll Pass on it)
+- [] test_dns.py (Should work here as well)
+- [] In Other Places and everyday software (I've actually started using winloop on one of my Osint tools that harvests up User information that I haven't made public yet... (Works very well with Tor , I'm impressed with the fact that it hasn't broken down when digging up data from many different search engines), I'll try winloop on theHarvester https://github.com/laramies/theHarvester as well and report how fast it is when I get to doing it... I might plan on seeing if those developers/contributors actually want to start using this library that I modified from the uvloop devs over using the Windows selector event loop policy.)
+
+Anyways I'm very close to setting up this python package, the last thing on my todo list is licensing and that's about it! 
