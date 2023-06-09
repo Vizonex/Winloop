@@ -6,7 +6,7 @@ I never really liked the fact that I couldn't make anything run faster escpecial
 It always felt dissapointing when libuv is avalible on windows but doesn't have uvloop compatability. 
 So I went ahead and downloaded the uvloop source code and modified the library to be windows compatable. 
 
-"This library was inpired by the MagicStack Team and I take no credit for the original code and I had to modify." - Vizonex 
+"This library was inpired by the MagicStack Team and I take no credit for the original code that I had to modify." - Vizonex 
 
 The differences with uvloop is that forking has been fully disabled and some smaller api calls had to be changed. Subprocesses instead release the gil instead of forking out although I might change that in the future. If handling asynchronous subprocesses becomes a problem to handle...
 
