@@ -23,7 +23,7 @@ However there is a perfromance increase of about 5 times vs using the `WindowsSe
 pip install winloop
 ```
 
-you can also clone the reposity and build the extension yourself by running if you wish to use/built the extension locally 
+you can also clone the reposity and build the extension yourself by running if you wish to use/build the extension locally 
 
 ```
 python setup.py build_ext --inplace 
