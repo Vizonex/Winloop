@@ -90,3 +90,5 @@ I made a new test to cover UDP due to the Unix Heavy testsuite and here is what 
 Anyways I'm very close to setting up this python package, the last thing on my todo list is licensing and that's about it! 
 
 - 6/9/2023 I am almost done with making the first pypi package and will likely have it done within a weeks time... I'll be letting the magicstack team know that users can use this library as an alternative from their setup.py as a pull-request/suggestion and I will be seeing if any of them also want to help with this project as well. If I'm lucky the first package will come out today or tomorrow. I'll need to test the installation from a virtual enviornment first but then after I'll start releasing the first beta version of this library along with a new readme , I'll archive this as "dev-journal.md" soon so that you can always go back and see what was accomplished.
+
+- I just uploaded the pypi package under `winloop` but I had acciendly made a typo package called winloop.loop as well so I'll have to conatct pypi about getting that library removed. One license for Appache isn't showing up apparently so I'll have to get that one fixed as well...
