@@ -1,7 +1,12 @@
 from setuptools import Extension, setup
-from Cython.Build import cythonize
 import pathlib 
 import sys 
+try:
+    from Cython.Build import cythonize
+except:
+    print("please install cython first")
+    sys.exit(1)
+
 
 
 HERE = pathlib.Path("winloop")
@@ -46,7 +51,7 @@ def do_installation():
 
 
     setup(
-        name="winloop.loop",
+        name="winloop",
         author="Vizonex",
         version=__version__,
         description="""An Alternative library for uvloop compatability with windows""",
@@ -70,6 +75,7 @@ def do_installation():
             'Intended Audience :: Developers',
             'Framework :: AsyncIO'
         ],
+        install_requires=["cython"]
     )
 
 if __name__ == "__main__":
@@ -80,3 +86,5 @@ if __name__ == "__main__":
         raise RuntimeError("Winloop is Only Avalible for Windows Users Please try installing uvloop instead, you won't be dissapointed with it...")
 
     do_installation()
+    
+ 
