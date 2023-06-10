@@ -1,25 +1,24 @@
-from setuptools import Extension, setup
+from setuptools import Extension, setup, find_packages
 import pathlib 
 import sys 
-try:
-    from Cython.Build import cythonize
-except:
-    print("please install cython first")
-    sys.exit(1)
+
+from Cython.Build import cythonize
 
 
 
 HERE = pathlib.Path("winloop")
-long_description = open('readme.md').read()
 
-__version__ = "0.0.1"
+__version__ = "0.0.5"
 
 
 
 # This is a temporary test Solution and is not the official file yet but this is to display/show what 
 # I'm currently using to compile the winloop library...
 def do_installation():
-
+    try:
+        long_description = (HERE.parent / 'readme.md').open("r").read()
+    except:
+        long_description = ""
 
     # "Thank goodness we don't have to dig out the libpath ourselves I almost vomited" - Vizonex            
     Windows_Libraries = [
@@ -66,6 +65,10 @@ def do_installation():
             "fast-asyncio",
             "uvloop-alternative"
         ],
+        # Credit to godlygeek for helping me fix the setup.py file
+        packages=find_packages(include="winloop*"),
+
+        include_package_data=True,
         long_description_content_type='text/markdown',
         long_description=long_description,
         classifiers=[
@@ -86,5 +89,6 @@ if __name__ == "__main__":
         raise RuntimeError("Winloop is Only Avalible for Windows Users Please try installing uvloop instead, you won't be dissapointed with it...")
 
     do_installation()
+    
     
  
