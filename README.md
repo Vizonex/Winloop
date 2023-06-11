@@ -257,7 +257,7 @@ from likely to least likely to be solved. This is my list of things that I will 
 
 - Maybe Drop and then re-join the gil after the subprocess is first spawned in instead of joining before being killed off by the end user (This will need to be accompanied by some heavy unittesting no doubt)
 
-- Optimzing TCP Connections as well as sending data in `streams.pyx` with the uv bites dropped. Currently uv bites is just there as a protection measure by me, this will be dropped in the future since the try_write block has a subprocess checks as well as long as it doesn't have subprocess behaviors I'm alright with upgrading `streams.pyx` as long as it doesn't break. I did leave my plan uncommented for right now but the other half belonging to subprocesses looks rather steep/deep.
+- Optimzing TCP Connections as well as sending data in `streams.pyx` with the uv bites are finally dropped in the try write portions of our library. Currently uv bites is just there as a protection measure by me, this will be dropped in the future since the try_write block has a subprocess checks as well as long as it doesn't have subprocess behaviors I'm alright with upgrading `streams.pyx` as long as it doesn't break. I did leave my plan uncommented for right now but the other half belonging to subprocesses looks rather steep/deep.
 
 - drop uv_a.lib and have the user compile .c files themselves once the current compiling problems/errors have been solved...
 
