@@ -239,4 +239,27 @@ if __name__ == "__main__":
     install()
     asyncio.run(main())
   ```
+  
+  
+ ## Possible Upcomming Features/Optimizations to Winloop / This is also our TODO list
+I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will tuning in and listing as to what we might change 
+from likely to least likely to be solved. This is my list of things that I will propose on doing. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
+
+- https://github.com/MagicStack/uvloop/pull/534/files adding the term `noexcept` to the ends of some functions to make winloop more cython 3 compatable when the day finally comes... 
+
+- delete loop.c on install once the code has been compiled to a `.pyd` file since `loop.c` becomes 8 Microbytes (8MB) of waste at that point (yeah it's very big). Users don't need a file this big escpecailly for those who are diskspace sensetive like myself.
+
+- Adding in the nessesary tools to help pyinstaller compile this fast library to executable code. Calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
+
+- Drop custom Socketpair function inside of `socketpair.h` in replacement for libvs's function until we can better understand how its need to be implemented so that we can make it go a bit deeper to be a bit more quick at creating sockets , the assert checks might be dropped as long as there's no problems with it. I'll be sure to reupload the dropped `socketpair.h` code of mine into a gist if anyone still wanted to go ahead and use it elsewhere although it may have many bugs of it's own which was my original reason for not using it when I discovered that libuv had it's own socketpair functions for windows...
+
+- Easier Error Diagnosis to code even though I've found that most errors are not even winloop's fault (This is a good thing but makes it harder to tell where other devs mess up) in fact it actually passes more tests that asyncio does. This might just be both a blessing and a curse for us...
+
+- Maybe Drop and then re-join the gil after the subprocess is first spawned in instead of joining before being killed off by the end user (This will need to be accompanied by some heavy unittesting no doubt)
+
+- Optimzing TCP Connections as well as sending data in `streams.pyx` with the uv bites dropped. Currently uv bites is just there as a protection measure by me, this will be dropped in the future since the try_write block has a subprocess checks as well as long as it doesn't have subprocess behaviors I'm alright with upgrading `streams.pyx` as long as it doesn't break. I did leave my plan uncommented for right now but the other half belonging to subprocesses looks rather steep/deep.
+
+- drop uv_a.lib and have the user compile .c files themselves once the current compiling problems/errors have been solved...
+
+
 
