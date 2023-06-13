@@ -245,7 +245,7 @@ if __name__ == "__main__":
 I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will tuning in and listing as to what we might change 
 from likely to least likely to be solved. This is my list of things that I will propose on doing. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
 
-- https://github.com/MagicStack/uvloop/pull/534/files adding the term `noexcept` to the ends of some functions to make winloop more cython 3 compatable when the day finally comes... 
+- https://github.com/MagicStack/uvloop/pull/534/files adding the term `noexcept` to the ends of some functions to make winloop more cython 3 compatable when the day finally comes... (__Update__) Doing this seems to have increased performance by another __5x__ for tcp connections lowering the current tcp test from __0.5__ seconds down to just __0.186 seconds!__. __This is a Major Breakthrough for us__ and I'll definately be updated our current code to include all `noexcept` keywords to those parts. It might have something to with with the code error checking where it shouldn't be. So excpect this feature updated in __winloop 0.0.6__ I hope you're excited as much as I am!
 
 - delete loop.c on install once the code has been compiled to a `.pyd` file since `loop.c` becomes 8 Microbytes (8MB) of waste at that point (yeah it's very big). Users don't need a file this big escpecailly for those who are diskspace sensetive like myself.
 
