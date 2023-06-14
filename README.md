@@ -259,4 +259,5 @@ I have been looking deeply into some of the proposed Pulls and changes to `Uvloo
 - drop uv_a.lib and have the user compile .c files themselves once the current compiling problems/errors have been solved...
 
 
-
+## Videos
+- By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have problems with reading)
