@@ -49,7 +49,7 @@ cdef class UVBaseTransport(UVSocketHandle):
     # === overloads ===
 
     cdef _new_socket(self)
-    cdef size_t _get_write_buffer_size(self)
+    cdef size_t _get_write_buffer_size(self) noexcept
 
     cdef bint _is_reading(self)
     cdef _start_reading(self)

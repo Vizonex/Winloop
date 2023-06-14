@@ -157,6 +157,7 @@ cdef signal_raise_signal = signal.raise_signal
 cdef signal_set_wakeup_fd = signal.set_wakeup_fd
 cdef signal_default_int_handler = signal.default_int_handler
 cdef signal_SIG_DFL = signal.SIG_DFL
+cdef signal_SIGINT = signal.SIGINT
 
 cdef time_sleep = time.sleep
 cdef time_monotonic = time.monotonic

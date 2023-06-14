@@ -3332,7 +3332,7 @@ class _SyncSocketWriterFuture(aio_Future):
 
 cdef void __loop_alloc_buffer(uv.uv_handle_t* uvhandle,
                               size_t suggested_size,
-                              uv.uv_buf_t* buf) with gil:
+                              uv.uv_buf_t* buf) noexcept with gil:
     cdef:
         Loop loop = (<UVHandle>uvhandle.data)._loop
 

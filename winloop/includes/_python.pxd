@@ -1,5 +1,5 @@
 cdef extern from "Python.h":
-    
+
     unicode PyUnicode_FromString(const char *u)
     void* PyMem_RawMalloc(size_t n) nogil
     void* PyMem_RawRealloc(void *p, size_t n) nogil
@@ -20,6 +20,8 @@ cdef extern from "Python.h":
     unicode PyUnicode_EncodeFSDefault(unicode)
     cdef enum:
         PyBUF_WRITE
+
+    
 
 cdef extern from "includes/context.h":
     object Context_CopyCurrent()

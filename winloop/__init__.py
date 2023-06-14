@@ -24,7 +24,7 @@ def install() -> None:
     """A helper function to install winloop policy."""
     __asyncio.set_event_loop_policy(WinLoopPolicy())
 
-# Renamed Eventloop policy for the sake of showing that it's different from Uvloop's version...
+
 class WinLoopPolicy(__BasePolicy):
     """Event loop policy.
     The preferred way to make your application use winloop:

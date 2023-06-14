@@ -759,7 +759,7 @@ cdef __process_convert_fileno(object obj):
 
 cdef void __uvprocess_on_exit_callback(uv.uv_process_t *handle,
                                        int64_t exit_status,
-                                       int term_signal) with gil:
+                                       int term_signal) noexcept with gil:
 
     if __ensure_handle_data(<uv.uv_handle_t*>handle,
                             "UVProcess exit callback") == 0:
@@ -778,7 +778,7 @@ cdef __socketpair():
         uv.uv_os_sock_t fds[2]
         int err
     
-    # Added uv_socketpair instead my function for now since we kept seeing a bad file descriptor
+    # Added uv_socketpair instead my function since we kept seeing a bad file descriptor
     err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
     
     # See https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c 
@@ -799,6 +799,5 @@ cdef __socketpair():
     return fds[0], fds[1]
 
 
-cdef void __uv_close_process_handle_cb(uv.uv_handle_t* handle) with gil:
+cdef void __uv_close_process_handle_cb(uv.uv_handle_t* handle) noexcept with gil:
     PyMem_RawFree(handle)
-

@@ -307,7 +307,7 @@ cdef class AddrInfo:
             uv.uv_freeaddrinfo(self.data)  # returns void
             self.data = NULL
 
-    cdef void set_data(self, system.addrinfo *data):
+    cdef void set_data(self, system.addrinfo *data) noexcept:
         self.data = data
 
     cdef unpack(self):
@@ -335,7 +335,7 @@ cdef class AddrInfo:
         return result
 
     @staticmethod
-    cdef int isinstance(object other):
+    cdef int isinstance(object other) noexcept:
         return type(other) is AddrInfo
 
 
@@ -424,7 +424,7 @@ cdef _intenum_converter(value, enum_klass):
 
 
 cdef void __on_addrinfo_resolved(uv.uv_getaddrinfo_t *resolver,
-                                 int status, system.addrinfo *res) with gil:
+                                 int status, system.addrinfo *res) noexcept with gil:
 
     if resolver.data is NULL:
         aio_logger.error(
@@ -455,7 +455,7 @@ cdef void __on_addrinfo_resolved(uv.uv_getaddrinfo_t *resolver,
 cdef void __on_nameinfo_resolved(uv.uv_getnameinfo_t* req,
                                  int status,
                                  const char* hostname,
-                                 const char* service) with gil:
+                                 const char* service) noexcept with gil:
     cdef:
         NameInfoRequest request = <NameInfoRequest> req.data
         Loop loop = request.loop

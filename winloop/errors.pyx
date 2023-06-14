@@ -19,7 +19,7 @@ cdef __convert_python_error(int uverr):
 
     # TODO VERIFY THAT THE ERRORS ARE CORRECTLY MAPPED!!!
 
-    cdef int oserr = uverr
+    cdef int oserr = -uverr
 
     exc = OSError
 
@@ -44,7 +44,7 @@ cdef __convert_python_error(int uverr):
     elif uverr == uv.EEXIST:
         exc = FileExistsError
 
-    elif uverr == uv.ENOENT:
+    elif uverr in (uv.ENOENT, uv.UV__ENOENT):
         exc = FileNotFoundError
 
     elif uverr == uv.EINTR:
@@ -62,7 +62,7 @@ cdef __convert_python_error(int uverr):
     return exc(oserr, __strerr(oserr))
 
 
-cdef int __convert_socket_error(int uverr):
+cdef int __convert_socket_error(int uverr) noexcept:
     cdef int sock_err = 0
 
     if uverr == uv.UV__EAI_ADDRFAMILY:

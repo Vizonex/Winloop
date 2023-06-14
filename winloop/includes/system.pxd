@@ -7,7 +7,8 @@ cdef extern from "winsock2.h":
 #define WIN32_LEAN_AND_MEAN
 #endif    
     """
-
+    
+    
     ctypedef unsigned long long UINT_PTR
     ctypedef UINT_PTR SOCKET 
 
@@ -54,6 +55,15 @@ cdef extern from "winsock2.h":
     unsigned long ntohl(unsigned long)
     unsigned long htonl(unsigned long)
     unsigned long ntohs(unsigned long)
+    
+    # SOCKET_ERROR = -1 
+    int SOCKET_ERROR
+
+    # Added WSABUF for uv__try_write TCP Implementation more directly inside of cython...
+    ctypedef struct WSABUF:
+        char * buf
+        unsigned long len
+
 
 # The AtFork Implementation does not work and it is belived that windows already takes care of this...
 # http://locklessinc.com/articles/pthreads_on_windows/
@@ -80,10 +90,11 @@ cdef extern from "includes/nfork_handler.h":
     int8_t MAIN_THREAD_ID_SET
     void setMainThreadID(uint64_t id)
 
+
 # socketpair.h by Vizonex 
 cdef extern from "socketpair.h" nogil:
     # I implemented this for windows because I wasn't 
-    # going to let it stop me from making Winloop impossible to put together...
+    # going to let it stop me from making Winloop not possible...
     int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2])
-    SOCKET get_socket_descriptor()
     
+
