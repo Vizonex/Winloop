@@ -242,7 +242,7 @@ if __name__ == "__main__":
   
   
  ## Possible Upcomming Features/Optimizations to Winloop / This is also our TODO list
-I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will tuning in and listening to what's going on uvloop's end to see what we might have to change . This is a list of features I would like to implement from likely to least likely to be done as well as solved. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
+I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will be tuning in and listening to what's going on uvloop's end to see what we might have to change . This is a list of features I would like to implement from likely to least likely to be done as well as solved. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
 
 - delete loop.c on install once the code has been compiled to a `.pyd` file since `loop.c` becomes 8 Microbytes (8MB) of waste at that point (yeah it's very big). Users don't need a file this big escpecailly for those who are diskspace sensetive like myself.
 
