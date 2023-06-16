@@ -48,6 +48,7 @@ jobs:
             ${{github.event.compare}}
           draft: false
           prerelease: false
+          allowUpdates : true
 
       - name: Upload distribution package as release asset
         uses: actions/upload-release-asset@v1
