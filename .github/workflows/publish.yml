@@ -32,8 +32,8 @@ jobs:
       - name: Install dependencies
         run: pip install Cython
 
-      - name: Build distribution packages
-        run: python setup.py sdist bdist_wheel
+      - name: Build Cython package
+        run: python setup.py build_ext
 
       - name: Create GitHub release
         id: create_release
