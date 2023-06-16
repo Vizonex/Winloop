@@ -13,8 +13,10 @@ The differences with uvloop is that forking has been fully disabled and some sma
 
 However there is a perfromance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which has ssl problems in python 3.9. Winloop is a very good replacement for that as well.
 
-## Update - We Might just go ahead and try to get this implementation merged to uvloop for portability and maintenence sake and so that uvloop will finally have winodws support.
+## Update - We Might just go ahead and try to get this implementation merged to uvloop for portability and maintenence sake and so that uvloop will finally have winodows support.
 Since it's currently only been myself who's has been maintaining this library so far, one of the contributors of theHarvester https://github.com/laramies/theHarvester/issues/1451 Mentioned to me about the idea of just making a pull request to uvloop. I don't know entirely how we will be able to do/handle such a large merge but it's now on my mind that we will need to reach out again about the possibilities of getting this large library merged to uvloop so that more maintainers like myself will be able to better manage the windows side of this. It's hard for me to make a list of all of our changes so it will most certainly not be an easy task. I'll try to reach out again to the magicstack team to see what they can do to pull all of these changes off any help in making this happen will be appreciated - Vizonex
+I'll talk about more of this in my journal file that I've left on here and what will have to be done if that's going to be our end goal...
+
 
 ## How to install Winloop on your windows OS 
 
