@@ -1,0 +1,70 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        architecture: ["x64", "x86"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Microsoft Visual C++ Build Tools
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install visualcpp-build-tools -y --installargs "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --quiet"
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
+
+      - name: Install dependencies
+        run: pip install setuptools wheel Cython
+
+      - name: Build distribution packages
+        run: python setup.py sdist bdist_wheel
+
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes since the previous release:
+            ${{github.event.compare}}
+          draft: false
+          prerelease: false
+
+      - name: Upload distribution package as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.whl
+          asset_name: myproject-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.architecture }}.whl
+          asset_content_type: application/zip
+
+      - name: Upload project source code zip as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.zip
+          asset_name: myproject-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.architecture }}.zip
+          asset_content_type: application/zip
