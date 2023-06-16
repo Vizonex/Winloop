@@ -33,7 +33,7 @@ jobs:
         run: pip install Cython
 
       - name: Build Cython package
-        run: python setup.py build_ext
+        run: python setup.py build_ext --inplace
 
       - name: Create GitHub release
         id: create_release
@@ -55,8 +55,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/*.whl
-          asset_name: myproject-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.architecture }}.whl
+          asset_path: ./build/*.whl
+          asset_name: winloop-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.architecture }}.whl
           asset_content_type: application/zip
 
       - name: Upload project source code zip as release asset
@@ -65,6 +65,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/*.zip
-          asset_name: myproject-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.architecture }}.zip
+          asset_path: ./build/*.zip
+          asset_name: winloop-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.architecture }}.zip
           asset_content_type: application/zip
