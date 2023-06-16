@@ -1,15 +1,5 @@
-![Alt text](https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png)
+## Vizonex's Dev Jornal
 
-# Winloop
-An Alternative library for uvloop compatability with windows Because let's face it. Window's python asyncio can be garabage at times. 
-I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place. 
-It always felt dissapointing when libuv is avalible on windows but doesn't have uvloop compatability. 
-So I went ahead and downloaded the uvloop source code and I'm currently modifying alot of parts to make it windows compatable. 
-
-This library is still being worked on but I wanted to make sure for right now that the name of this library has been claimed by me. 
-I will not be posting any code yet until I have resolved licensing with the uvloop devs (No Longer required see bottom paragraph in updates).
-
-The main differences will be some name changes incase there's any problems and the disabling of non-windows compatable apis...
 
 ## Current Progress
 
@@ -92,3 +82,13 @@ Anyways I'm very close to setting up this python package, the last thing on my t
 - 6/9/2023 I am almost done with making the first pypi package and will likely have it done within a weeks time... I'll be letting the magicstack team know that users can use this library as an alternative from their setup.py as a pull-request/suggestion and I will be seeing if any of them also want to help with this project as well. If I'm lucky the first package will come out today or tomorrow. I'll need to test the installation from a virtual enviornment first but then after I'll start releasing the first beta version of this library along with a new readme , I'll archive this as "dev-journal.md" soon so that you can always go back and see what was accomplished.
 
 - I just uploaded the pypi package under `winloop` but I had acciendly made a typo package called winloop.loop as well so I'll have to conatct pypi about getting that library removed. One license for Appache isn't showing up apparently so I'll have to get that one fixed as well...
+
+- 6/15/2023 Winloop is already a sucess but there was an idea to go ahead and maybe see about merging winloop to uvloop so that the uvloop maintainers will be able to maintain the new branch. If we end up doing this I will like to see some votes maybe about the idea. 
+## Reasons for why Merging Winloop to Uvloop would be a good idea
+- Maitenece would be better and with an extra couple contriubtors like myself on hand we will be able to work with the Magicstak team on making uvloop avalible to all systems alike. 
+- I would be able to stop having to do absolutely everything by myself and focus on other ideas and projects I had in mind in the future
+That is if it actually succeeds at working...
+## Cons
+- Nobody decides that they want to try and merge something this big into uvloop since there's a couple of fallbacks that I had to do since windows is a competely 
+different system from linux or apple.
+- I'm mainly just worried about the task at hand as well as the fear that too many big changes would/could cause problems...
