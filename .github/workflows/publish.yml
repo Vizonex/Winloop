@@ -6,8 +6,11 @@ on:
       - "*" 
   workflow_dispatch: 
 
+permissions:
+  contents: read
+  
 
-jobs: 
+jobs:
   build_wheels: 
     name: Build wheels 
     runs-on: windows-latest
@@ -22,9 +25,8 @@ jobs:
       - name: Install cibuildwheel 
         run: pip install cibuildwheel -qq 
       
-      - name: Install Cython
-        run: pip install cython
       
+
       - name: Build wheels 
         run: python -m cibuildwheel --output-dir wheelhouse 
         env: 
@@ -35,6 +37,7 @@ jobs:
         with: 
           name: dist
           path: ./wheelhouse/*.whl 
+  
   
   build_sdist:
     name: Build source distribution
