@@ -53,7 +53,7 @@ jobs:
 
   publish: 
     name: Publish 
-    needs: build_wheels 
+    needs: ['build_wheels', 'build_sdist']
     runs-on: windows-latest 
 
     environment: 
