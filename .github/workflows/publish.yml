@@ -56,7 +56,7 @@ jobs:
       - name: Build sdist
         run: python setup.py bdist_wheel
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/*.tar.gz
