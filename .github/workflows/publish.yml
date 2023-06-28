@@ -90,7 +90,9 @@ jobs:
           path: dist 
 
       - name: Publish to PyPI 
-        if: ${{ github.event_name == 'push' }} 
-        run: twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }} --disable-progress-bar 
-        
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+#           Hopefully this will upload the wheels that were asked for...
+          password: ${{ secrets.pypi_password }}
+          repository_url: https://upload.pypi.org/legacy/
 
