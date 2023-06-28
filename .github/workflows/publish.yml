@@ -88,11 +88,9 @@ jobs:
         with: 
           name: dist 
           path: dist 
-
-      - name: Publish to PyPI 
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-#           Hopefully this will upload the wheels that were asked for...
-          password: ${{ secrets.pypi_password }}
-          repository_url: https://upload.pypi.org/legacy/
-
+      - name: Commit and push wheel
+#         Send them back to use for now... until I can propperly get this issue resolved...
+        run: |
+          git add -f ./dist/*.whl
+          git commit -m 'pushing new wheel'
+          git push
