@@ -351,16 +351,14 @@ cdef class UVStream(UVBaseTransport):
             ssize_t written
             bint used_buf = 0
             Py_buffer py_buf
-            # void* buf
-            # size_t blen
+
             int saved_errno
             int fd
 
             uv.uv_buf_t _buf
-
             
-            # NEW added WSABUF Brought over from "winsock2.h"
-            # system.WSABUF wsa 
+            # UPDATE: added WSABUF Brought over from "winsock2.h"
+            system.WSABUF wsa 
         
 
         if (<uv.uv_stream_t*>self._handle).write_queue_size != 0:
@@ -371,53 +369,42 @@ cdef class UVStream(UVBaseTransport):
             # We can only use this hack for bytes since it's
             # immutable.  For everything else it is only safe to
             # use buffer protocol.
-            _buf.base = <char*>PyBytes_AS_STRING(data)
-            _buf.len = Py_SIZE(data)
+            wsa.buf = <char*>PyBytes_AS_STRING(data)
+            wsa.len = <unsigned long>Py_SIZE(data)
 
         else:
             PyObject_GetBuffer(data, &py_buf, PyBUF_SIMPLE)
             used_buf = 1
 
-            _buf.base = <char*>py_buf.buf
-            _buf.len = py_buf.len
+            wsa.buf  = <char*>py_buf.buf
+            wsa.len = <unsigned long>py_buf.len
 
-        if _buf.len == 0:
+        if wsa.len == 0:
             # Empty data, do nothing.
             return 0
 
         # IGNORE FOR NOW, This is currently disabled until someone can come up with an actual fix for the bad file descriptors issues.
 
         # NOTE Replaced System.write for tcp to have direct access to windows API see libuv/src/win/stream.c ...
-       
-        # if (<uv.uv_stream_t*>self._handle).type == uv.UV_TCP:
-        #     print("Sending TCP")
-        #     (&wsa).buf = <char*>buf 
-        #     (&wsa).len = <unsigned long>blen
+        # Try this unless Something else comes up then fallback to try_uv_write...
+        if (<uv.uv_stream_t*>self._handle).type == uv.UV_TCP:
 
-        #     # NOTE I had a strange import situtaion with uv.pxd, which is why it has the uv prefix...
-        #     # try_tcp_write when it is actually a custom function I made to be faster than uv_try_write
-        #     written = uv.try_tcp_write((<uv.uv_tcp_t*>self._handle), wsa)
+            # TODO (Vizonex) Instead of our custom try_tcp_write maybe send all of that into a new cython file 
+            # or send the entire WSASend here? 
 
-        # else:
+            # NOTE I had a strange import situtaion with uv.pxd, which is why it has the uv prefix...
+            # try_tcp_write when it is actually a custom function 
+            # I made to be a little faster than uv_try_write but since libuv cannot access it's own 
+            # try_tcp_write the only thing we can do is give it's own funciton for now... 
+            written = uv.try_tcp_write((<uv.uv_tcp_t*>self._handle), wsa)
+
+        else:
+            _buf.base = wsa.buf
+            _buf.len = wsa.len
+
             
-        #     print("Doing FALLBACK!") # 17297548
-
-        #     # NOTE I kept this chunk incase we absolutely must fallback. 
-        #     # because at this point it would have to do tty which 
-        #     # seems to be related to shell stuff so it wouldn't screw around with yet
-        #     # Also Same code as before is kept incase I missed something - Vizonex
-        #     fd = self._fileno()
-
-        #     # Use `unistd.h/write` directly, it's faster than
-        #     # uv_try_write -- less layers of code.  The error
-        #     # checking logic is copied from libuv.
-        #     written = system._write(fd, buf, blen)
-            
-        #     while written == -1 and errno.errno == errno.EPROTOTYPE:
-        #         written = system._write(fd, buf, blen)
-
-        # NOTE Fallen back to uv_try_write until we can come up with a better solution.
-        written = uv.uv_try_write(<uv.uv_stream_t*>self._handle, &_buf, 1)
+            # NOTE Fallback to uv_try_write until we can come up with a better solution.
+            written = uv.uv_try_write(<uv.uv_stream_t*>self._handle, &_buf, 1)
 
         
         saved_errno = errno.errno
