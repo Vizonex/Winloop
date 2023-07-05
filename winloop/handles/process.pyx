@@ -31,9 +31,6 @@ cdef class UVProcess(UVHandle):
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
                pass_fds, debug_flags, preexec_fn, restore_signals):
 
-        # global __forking
-        # global __forking_loop
-        # global __forkHandler
 
         cdef int err
 
@@ -86,10 +83,7 @@ cdef class UVProcess(UVHandle):
 
             loop.active_process_handler = self
         
-            # __forking = 1
-            # __forking_loop = loop
-            # system.setForkHandler(<system.OnForkHandler>&__get_fork_handler)
-            # PyOS_BeforeFork()
+       
 
             # Also Important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
             # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
@@ -97,17 +91,29 @@ cdef class UVProcess(UVHandle):
             # Finding examples of how uv_spawn is used will be helful as well...
             # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
 
-            # TODO (Vizonex) check or disable options depending on what is considered default otherwise replace options with NULL... 
-            # Maybe these macros could sufice?
+
+            # NOTE To Make up for the loss of forking (Which I saw as an enhancment on other systems)
+            # Try releasing the gil during the spawning phase which is what CPython does...
+            # mimic forking behaviors this will likely allow us to moderate the OS better 
+            # if something bad happens... - Vizonex 
+
+            # I cannot seem to get with nogil to work here so this was my workaround...
             self.py_gil_state = PyGILState_Ensure()
-            
             # This might be our answer...
             # https://github.com/saghul/pyuv/blob/39342fc2fd688f2fb2120d3092dd9cf52f537de2/src/process.c
 
+            # This is simillar to how CPython handles process spawning
+            # It releases the gil during spawntime and then brings it back in...
+            
             err = uv.uv_spawn(loop.uvloop,
                               <uv.uv_process_t*>self._handle,
                               &self.options)
-    
+
+            # NOTE I broght the PyGILState_Release here instead of later 
+            # so that we can have better control over the os module... - Vizonex
+
+            PyGILState_Release(self.py_gil_state)
+
             loop.active_process_handler = None
 
             if err < 0:
@@ -151,8 +157,9 @@ cdef class UVProcess(UVHandle):
         # untrack this handle.
         self._loop._track_process(self)
 
-        if debug_flags & __PROCESS_DEBUG_SLEEP_AFTER_FORK:
-            time_sleep(1)
+        # NOTE We aren't Forking so this check is irrelevant...
+        # if debug_flags & __PROCESS_DEBUG_SLEEP_AFTER_FORK:
+        #     time_sleep(1)
 
         if preexec_fn is not None and errpipe_data:
             # preexec_fn has raised an exception.  The child
@@ -184,7 +191,7 @@ cdef class UVProcess(UVHandle):
 
        
         # PyOS_AfterFork_Child()
-        PyGILState_Release(self.py_gil_state)
+        
         # err = uv.uv_loop_fork(self._loop.uvloop)
         # if err < 0:
         #     raise convert_error(err)
@@ -266,9 +273,6 @@ cdef class UVProcess(UVHandle):
             # "All of these flags have been set because they're all meaningful on windows systems...
             # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
             # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
-            # self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE 
-            # self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_GUI 
-            # self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_CONSOLE 
             # enabiling VERBATIM_ARGUMENTS is helpful here because we're not enabiling children...
             self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS 
 
@@ -332,6 +336,7 @@ cdef class UVProcess(UVHandle):
         else:
             self.__env = None
 
+    # Maybe give noexcept keyword ?
     cdef _init_files(self, _stdin, _stdout, _stderr):
         self.options.stdio_count = 0
 
@@ -801,3 +806,4 @@ cdef __socketpair():
 
 cdef void __uv_close_process_handle_cb(uv.uv_handle_t* handle) noexcept with gil:
     PyMem_RawFree(handle)
+
