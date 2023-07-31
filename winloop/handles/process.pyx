@@ -806,4 +806,3 @@ cdef __socketpair():
 
 cdef void __uv_close_process_handle_cb(uv.uv_handle_t* handle) noexcept with gil:
     PyMem_RawFree(handle)
-

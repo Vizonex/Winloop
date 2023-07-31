@@ -35,6 +35,9 @@ at a fast pace in the future... */
 #include <stdlib.h>
 #include <time.h>
 
+/* Remove Socketpair.h in the next release... 
+I'll move this all to a gist since I don't want 
+to put useful code to waste - Vizonex */
 
 /* Inspiration was taken from both of these libraries on how to implement this function...
 https://github.com/ncm/selectable-socketpair/blob/master/socketpair.c 

@@ -211,7 +211,7 @@ cdef class UVBaseTransport(UVSocketHandle):
             self._extra_info = {}
         self._extra_info[name] = obj
 
-    cdef bint _is_reading(self):
+    cdef bint _is_reading(self) noexcept:
         raise NotImplementedError
 
     cdef _start_reading(self):

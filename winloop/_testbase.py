@@ -1,4 +1,4 @@
-"""Test utilities. Don't use outside of the uvloop project."""
+"""Test utilities. Don't use outside of the winloop project."""
 
 
 import asyncio
@@ -17,7 +17,7 @@ import tempfile
 import threading
 import time
 import unittest
-import winloop as init 
+import winloop
 
 
 class MockPattern(str):
@@ -83,8 +83,7 @@ class BaseTestCase(unittest.TestCase, metaclass=BaseTestCaseMeta):
     def run_loop_briefly(self, *, delay=0.01):
         self.loop.run_until_complete(asyncio.sleep(delay))
 
-    def loop_exception_handler(self, loop:init.Loop, context):
-        # print("default_exception_handler" in dir(loop))
+    def loop_exception_handler(self, loop, context):
         self.__unhandled_exceptions.append(context)
         self.loop.default_exception_handler(context)
 
@@ -298,13 +297,13 @@ class SSLTestCase:
 
 class UVTestCase(BaseTestCase):
 
-    implementation = 'init'
+    implementation = 'winloop'
 
     def new_loop(self):
-        return init.new_event_loop()
+        return winloop.new_event_loop()
 
     def new_policy(self):
-        return init.WinLoopPolicy()
+        return winloop.WinLoopPolicy()
 
 
 class AIOTestCase(BaseTestCase):
@@ -314,12 +313,12 @@ class AIOTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        watcher = asyncio.get_child_watcher()
-        watcher.attach_loop(self.loop)
-        asyncio.set_child_watcher(watcher)
+        # watcher = asyncio.SafeChildWatcher()
+        # watcher.attach_loop(self.loop)
+        # asyncio.set_child_watcher(watcher)
 
     def tearDown(self):
-        asyncio.set_child_watcher(None)
+        # asyncio.set_child_watcher(None)
         super().tearDown()
 
     def new_loop(self):

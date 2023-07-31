@@ -13,7 +13,7 @@ cdef __convert_python_error(int uverr):
     #      negated errno (or -errno), while on Windows they
     #      are defined by libuv to arbitrary negative numbers.
 
-    # NOTE (Vizonex): I DEBUNKED IT. IT CAN! As long as we can find it's actual Diagnosis...
+    # NOTE (Vizonex): I DEBUNKED IT, IT CAN! As long as we can find it's actual Diagnosis...
     # by substituting the 'UV_E' macros to Just 'E' we can then find the errors we need and 
     # then diagnose them... 
 
@@ -25,6 +25,10 @@ cdef __convert_python_error(int uverr):
 
     if uverr in (uv.EACCES, uv.EPERM):
         exc = PermissionError
+    
+    # TODO (Vizonex) Translate more error types...
+    elif uverr == uv.EOF:
+        exc = EOFError
 
     elif uverr in (uv.EAGAIN, uv.EALREADY):
         exc = BlockingIOError
