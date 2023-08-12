@@ -95,5 +95,5 @@ jobs:
     - name: Test PyPi Deployment
       shell: cmd
       run: |
-        python -m twine upload --repository testpypi dist/* -u __token__ -p ${{ secrets.PYPI_PASSWORD }} --skip-existing
+        python -m twine upload --repository testpypi dist/* -u __token__ -p ${{ secrets.PYPI_PASSWORD }} --skip-existing --verbose
       
