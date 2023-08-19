@@ -64,7 +64,7 @@ jobs:
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
-    runs-on: windows-2019
+    runs-on: ubuntu-latest
 
     # I chose this repo's setup/workflow because it was the best Resource I could find for an implementation - Vizonex
     # See: https://github.com/hoffstadt/DearPyGui/blob/master/.github/workflows/Deployment.yml#L165 
