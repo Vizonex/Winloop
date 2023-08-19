@@ -8,7 +8,7 @@ from Cython.Build import cythonize
 
 HERE = pathlib.Path("winloop")
 
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 
 
 
