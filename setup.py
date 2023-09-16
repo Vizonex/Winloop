@@ -37,7 +37,7 @@ def do_installation():
         Extension("winloop.loop",["winloop\\loop.pyx"], 
             # NOTE uv_a.lib will be user-compiled when 
             # I've fixed the install there's still been some probelms with compiling fs-poll.c on it's own...
-            extra_link_args=Windows_Libraries + ["winloop\\vendor\\uv_a.lib"],
+            extra_link_args=Windows_Libraries + ["winloop\\vendor\\libuv.lib"],
             # I have some macros setup for now to help me with debugging - Vizonex
             library_dirs=["winloop"],
             define_macros=[
