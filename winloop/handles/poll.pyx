@@ -10,8 +10,10 @@ cdef class UVPoll(UVHandle):
             self._abort_init()
             raise MemoryError()
 
-        # SOLVED!
-        # turns out actually that file/socket descriptors are already invoked so no need to do jack shit to what we already have in place...
+        
+        # SOLVED FOR WINDOWS!: turns out actually that file/socket 
+        # descriptors are already invoked so  no need to do jack shit 
+        # to what we already have in place...
         err = uv.uv_poll_init_socket(self._loop.uvloop,
                               <uv.uv_poll_t *>self._handle, fd)
         if err < 0:
@@ -58,11 +60,12 @@ cdef class UVPoll(UVHandle):
 
         err = uv.uv_poll_stop(<uv.uv_poll_t*>self._handle)
         if err < 0:
-            exc = convert_error(err)
-            self._fatal_error(exc, True)
+            # Leave exc embedded into here instead...
+            self._fatal_error(convert_error(err), True)
             return
         
-        # XXX On windows we can ignore this for right now...
+        # XXX On windows we can ignore this for right now if there's problems in 
+        # the future then wepoll will be used...
         
         # cdef:
             # int backend_id

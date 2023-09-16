@@ -227,7 +227,3 @@ cdef void __tcp_connect_callback(uv.uv_connect_t* req, int status) noexcept with
     finally:
         wrapper.on_done()
 
-# from basetransport cimport UVBaseTransport
-# from stream cimport UVStream
-# from streamserver cimport UVStreamServer
-# from loop cimport Loop 

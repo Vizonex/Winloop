@@ -16,7 +16,7 @@ class Loop(__BaseLoop, __asyncio.AbstractEventLoop):  # type: ignore[misc]
 
 
 def new_event_loop() -> Loop:
-    """Return a new event loop."""
+    """Returns a new event loop."""
     return Loop()
 
 

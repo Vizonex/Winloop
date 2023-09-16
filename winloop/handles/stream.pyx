@@ -1,5 +1,6 @@
 from libc cimport errno
 
+
 DEF __PREALLOCED_BUFS = 4
 
 @cython.no_gc_clear
@@ -73,7 +74,7 @@ cdef class _StreamWriteContext:
         # sometimes sends only a portion of data.
         # We then call "advance_uv_buf" on the write
         # context, and reuse it in a "uv_write" call.
-
+        
         cdef:
             uv.uv_buf_t* buf
             size_t idx
@@ -388,7 +389,8 @@ cdef class UVStream(UVBaseTransport):
         # NOTE Replaced System.write for tcp to have direct access to windows API see libuv/src/win/stream.c ...
         # Try this unless Something else comes up then fallback to try_uv_write...
         if (<uv.uv_stream_t*>self._handle).type == uv.UV_TCP:
-
+            
+            
             # TODO (Vizonex) Instead of our custom try_tcp_write maybe send all of that into a new cython file 
             # or send the entire WSASend here? 
 

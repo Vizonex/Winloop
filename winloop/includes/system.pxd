@@ -64,6 +64,27 @@ cdef extern from "winsock2.h":
         char * buf
         unsigned long len
 
+    # ADDED In the others since we plan to optimize uv__try_write down to just simply window's api...
+    ctypedef WSABUF *LPWSABUF
+    
+
+    # --- FUTURE IMPLEMENTATION CURRENTLY IN THE WORKS... ---
+
+    # struct _OVERLAPPED:
+    #     pass 
+
+    # ctypedef _OVERLAPPED* LPWSAOVERLAPPED
+    # ctypedef unsigned long DWORD
+    # ctypedef DWORD *LPDWORD
+    
+
+    # int WSASend(SOCKET s, 
+    #     LPWSABUF lpBuffers, 
+    #     DWORD dwBufferCount, 
+    #     LPDWORD lpNumberOfBytesSent, 
+    #     DWORD dwFlags, 
+    #     LPWSAOVERLAPPED lpOverlapped, 
+    #     LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine)
 
 # The AtFork Implementation does not work and it is belived that windows already takes care of this...
 # http://locklessinc.com/articles/pthreads_on_windows/
@@ -91,10 +112,16 @@ cdef extern from "includes/nfork_handler.h":
     void setMainThreadID(uint64_t id)
 
 
-# socketpair.h by Vizonex 
-cdef extern from "socketpair.h" nogil:
-    # I implemented this for windows because I wasn't 
-    # going to let it stop me from making Winloop not possible...
-    int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2])
-    
+# TODO put uv.try_tcp_write into here instead since it's not a member of uvloop rather our own creation...
 
+
+# -- DEPRICATED --
+# socketpair.h by Vizonex 
+# cdef extern from "socketpair.h" nogil:
+#     # I implemented this for windows because I wasn't 
+#     # going to let it stop me from making Winloop not possible...
+#     int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2])
+
+cdef extern from "corecrt_io.h":
+    ctypedef long long intptr_t
+    intptr_t _get_osfhandle(int _FileHandle)

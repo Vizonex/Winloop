@@ -347,11 +347,14 @@ cdef void __uv_udp_on_receive(uv.uv_udp_t* handle,
     if addr is NULL:
         pyaddr = None
     elif addr.sa_family == uv.AF_UNSPEC:
-        # https://github.com/MagicStack/uvloop/issues/304
-        IF UNAME_SYSNAME == "Linux":
-            pyaddr = None
-        ELSE:
-            pyaddr = ''
+        # DISABLE THIS PART IT'S Depericated and will be removed soon...
+        # SEE: https://github.com/cython/cython/issues/4310
+        
+        # # https://github.com/MagicStack/uvloop/issues/304
+        # IF UNAME_SYSNAME == "Linux":
+        #     pyaddr = None
+        # ELSE:
+        pyaddr = ''
     else:
         try:
             pyaddr = __convert_sockaddr_to_pyaddr(addr)
@@ -394,7 +397,6 @@ cdef void __uv_udp_on_send(uv.uv_udp_send_t* req, int status) noexcept with gil:
 
     if status < 0:
         exc = convert_error(status)
-        print(exc)
     else:
         exc = None
 

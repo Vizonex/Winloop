@@ -1,5 +1,5 @@
 #cython:language_level = 3
-from .includes cimport uv, system 
+from winloop.includes cimport uv, system 
 from libc.stdint cimport uint64_t, uint32_t, int64_t
 
 
@@ -8,6 +8,10 @@ include "includes/consts.pxi"
 
 cdef extern from *:
     ctypedef int vint "volatile int"
+
+
+# TODO (Vizonex) Maybe look into using the wepoll C library with winloop?  
+
 
 # cdef class UVHandle()
 

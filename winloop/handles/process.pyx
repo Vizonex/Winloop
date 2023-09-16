@@ -365,11 +365,18 @@ cdef class UVProcess(UVHandle):
         finally:
             UVHandle._close(self)
 
-
-DEF _CALL_PIPE_DATA_RECEIVED = 0
-DEF _CALL_PIPE_CONNECTION_LOST = 1
-DEF _CALL_PROCESS_EXITED = 2
-DEF _CALL_CONNECTION_LOST = 3
+# DROP DEF Keywords (Vizonex)
+cdef extern from *:
+    """
+    #define _CALL_PIPE_DATA_RECEIVED 0
+    #define _CALL_PIPE_CONNECTION_LOST 1
+    #define _CALL_PROCESS_EXITED 2
+    #define _CALL_CONNECTION_LOST 3
+    """
+    int _CALL_PIPE_DATA_RECEIVED
+    int _CALL_PIPE_CONNECTION_LOST
+    int _CALL_PROCESS_EXITED
+    int _CALL_CONNECTION_LOST
 
 
 @cython.no_gc_clear
@@ -783,19 +790,25 @@ cdef __socketpair():
         uv.uv_os_sock_t fds[2]
         int err
     
+    # TODO: Optimize uv_socket_pair function
     # Added uv_socketpair instead my function since we kept seeing a bad file descriptor
     err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
     
-    # See https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c 
-    # in libuv... 
-    # libuv doesn't detect the fact that were a named PIPE so we're doing the same check in here 
-    assert uv.uv_guess_handle(<uv.uv_file>fds[0]) == uv.UV_NAMED_PIPE
-    assert uv.uv_guess_handle(<uv.uv_file>fds[1]) == uv.UV_NAMED_PIPE
-
+  
     if err:
         # TODO See if this is still correctly done or not...
         exc = convert_error(-err)
         raise exc
+        
+    # See: https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c 
+    # in libuv... 
+    # libuv doesn't detect the fact that were a named UV_TCP so we're doing the same 
+    # check here but optimized way down
+    # NOTE: Trying without assert will be faster...
+    # TODO Optimze Guess handle down futher using -> intptr_t __cdecl _get_osfhandle(int _FileHandle)
+    system._get_osfhandle(<int>fds[0]) 
+    system._get_osfhandle(<int>fds[1]) 
+
 
 
     os_set_inheritable(fds[0], False)

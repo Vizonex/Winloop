@@ -255,9 +255,7 @@ cdef extern from "vendor/include/uv.h" nogil:
         UV_LEAVE_GROUP = 0,
         UV_JOIN_GROUP
 
-    cpdef enum uv_fs_event:
-        UV_RENAME = 1,
-        UV_CHANGE = 2
+    
 
     const char* uv_strerror(int err)
     const char* uv_err_name(int err)
@@ -559,12 +557,16 @@ cdef extern from "vendor/include/uv.h" nogil:
     
     uv_handle_type uv_guess_handle(uv_file)
 
+cdef enum uv_fs_event:
+    UV_RENAME = 1,
+    UV_CHANGE = 2
+
 
 cdef extern from "winsock2.h":
     cdef int SO_REUSEADDR
     cdef int SO_BROADCAST
 
-# NOTE This will be added later when the library is finally stable 
+
 # Since we already have system imported into here and To Prevent Looped imports 
 # I'll just put try_tcp_write right here - Vizonex 
 cdef extern from "includes/tcp.h":
