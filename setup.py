@@ -8,7 +8,7 @@ from Cython.Build import cythonize
 
 HERE = pathlib.Path("winloop")
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 
 
@@ -28,7 +28,9 @@ def do_installation():
         "iphlpapi.lib",
         "WSock32.lib",
         "Userenv.lib",
-        "User32.lib"
+        "User32.lib",
+        "Dbghelp.lib",
+        "Ole32.lib"
     ]
 
     ext = [
