@@ -88,7 +88,7 @@ if __name__ == "__main__":
     if sys.platform not in ('win32', 'cygwin', 'cli'):
         # TODO (Vizonex) Ask uvloop Owners/contributors if it would be ok or acceptable to recommend 
         # this library as an alternative resource for any users on windows 
-        raise RuntimeError("Winloop is Only Avalible for Windows Users Please try installing uvloop instead, you won't be dissapointed with it...")
+        raise RuntimeError("Winloop is only avalible for Windows users. Please try installing uvloop instead, you won't be disappointed with it...")
 
     do_installation()
     

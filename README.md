@@ -3,7 +3,7 @@
 # Winloop
 An Alternative library for uvloop compatability with windows Because let's face it. Window's python asyncio can be garabage at times. 
 I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place. 
-It always felt dissapointing when libuv is avalible on windows but doesn't have uvloop compatability. see: https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367
+It always felt disappointing when libuv is avalible on windows but doesn't have uvloop compatability. see: https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367
 So I went ahead and downloaded the uvloop source code and modified the library to be windows compatable. 
 
 "This library was inspired by the MagicStack Team and I take no credit for the original code that I had to modify." - Vizonex 
