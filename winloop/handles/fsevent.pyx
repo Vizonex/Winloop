@@ -1,7 +1,4 @@
-import enum
-cimport cython 
 
-# class FileSystemEvent(enum.IntEnum):
 cdef enum FileSystemEvent:
     RENAME = uv.UV_RENAME
     CHANGE = uv.UV_CHANGE
