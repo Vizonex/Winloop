@@ -4,7 +4,6 @@
 #pragma once
 #include <windef.h>
 #include "vendor/include/uv.h"
-#include "uv.h"
 
 /* based off of and inspired by src/win/tcp.c 
 but with buffers already handled to be very direct... */
