@@ -55,7 +55,7 @@ def do_installation():
         name="winloop",
         author="Vizonex",
         version=__version__,
-        description="""An Alternative library for uvloop compatability with windows""",
+        description="""An alternative library for uvloop compatibility with Windows""",
         ext_modules=cythonize(ext),
         license="MIT",
         platforms=['Microsoft Windows'],
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     if sys.platform not in ('win32', 'cygwin', 'cli'):
         # TODO (Vizonex) Ask uvloop Owners/contributors if it would be ok or acceptable to recommend 
         # this library as an alternative resource for any users on windows 
-        raise RuntimeError("Winloop is only avalible for Windows users. Please try installing uvloop instead, you won't be disappointed with it...")
+        raise RuntimeError("Winloop is only available for Windows users. Please try installing uvloop instead, you won't be disappointed with it...")
 
     do_installation()
     
