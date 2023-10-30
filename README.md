@@ -1,39 +1,30 @@
 ![Alt text](https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png)
 
 # Winloop
-An Alternative library for uvloop compatability with windows Because let's face it. Window's python asyncio can be garabage at times. 
-I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place. 
-It always felt disappointing when libuv is avalible on windows but doesn't have uvloop compatability. see: https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367
-So I went ahead and downloaded the uvloop source code and modified the library to be windows compatable. 
+An Alternative library for uvloop compatability with windows Because let's face it. Window's python asyncio is garabage escpecially when Windows Defender eats up half your ram. 
+I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is avalible on windows but doesn't have [compatability with uvloop at all.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
-"This library was inspired by the MagicStack Team and I take no credit for the original code that I had to modify." - Vizonex 
+Because nobody was willing to step in after so many years of people waiting , I went ahead and downloaded the uvloop source code and modified the source code to be windows compatable by carefully removing and changing parts that were not made for windows, many hours of research went into making this library exist. 
 
-The differences with uvloop is that forking has been fully disabled and some smaller api calls had to be changed. Subprocesses instead release the gil instead of forking out although I might change that in the future. If handling asynchronous subprocesses becomes a problem to handle...
+The differences with __uvloop__ is that forking has been fully disabled and some smaller api calls had to be changed. Subprocesses instead release the gil instead of forking out although I might change that in the future if handling asynchronous subprocesses becomes a problem to handle...
 
 
-However there is a perfromance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which has ssl problems in python 3.9. Winloop is a very good replacement for that as well.
-
-## Update - We Might just go ahead and try to get this implementation merged to uvloop for portability and maintenence sake and so that uvloop will finally have winodows support.
-Since it's currently only been myself who's has been maintaining this library so far, one of the contributors of theHarvester https://github.com/laramies/theHarvester/issues/1451 Mentioned to me about the idea of just making a pull request to uvloop. I don't know entirely how we will be able to do/handle such a large merge but it's now on my mind that we will need to reach out again about the possibilities of getting this large library merged to uvloop so that more maintainers like myself will be able to better manage the windows side of this. It's hard for me to make a list of all of our changes so it will most certainly not be an easy task. I'll try to reach out again to the magicstack team to see what they can do to pull all of these changes off any help in making this happen will be appreciated - Vizonex
-I'll talk about more of this in my journal file that I've left on here and what will have to be done if that's going to be our end goal...
+There is a perfromance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in python 3.9. Winloop is a very good replacement for those ssl problem as well.
 
 
-
-## How to install Winloop on your windows OS 
+## How to install Winloop on your Operating System
 
 ```
 pip install winloop
 ```
 
-you can also clone the reposity and build the extension yourself by running if you wish to use/build the extension locally 
+you can also clone the reposity and build the extension yourself by running the command below if you wish to use or build this library locally
 
 ```
 python setup.py build_ext --inplace 
 ```
 
-This project is still in it's beta phase and may have some sneaky bugs that we didn't catch yet, so if you find find any bugs you can report them to our github repository.
-
-
+If you find any sneaky bugs with this library be sure to open up an issue to our github repo. Me and other contributors will be happy to help you figure out and diagnose your problems.
 
 ```python
 try:
@@ -262,8 +253,8 @@ I have been looking deeply into some of the proposed Pulls and changes to `Uvloo
 
 - Optimzing TCP Connections as well as sending data in `streams.pyx` with the uv bites are finally dropped in the try write portions of our library. Currently uv bites is just there as a protection measure by me, this will be dropped in the future since the try_write block has some subprocess checks as well as long as it doesn't have subprocess behaviors I'm alright with upgrading `streams.pyx` as long as it doesn't break. I did leave my plan uncommented for right now but the other half belonging to subprocesses looks rather steep/deep.
 
-- drop uv_a.lib and have the user compile .c files themselves once the current compiling problems/errors have been solved...
+- drop the `.lib` file for compiling libuv in replacement for libuv's C files directly once the current compiling problems and errors have been solved.
 
 
 ## Videos
-- By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have problems with reading)
+- By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have reading problems)
