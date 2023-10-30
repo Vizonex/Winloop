@@ -1,7 +1,7 @@
-![Alt text](https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png)
+<img src="https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png" width="200px"/>
 
 # Winloop
-An Alternative library for uvloop compatability with windows Because let's face it. Window's python asyncio is garabage escpecially when Windows Defender eats up half your ram. 
+An Alternative library for uvloop compatability with windows because let's face it. Window's python asyncio is garabage escpecially when Windows Defender eats up half your ram. 
 I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is avalible on windows but doesn't have [compatability with uvloop at all.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
 Because nobody was willing to step in after so many years of people waiting , I went ahead and downloaded the uvloop source code and modified the source code to be windows compatable by carefully removing and changing parts that were not made for windows, many hours of research went into making this library exist. 
