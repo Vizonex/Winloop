@@ -570,7 +570,7 @@ cdef class UVStream(UVBaseTransport):
                         self._buffer_size = 0
                         return
 
-                elif err != uv.EAGAIN:
+                elif err != -4088:  # for now, use -4088 directly, instead of uv.EAGAIN (which is equal to 11)
                     ctx.close()
                     # print("Something failed in line 519 uv.uv_try_write")
                     exc = convert_error(err)
@@ -786,7 +786,7 @@ cdef inline bint __uv_stream_on_read_common(UVStream sc, Loop loop,
         sc.__reading_stopped()  # Just in case.
         return True
 
-    if nread == uv.EOF:
+    if nread == -4095:  # for now, use -4095 directly, instead of uv.EOF (which is equal to -1)
         # From libuv docs:
         #     The callee is responsible for stopping closing the stream
         #     when an error happens by calling uv_read_stop() or uv_close().

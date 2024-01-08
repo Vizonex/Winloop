@@ -1,4 +1,4 @@
-# cython:langauge_level = 3
+# cython:language_level = 3
 from libc.string cimport strerror 
 # from includes._stdlib cimport *
 from .includes cimport uv , system
