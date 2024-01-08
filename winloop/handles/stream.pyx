@@ -570,8 +570,7 @@ cdef class UVStream(UVBaseTransport):
                         self._buffer_size = 0
                         return
 
-                # FOR WINLOOP We added an extra check, SEE: https://github.com/Vizonex/Winloop/issues/13 
-                elif err != uv.EAGAIN or err != 11:
+                elif err != uv.EAGAIN:
                     ctx.close()
                     # print("Something failed in line 519 uv.uv_try_write")
                     exc = convert_error(err)
@@ -787,8 +786,7 @@ cdef inline bint __uv_stream_on_read_common(UVStream sc, Loop loop,
         sc.__reading_stopped()  # Just in case.
         return True
 
-    # FOR WINLOOP SEE: https://github.com/Vizonex/Winloop/issues/13
-    if nread == uv.EOF or nread == -1:
+    if nread == uv.EOF:
         # From libuv docs:
         #     The callee is responsible for stopping closing the stream
         #     when an error happens by calling uv_read_stop() or uv_close().
