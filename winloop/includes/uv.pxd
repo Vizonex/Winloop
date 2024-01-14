@@ -10,35 +10,38 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int UV_TCP_IPV6ONLY
 
     # NOTE: This is from errno.h as well...
+
+	# ... maybe possible to change these back all to UV_EACCES etcetera like in uvloop
     cdef int EACCES
-    cdef int EAGAIN
     cdef int UV_EAGAIN
     cdef int EALREADY
     cdef int EBUSY
-    cdef int ECONNABORTED
-    cdef int ECONNREFUSED
+    cdef int UV_ECONNABORTED
+    cdef int UV_ECONNREFUSED
     cdef int ECONNRESET
+    cdef int UV_ECONNRESET
     cdef int ECANCELED
-    cdef int EEXIST
-    cdef int EINTR
+    cdef int UV_EEXIST
+    cdef int UV_EINTR
     cdef int EINVAL
-    cdef int EISDIR
+    cdef int UV_EISDIR
     cdef int UV__ENOENT
     cdef int ENOENT
     cdef int EOF
+    cdef int UV_EOF
     cdef int EPERM
     cdef int EPIPE
     # cdef int ESHUTDOWN
     # There's only a few of these that don't cut this execption...
     cdef int UV__ESHUTDOWN
 
-    cdef int ESRCH
+    cdef int UV_ESRCH
     cdef int ETIMEDOUT
     cdef int EBADF
-    cdef int ENOBUFS
+    cdef int UV_ENOBUFS
     cdef int EWOULDBLOCK
 
-    # socket-erros
+    # socket-errors
     # cdef int EAI_ADDRFAMILY
     cdef int UV__EAI_ADDRFAMILY
     cdef int EAI_AGAIN
@@ -57,7 +60,7 @@ cdef extern from "vendor/include/uv.h" nogil:
 
     cdef int SOL_SOCKET
     cdef int SO_ERROR
- 
+
     # TODO Vizonex Get SO_RESUSEADDR FROM ANOTHER HEADER FILE IF NEEDED!
     # cdef int SO_REUSEADDR
     # cdef int SO_REUSEPORT We already have this avalibe inside of "_stdlib.pxi" so no need to have it here...
@@ -152,7 +155,7 @@ cdef extern from "vendor/include/uv.h" nogil:
         size_t write_queue_size
         uv_loop_t* loop
 
-        # NOTE Introduced flags and type into uv_stream so that 
+        # NOTE Introduced flags and type into uv_stream so that
         # we can implement a faster / more direct version of uv_try_write
         unsigned int flags
         uv_handle_type type
@@ -255,7 +258,7 @@ cdef extern from "vendor/include/uv.h" nogil:
         UV_LEAVE_GROUP = 0,
         UV_JOIN_GROUP
 
-    
+
 
     const char* uv_strerror(int err)
     const char* uv_err_name(int err)
@@ -510,7 +513,7 @@ cdef extern from "vendor/include/uv.h" nogil:
         UV_INHERIT_STREAM = 0x04,
         UV_READABLE_PIPE = 0x10,
         UV_WRITABLE_PIPE = 0x20,
-        # NOTE Added in UV_NONBLOCK_PIPE for stability reasons... - Vizonex 
+        # NOTE Added in UV_NONBLOCK_PIPE for stability reasons... - Vizonex
         UV_NONBLOCK_PIPE  = 0x40
 
 
@@ -524,7 +527,7 @@ cdef extern from "vendor/include/uv.h" nogil:
 
 
     ctypedef unsigned char uv_uid_t
-    ctypedef unsigned char uv_gid_t    
+    ctypedef unsigned char uv_gid_t
 
     ctypedef struct uv_process_options_t:
         uv_exit_cb exit_cb
@@ -554,7 +557,7 @@ cdef extern from "vendor/include/uv.h" nogil:
 
 
     int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
-    
+
     uv_handle_type uv_guess_handle(uv_file)
 
 cdef enum uv_fs_event:
@@ -567,8 +570,8 @@ cdef extern from "winsock2.h":
     cdef int SO_BROADCAST
 
 
-# Since we already have system imported into here and To Prevent Looped imports 
-# I'll just put try_tcp_write right here - Vizonex 
+# Since we already have system imported into here and To Prevent Looped imports
+# I'll just put try_tcp_write right here - Vizonex
 cdef extern from "includes/tcp.h":
     # incase anyone is like "try_tcp_write doesn't exitst in libuv!" I'll put another note into stream.pyx about this function
     int try_tcp_write(uv_tcp_t* handle, system.WSABUF bufs)

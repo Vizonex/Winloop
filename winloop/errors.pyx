@@ -1,69 +1,28 @@
 # cython:language_level = 3
-from libc.string cimport strerror 
+from libc.string cimport strerror
 # from includes._stdlib cimport *
 from .includes cimport uv , system
 
-cdef str __strerr(int errno):
-    return strerror(errno).decode()
 
 cdef __convert_python_error(int uverr):
-    # XXX Won't work for Windows: 
+    # XXX Won't work for Windows:
     # From libuv docs:
     #      Implementation detail: on Unix error codes are the
     #      negated errno (or -errno), while on Windows they
     #      are defined by libuv to arbitrary negative numbers.
 
     # NOTE (Vizonex): I DEBUNKED IT, IT CAN! As long as we can find it's actual Diagnosis...
-    # by substituting the 'UV_E' macros to Just 'E' we can then find the errors we need and 
-    # then diagnose them... 
+    # by substituting the 'UV_E' macros to Just 'E' we can then find the errors we need and
+    # then diagnose them...
 
     # TODO VERIFY THAT THE ERRORS ARE CORRECTLY MAPPED!!!
 
-    cdef int oserr = -uverr
-
-    exc = OSError
-
-    if uverr in (uv.EACCES, uv.EPERM):
-        exc = PermissionError
-    
-    # TODO (Vizonex) Translate more error types...
-    elif uverr == uv.EOF:
-        exc = EOFError
-
-    elif uverr in (uv.EAGAIN, uv.EALREADY):
-        exc = BlockingIOError
-
-    elif uverr in (uv.EPIPE, uv.UV__ESHUTDOWN):
-        exc = BrokenPipeError
-
-    elif uverr == uv.ECONNABORTED:
-        exc = ConnectionAbortedError
-
-    elif uverr == uv.ECONNREFUSED:
-        exc = ConnectionRefusedError
-
-    elif uverr == uv.ECONNRESET:
-        exc = ConnectionResetError
-
-    elif uverr == uv.EEXIST:
-        exc = FileExistsError
-
-    elif uverr in (uv.ENOENT, uv.UV__ENOENT):
-        exc = FileNotFoundError
-
-    elif uverr == uv.EINTR:
-        exc = InterruptedError
-
-    elif uverr == uv.EISDIR:
-        exc = IsADirectoryError
-
-    elif uverr == uv.ESRCH:
-        exc = ProcessLookupError
-
-    elif uverr == uv.ETIMEDOUT:
-        exc = TimeoutError
-
-    return exc(oserr, __strerr(oserr))
+    # ...
+    # The following approach seems to work for Windows: translation from uverr,
+    # which is a negative number like -4088 or -4071 defined by libuv (as mentioned above),
+    # to error numbers obtained via the Python module errno.
+    err = getattr(errno, uv.uv_err_name(uverr).decode(), uverr)
+    return OSError(err, uv.uv_strerror(uverr).decode())
 
 
 cdef int __convert_socket_error(int uverr) noexcept:
