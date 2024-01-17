@@ -229,9 +229,9 @@ cdef class UDPTransport(UVBaseTransport):
                                      saddr)
             PyBuffer_Release(&try_pybuf)
         else:
-            err = uv.EAGAIN
+            err = uv.UV_EAGAIN
 
-        if err == uv.EAGAIN:
+        if err == uv.UV_EAGAIN:
             ctx = _UDPSendContext.new(self, data)
             err = uv.uv_udp_send(&ctx.req,
                                  <uv.uv_udp_t*>self._handle,
