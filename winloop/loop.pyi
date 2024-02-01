@@ -18,7 +18,7 @@ from typing import (
     overload,
 )
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 _Context = Dict[str, Any]
 _ExceptionHandler = Callable[[asyncio.AbstractEventLoop, _Context], Any]
 _SSLContext = Union[bool, None, ssl.SSLContext]
@@ -32,10 +32,18 @@ class Loop:
         self, callback: Callable[..., Any], *args: Any, context: Optional[Any] = ...
     ) -> asyncio.Handle: ...
     def call_later(
-        self, delay: float, callback: Callable[..., Any], *args: Any, context: Optional[Any] = ...
+        self,
+        delay: float,
+        callback: Callable[..., Any],
+        *args: Any,
+        context: Optional[Any] = ...,
     ) -> asyncio.TimerHandle: ...
     def call_at(
-        self, when: float, callback: Callable[..., Any], *args: Any, context: Optional[Any] = ...
+        self,
+        when: float,
+        callback: Callable[..., Any],
+        *args: Any,
+        context: Optional[Any] = ...,
     ) -> asyncio.TimerHandle: ...
     def time(self) -> float: ...
     def stop(self) -> None: ...
@@ -55,13 +63,18 @@ class Loop:
     def set_task_factory(
         self,
         factory: Optional[
-            Callable[[asyncio.AbstractEventLoop, Generator[Any, None, _T]], asyncio.Future[_T]]
+            Callable[
+                [asyncio.AbstractEventLoop, Generator[Any, None, _T]],
+                asyncio.Future[_T],
+            ]
         ],
     ) -> None: ...
     def get_task_factory(
         self,
     ) -> Optional[
-        Callable[[asyncio.AbstractEventLoop, Generator[Any, None, _T]], asyncio.Future[_T]]
+        Callable[
+            [asyncio.AbstractEventLoop, Generator[Any, None, _T]], asyncio.Future[_T]
+        ]
     ]: ...
     @overload
     def run_until_complete(self, future: Generator[Any, None, _T]) -> _T: ...
@@ -88,9 +101,7 @@ class Loop:
     async def getnameinfo(
         self,
         sockaddr: Union[
-            Tuple[str, int],
-            Tuple[str, int, int],
-            Tuple[str, int, int, int]
+            Tuple[str, int], Tuple[str, int, int], Tuple[str, int, int, int]
         ],
         flags: int = ...,
     ) -> Tuple[str, str]: ...
@@ -212,8 +223,12 @@ class Loop:
     async def sock_accept(self, sock: socket) -> Tuple[socket, _RetAddress]: ...
     async def sock_connect(self, sock: socket, address: _Address) -> None: ...
     async def sock_recvfrom(self, sock: socket, bufsize: int) -> bytes: ...
-    async def sock_recvfrom_into(self, sock: socket, buf: bytearray, nbytes: int = ...) -> int: ...
-    async def sock_sendto(self, sock: socket, data: bytes, address: _Address) -> None: ...
+    async def sock_recvfrom_into(
+        self, sock: socket, buf: bytearray, nbytes: int = ...
+    ) -> int: ...
+    async def sock_sendto(
+        self, sock: socket, data: bytes, address: _Address
+    ) -> None: ...
     async def connect_accepted_socket(
         self,
         protocol_factory: Callable[[], _ProtocolT],
@@ -290,5 +305,5 @@ class Loop:
         offset: int = ...,
         count: Optional[int] = ...,
         *,
-        fallback: bool = ...
+        fallback: bool = ...,
     ) -> int: ...
