@@ -4,9 +4,8 @@ Winloop
 -------
 
 A Modifed Version of uvloop for windows operating systems made to bring faster 
-performance than that of python's stdlib EventloopPolicies such as windowsproactor and 
-windowsselector policies and beats it in speed by over 8 times.
-
+performance than that of python's stdlib asyncio EventloopPolicies such as windowsproactor and 
+windowsselector policies and beats both of them in speed by over 8 times.
 
 """
 
@@ -19,10 +18,11 @@ from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
 
 # from . import includes as __includes  # NOQA
 from .loop import Loop as __BaseLoop  # NOQA
+
 # from ._version import __version__  # NOQA
 
 
-__all__ = ('new_event_loop', 'install', 'WinLoopPolicy')
+__all__ = ("new_event_loop", "install", "WinLoopPolicy")
 
 
 class Loop(__BaseLoop, __asyncio.AbstractEventLoop):  # type: ignore[misc]
@@ -30,6 +30,7 @@ class Loop(__BaseLoop, __asyncio.AbstractEventLoop):  # type: ignore[misc]
 
 
 _T = _typing.TypeVar("_T")
+
 
 def new_event_loop() -> Loop:
     """Returns a new event loop."""
@@ -41,8 +42,8 @@ def install() -> None:
     # Warnings were ripped from uvloop to stay up to date with their changes...
     if _sys.version_info[:2] >= (3, 12):
         _warnings.warn(
-            'winloop.install() is deprecated in favor of winloop.run() and using its policy Class Object'
-            'starting with Python 3.12.',
+            "winloop.install() is deprecated in favor of winloop.run() and using its policy Class Object"
+            "starting with Python 3.12.",
             DeprecationWarning,
             stacklevel=1,
         )
@@ -52,16 +53,17 @@ def install() -> None:
 # Copied from uvloop for the sake of compatability
 
 if _typing.TYPE_CHECKING:
+
     def run(
         main: _typing.Coroutine[_typing.Any, _typing.Any, _T],
         *,
-        loop_factory: _typing.Optional[
-            _typing.Callable[[], Loop]
-        ] = new_event_loop,
-        debug: _typing.Optional[bool]=None,
+        loop_factory: _typing.Optional[_typing.Callable[[], Loop]] = new_event_loop,
+        debug: _typing.Optional[bool] = None,
     ) -> _T:
         """The preferred way of running a coroutine with winloop."""
+
 else:
+
     def run(main, *, loop_factory=new_event_loop, debug=None, **run_kwargs):
         """The preferred way of running a coroutine with winloop."""
 
@@ -71,7 +73,7 @@ else:
             # is using `winloop.run()` intentionally.
             loop = __asyncio._get_running_loop()
             if not isinstance(loop, Loop):
-                raise TypeError('winloop.run() uses a non-winloop event loop')
+                raise TypeError("winloop.run() uses a non-winloop event loop")
             return await main
 
         vi = _sys.version_info[:2]
@@ -81,12 +83,11 @@ else:
 
             if __asyncio._get_running_loop() is not None:
                 raise RuntimeError(
-                    "asyncio.run() cannot be called from a running event loop")
+                    "asyncio.run() cannot be called from a running event loop"
+                )
 
             if not __asyncio.iscoroutine(main):
-                raise ValueError(
-                    "a coroutine was expected, got {!r}".format(main)
-                )
+                raise ValueError("a coroutine was expected, got {!r}".format(main))
 
             loop = loop_factory()
             try:
@@ -98,10 +99,8 @@ else:
                 try:
                     _cancel_all_tasks(loop)
                     loop.run_until_complete(loop.shutdown_asyncgens())
-                    if hasattr(loop, 'shutdown_default_executor'):
-                        loop.run_until_complete(
-                            loop.shutdown_default_executor()
-                        )
+                    if hasattr(loop, "shutdown_default_executor"):
+                        loop.run_until_complete(loop.shutdown_default_executor())
                 finally:
                     __asyncio.set_event_loop(None)
                     loop.close()
@@ -109,24 +108,19 @@ else:
         elif vi == (3, 11):
             if __asyncio._get_running_loop() is not None:
                 raise RuntimeError(
-                    "asyncio.run() cannot be called from a running event loop")
+                    "asyncio.run() cannot be called from a running event loop"
+                )
 
             with __asyncio.Runner(
-                loop_factory=loop_factory,
-                debug=debug,
-                **run_kwargs
+                loop_factory=loop_factory, debug=debug, **run_kwargs
             ) as runner:
                 return runner.run(wrapper())
 
         else:
             assert vi >= (3, 12)
             return __asyncio.run(
-                wrapper(),
-                loop_factory=loop_factory,
-                debug=debug,
-                **run_kwargs
+                wrapper(), loop_factory=loop_factory, debug=debug, **run_kwargs
             )
-
 
 
 def _cancel_all_tasks(loop: __asyncio.AbstractEventLoop) -> None:
@@ -139,32 +133,32 @@ def _cancel_all_tasks(loop: __asyncio.AbstractEventLoop) -> None:
     for task in to_cancel:
         task.cancel()
 
-    loop.run_until_complete(
-        __asyncio.gather(*to_cancel, return_exceptions=True)
-    )
+    loop.run_until_complete(__asyncio.gather(*to_cancel, return_exceptions=True))
 
     for task in to_cancel:
         if task.cancelled():
             continue
         if task.exception() is not None:
-            loop.call_exception_handler({
-                'message': 'unhandled exception during asyncio.run() shutdown',
-                'exception': task.exception(),
-                'task': task,
-            })
+            loop.call_exception_handler(
+                {
+                    "message": "unhandled exception during asyncio.run() shutdown",
+                    "exception": task.exception(),
+                    "task": task,
+                }
+            )
 
 
-class WinLoopPolicy(__BasePolicy):
+class EventLoopPolicy(__BasePolicy):
     """Event loop policy.
     The preferred way to make your application use winloop:
     ::
 
         import asyncio
         import winloop
-        asyncio.set_event_loop_policy(winloop.WinLoopPolicy())
+        asyncio.set_event_loop_policy(winloop.EventLoopPolicy())
         asyncio.get_event_loop()
         "<winloop.Loop running=False closed=False debug=False>"
-        
+
     """
 
     def _loop_factory(self) -> Loop:
@@ -178,12 +172,18 @@ class WinLoopPolicy(__BasePolicy):
         def get_child_watcher(self) -> _typing.NoReturn:
             ...
 
-        def set_child_watcher(
-            self, watcher: _typing.Any
-        ) -> _typing.NoReturn:
+        def set_child_watcher(self, watcher: _typing.Any) -> _typing.NoReturn:
             ...
 
-# For Easier Compatabilty with uvloop , WinloopPolicy was chosen more as a vanity name
-# We will retain this name for now as backwards compatability but it will be renamed 
-# in the future in 0.1.2... - Vizonex
-EventLoopPolicy = WinLoopPolicy
+
+# For Easier Compatabilty with uvloop , WinLoopPolicy was chosen more as a vanity name
+# We will retain this name for now as backwards compatability but it will be removed
+# in the future in 0.1.3... - Vizonex
+
+
+class WinLoopPolicy(EventLoopPolicy):
+    def __init__(self) -> None:
+        _warnings.warn(
+            "WinLoopPolicy is Deprecated and Will be removed in version 0.1.3"
+        )
+        super().__init__()
