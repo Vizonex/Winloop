@@ -1,30 +1,34 @@
 <img src="https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png" width="200px"/>
 
 # Winloop
-An Alternative library for uvloop compatability with windows because let's face it. Window's python asyncio is garabage escpecially when Windows Defender eats up half your ram. 
-I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is avalible on windows but doesn't have [compatability with uvloop at all.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
+An Alternative library for uvloop compatability with windows because let's face it. Window's python asyncio standard libaray is garabage escpecially when Windows Defender decides to eat half your ram. 
+I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is avalible for windows [but windows was never compatable with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
-Because nobody was willing to step in after so many years of people waiting , I went ahead and downloaded the uvloop source code and modified the source code to be windows compatable by carefully removing and changing parts that were not made for windows, many hours of research went into making this library exist. 
+Because nobody was willing to step in after so many years of waiting, I went ahead and downloaded the source code for uvloop and started modifying the source code to be windows compatable by carefully removing and changing parts that were not made for windows. Many hours of research went into making this library exist. 
 
-The differences with __uvloop__ is that forking has been fully disabled and some smaller api calls had to be changed. Subprocesses instead release the gil instead of forking out although I might change that in the future if handling asynchronous subprocesses becomes a problem to handle...
+The differences with __uvloop__ is that forking has been fully disabled and some smaller api calls had to be changed, error handling has been carefully modified and subprocesses instead release the gil instead of forking out...
+
+There is a perfromance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problem as well. This library also has comparable performace to it's brother uvloop. 
 
 
-There is a perfromance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in python 3.9. Winloop is a very good replacement for those ssl problem as well.
-
-
-## How to install Winloop on your Operating System
+## How to install Winloop on your Windows Operating System
 
 ```
 pip install winloop
 ```
 
-you can also clone the reposity and build the extension yourself by running the command below if you wish to use or build this library locally
+You can also clone the reposity and build the extension yourself by running the command below if you wish to use or build this library locally, Note that you will need Cython and The Visual C++ extensions 
+to compile this library on your own. 
 
 ```
 python setup.py build_ext --inplace 
 ```
 
-If you find any sneaky bugs with this library be sure to open up an issue to our github repo. Me and other contributors will be happy to help you figure out and diagnose your problems.
+## Issues Reporting
+
+If you find any bugs with this library be sure to open up an issue to our github repo. Me and other contributors will be happy try to help you figure out and diagnose your problems.
+
+
 
 ```python
 try:
@@ -225,35 +229,28 @@ async def main():
 
 if __name__ == "__main__":
     if sys.platform in ('win32', 'cygwin', 'cli'):
-        from winloop import install
+        from winloop import run
     else:
         # if we're on apple or linux do this instead
-        from uvloop import install 
-    install()
-    asyncio.run(main())
+        from uvloop import run 
+    run(main())
   ```
   
   
  ## Possible Upcomming Features/Optimizations to Winloop / This is also our TODO list
 I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will be tuning in and listening to what's going on uvloop's end to see what we might have to change . This is a list of features I would like to implement from likely to least likely to be done as well as solved. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
 
+- Format all `.py` & `.pyi` files using [black](https://pypi.org/project/black/)
+
+- Finish implementing our brand new test suite and write a workflow for using it whenever a pullrequest is being made
+
 - Drop All `DEF` Macros, I'm currently seeking help on replacements for macros where all the variables are known about at compile-time
-
-- Make a sucessful Github Workflow for uploading wheels to pypi any help and guidence would be appreciated 
-
-- delete loop.c on install once the code has been compiled to a `.pyd` file since `loop.c` becomes 8 Microbytes (8MB) of waste at that point (yeah it's very big). Users don't need a file this big escpecailly for those who are diskspace sensetive like myself.
 
 - Adding in the nessesary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
 
-- Drop custom Socketpair function inside of `socketpair.h` in replacement for libvs's function until we can better understand how its need to be implemented so that we can make it go a bit deeper to be a bit more quick at creating sockets , the assert checks might be dropped as long as there's no problems with it. I'll be sure to reupload the dropped `socketpair.h` code of mine into a gist if anyone still wanted to go ahead and use it elsewhere although it may have many bugs of it's own which was my original reason for not using it when I discovered that libuv had it's own socketpair functions for windows...
-
-- Easier Error Diagnosis to code even though I've found that most errors are not arising from winloop's own code and it is being triggered from elsewhere (This is a good thing but makes it harder to tell where other devs mess up) in fact, winloop actually passes more tests than python's asyncio event loop policies do. This might just be both a blessing and a curse for us...
-
-- Maybe Drop and then re-join the gil after the subprocess is first spawned in instead of joining before being killed off by the end user (This will need to be accompanied by some heavy unittesting no doubt)
-
-- Optimzing TCP Connections as well as sending data in `streams.pyx` with the uv bites are finally dropped in the try write portions of our library. Currently uv bites is just there as a protection measure by me, this will be dropped in the future since the try_write block has some subprocess checks as well as long as it doesn't have subprocess behaviors I'm alright with upgrading `streams.pyx` as long as it doesn't break. I did leave my plan uncommented for right now but the other half belonging to subprocesses looks rather steep/deep.
-
 - drop the `.lib` file for compiling libuv in replacement for libuv's C files directly once the current compiling problems and errors have been solved.
+
+- Sphinx Styled Documentation (Maybe I am thinking about it...)
 
 
 ## Videos
