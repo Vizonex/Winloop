@@ -44,7 +44,7 @@ jobs:
   
   build_sdist:
     name: Build source distribution
-    runs-on: windows-latest
+    runs-on: window-latest
     
     steps:
       - uses: actions/checkout@v3
@@ -65,3 +65,4 @@ jobs:
           path: ./dist/*
       
     
+# TODO (Vizonex): Make sure this job works and that we get our compiled wheels...
