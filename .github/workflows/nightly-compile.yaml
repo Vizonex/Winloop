@@ -1,4 +1,4 @@
-name: Test Publish 
+name: Nightly Build And Compile Test
   
 on: 
   push: 
@@ -61,33 +61,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: dist
+          came: dist
           path: ./dist/*
-
- 
-
-  upload_pypi:
-    needs: [build_wheels, build_sdist]
-    runs-on: windows-2019
-
-    # I chose this repo's setup/workflow because it was the best Resource I could find for an implementation - Vizonex
-    # See: https://github.com/hoffstadt/DearPyGui/blob/master/.github/workflows/Deployment.yml#L165 
+      
     
-    steps:
-
-    - name: Checkout
-      uses: actions/checkout@v3
-    
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-    
-    # - name: Publish package
-    #   uses: pypa/gh-action-pypi-publish@v1.8.5
-    #   with:
-    #     user: __token__
-    #     password: ${{ secrets.PYPI_API_TOKEN }}
-    - name: Publish package to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository-url: https://test.pypi.org/legacy/
