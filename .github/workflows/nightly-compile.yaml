@@ -63,6 +63,26 @@ jobs:
         with:
           came: dist
           path: ./dist/*
+
+  upload_wheels_as_nightly_builds:
+      name: Publish
+      needs: [build_wheels, build_sdist]
+      runs-on: ubuntu-latest
+  
+      # I chose this repo's setup/workflow because it was the best Resource I could find for an implementation - Vizonex
+      # See: https://github.com/hoffstadt/DearPyGui/blob/master/.github/workflows/Deployment.yml#L165 
       
-    
-# TODO (Vizonex): Make sure this job works and that we get our compiled wheels...
+      steps:
+  
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      - name: Upload Nightly Builds
+        uses: actions/upload-artifact@v3
+        with:
+          name: Winloop-Nightly-Wheels
+          path: |
+            "./wheelhouse/*.whl"
+            "./dist/*"
