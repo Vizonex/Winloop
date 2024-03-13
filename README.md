@@ -1,4 +1,5 @@
 <img src="https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png" width="200px"/>
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 # Winloop
 An Alternative library for uvloop compatability with windows because let's face it. Window's python asyncio standard libaray is garabage escpecially when Windows Defender decides to eat half your ram. 
@@ -27,6 +28,11 @@ python setup.py build_ext --inplace
 ## Issues Reporting
 
 If you find any bugs with this library be sure to open up an issue to our github repo. Me and other contributors will be happy try to help you figure out and diagnose your problems.
+
+## Making pull requests 
+We encourage anyone to make pull-requests to winloop from spelling mistakes to vulnerability patches. Every little bit helps keep this library maintained and alive.
+Make sure that you are able to compile the library with the steps shown above. We plan to implement a nightly workflow to verify one's pull request in the future.
+
 
 
 
@@ -237,25 +243,27 @@ if __name__ == "__main__":
   ```
   
   
- ## Possible Upcomming Features/Optimizations to Winloop / This is also our TODO list
-I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will be tuning in and listening to what's going on uvloop's end to see what we might have to change . This is a list of features I would like to implement from likely to least likely to be done as well as solved. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
+ ## TODO-List
+
+- Update Fastapi Example to a more recent version of fastapi
+
+- Contact uvicorn about this [issue](https://github.com/Vizonex/Winloop/issues/11) I have a funny feeling something is going on here...
 
 - See about making a pull request to [Aiodns](https://github.com/saghul/aiodns) to allow for or try to ask/see if winloop to be used. 
 
 - Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions.
 
-- Format all `.py` & `.pyi` files using [black](https://pypi.org/project/black/)
-
-- Finish implementing our brand new test suite and write a workflow for using it whenever a pullrequest is being made
-
 - Drop All `DEF` Macros, I'm currently seeking help on replacements for macros where all the variables are known about at compile-time
 
 - Adding in the nessesary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
 
-- drop the `.lib` file for compiling libuv in replacement for libuv's C files directly once the current compiling problems and errors have been solved.
+- write a workflow for compiling libuv on different versions of windows when distributing out pypi wheels.
+
+- write a workflow for nightly builds if nessesary for verification of pull requests.
 
 - Sphinx Styled Documentation (Maybe I am thinking about it...)
 
+- Update benchmarks (They are old) can't belive I maintained this project for over a year now...
 
 ## Videos
 - By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have reading problems)
