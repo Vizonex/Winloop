@@ -240,6 +240,8 @@ if __name__ == "__main__":
  ## Possible Upcomming Features/Optimizations to Winloop / This is also our TODO list
 I have been looking deeply into some of the proposed Pulls and changes to `Uvloop` and I will be tuning in and listening to what's going on uvloop's end to see what we might have to change . This is a list of features I would like to implement from likely to least likely to be done as well as solved. If any of these feature have been added you will simply know by the fact that It won't be on this list anymore...
 
+- See about making a pull request to [Aiodns](https://github.com/saghul/aiodns) to allow for or try to ask/see if winloop to be used. 
+
 - Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions.
 
 - Format all `.py` & `.pyi` files using [black](https://pypi.org/project/black/)
