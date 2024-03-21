@@ -174,16 +174,3 @@ class EventLoopPolicy(__BasePolicy):
 
         def set_child_watcher(self, watcher: _typing.Any) -> _typing.NoReturn:
             ...
-
-
-# For Easier Compatabilty with uvloop , WinLoopPolicy was chosen more as a vanity name
-# We will retain this name for now as backwards compatability but it will be removed
-# in the future in 0.1.3... - Vizonex
-
-
-class WinLoopPolicy(EventLoopPolicy):
-    def __init__(self) -> None:
-        _warnings.warn(
-            "WinLoopPolicy is Deprecated and Will be removed in version 0.1.3"
-        )
-        super().__init__()
