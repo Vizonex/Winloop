@@ -249,7 +249,9 @@ if __name__ == "__main__":
 
 - Contact uvicorn about this [issue](https://github.com/Vizonex/Winloop/issues/11) I have a funny feeling something is going on here...
 
-- See about making a pull request to [Aiodns](https://github.com/saghul/aiodns) to allow for or try to ask/see if winloop to be used. 
+- See about making a pull request to [Aiodns](https://github.com/saghul/aiodns) to allow for or try to ask/see if winloop to be used.
+Update: We are waiting to see if my [pull request](https://github.com/saghul/aiodns/pull/116) passes. 
+
 
 - Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions.
 
@@ -261,7 +263,7 @@ if __name__ == "__main__":
 
 - write a workflow for nightly builds if nessesary for verification of pull requests.
 
-- Sphinx Styled Documentation (Maybe I am thinking about it...)
+- Sphinx Styled Documentation (Maybe I'm thinking about it...)
 
 - Update benchmarks (They are old) can't belive I maintained this project for over a year now...
 
