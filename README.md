@@ -270,3 +270,6 @@ Update: We are waiting to see if my [pull request](https://github.com/saghul/aio
 ## Videos
 - By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have reading problems)
 - My Presentation and Virtual Confrence: https://www.youtube.com/watch?v=Cbb6trkKWXY 
+
+## Contributing
+I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me. 
