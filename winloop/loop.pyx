@@ -24,6 +24,7 @@ from cpython.buffer cimport (
     Py_buffer, 
     PyObject_GetBuffer
 )
+from cpython.list cimport PyList_Append
 
 from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
 
@@ -1984,7 +1985,7 @@ cdef class Loop:
                     uv.SOCK_STREAM, proto, flags,
                     0)  # 0 == don't unpack
 
-                fs.append(f1)
+                PyList_Append(fs, f1)
             else:
                 rai_static.ai_addr = <system.sockaddr*>&rai_addr_static
                 rai_static.ai_next = NULL
@@ -2006,7 +2007,7 @@ cdef class Loop:
                         uv.SOCK_STREAM, proto, flags,
                         0)  # 0 == don't unpack
 
-                    fs.append(f2)
+                    PyList_Append(fs, f2)
                 else:
                     lai_static.ai_addr = <system.sockaddr*>&lai_addr_static
                     lai_static.ai_next = NULL
@@ -2044,7 +2045,7 @@ cdef class Loop:
                                 tr.bind(lai_iter.ai_addr)
                                 break
                             except OSError as exc:
-                                exceptions.append(exc)
+                                PyList_Append(exceptions, exc)
                             lai_iter = lai_iter.ai_next
                         else:
                             tr._close()
@@ -2060,7 +2061,7 @@ cdef class Loop:
                     if tr is not None:
                         tr._close()
                         tr = None
-                    exceptions.append(exc)
+                    PyList_Append(exceptions, exc)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except BaseException:
@@ -3151,7 +3152,7 @@ cdef class Loop:
                         raise
                     except BaseException as ex:
                         lai = lai.ai_next
-                        excs.append(ex)
+                        PyList_Append(excs, ex)
                         continue
                     else:
                         break
@@ -3406,6 +3407,8 @@ cdef __install_disable_stdio_inheritence():
         return
     uv.uv_disable_stdio_inheritance()
     __os_stdio_installed = 1
+
+
 # Helps for tests...
 
 @cython.iterable_coroutine
