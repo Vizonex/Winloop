@@ -22,7 +22,7 @@ from .loop import Loop as __BaseLoop  # NOQA
 # from ._version import __version__  # NOQA
 
 
-__all__ = ("new_event_loop", "install", "WinLoopPolicy")
+__all__ = ("new_event_loop", "install", "EventLoopPolicy")
 
 
 class Loop(__BaseLoop, __asyncio.AbstractEventLoop):  # type: ignore[misc]
@@ -47,7 +47,7 @@ def install() -> None:
             DeprecationWarning,
             stacklevel=1,
         )
-    __asyncio.set_event_loop_policy(WinLoopPolicy())
+    __asyncio.set_event_loop_policy(EventLoopPolicy())
 
 
 # Copied from uvloop for the sake of compatability
