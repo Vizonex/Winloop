@@ -390,9 +390,7 @@ cdef class UVStream(UVBaseTransport):
         # Try this unless Something else comes up then fallback to try_uv_write...
         if (<uv.uv_stream_t*>self._handle).type == uv.UV_TCP:
             
-            
-            # TODO (Vizonex) Instead of our custom try_tcp_write maybe send all of that into a new cython file 
-            # or send the entire WSASend here? 
+            # TODO (Vizonex) WSAsend maybe possible in this part. I have a lot more experience with C/C++ now and I think we can make it happen...
 
             # NOTE I had a strange import situtaion with uv.pxd, which is why it has the uv prefix...
             # try_tcp_write when it is actually a custom function 
@@ -400,6 +398,7 @@ cdef class UVStream(UVBaseTransport):
             # try_tcp_write the only thing we can do is give it's own funciton for now... 
             written = uv.try_tcp_write((<uv.uv_tcp_t*>self._handle), wsa)
 
+        # TODO: Try killing this section off, I don't remeber us having to use tty - Vizonex. 
         else:
             _buf.base = wsa.buf
             _buf.len = wsa.len
