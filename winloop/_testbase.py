@@ -301,7 +301,7 @@ class UVTestCase(BaseTestCase):
         return winloop.new_event_loop()
 
     def new_policy(self):
-        return winloop.WinLoopPolicy()
+        return winloop.EventLoopPolicy()
 
 
 class AIOTestCase(BaseTestCase):
