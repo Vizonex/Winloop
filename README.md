@@ -250,7 +250,7 @@ if __name__ == "__main__":
 - Contact uvicorn about this [issue](https://github.com/Vizonex/Winloop/issues/11) I have a funny feeling something is going on here...
 
 - See about making a pull request to [Aiodns](https://github.com/saghul/aiodns) to allow for or try to ask/see if winloop to be used.
-Update: We are waiting to see if my [pull request](https://github.com/saghul/aiodns/pull/116) passes. 
+Update: We are waiting to see if my [pull request](https://github.com/saghul/aiodns/pull/116) passes. Update: It passed. Now you'l just have to wait for it to be updated. also added tests on it's end for aiodns. I will maybe add these tests onto our end since they would benefit us if something on our side is at fault. 
 
 
 - Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions.
