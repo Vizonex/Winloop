@@ -1,4 +1,4 @@
-from libc.stdint cimport int8_t, uint64_t
+ffrom libc.stdint cimport int8_t, uint64_t
 
 
 cdef extern from "winsock2.h":
@@ -6,6 +6,9 @@ cdef extern from "winsock2.h":
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif    
+
+/* Inspired by uvloop's own work SEE: https://github.com/MagicStack/uvloop/blob/master/uvloop/handles/stream.pyx */
+#define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL)
     """
     
     
@@ -67,24 +70,12 @@ cdef extern from "winsock2.h":
     # ADDED In the others since we plan to optimize uv__try_write down to just simply window's api...
     ctypedef WSABUF *LPWSABUF
     
-
-    # --- FUTURE IMPLEMENTATION CURRENTLY IN THE WORKS... ---
-
-    # struct _OVERLAPPED:
-    #     pass 
-
-    # ctypedef _OVERLAPPED* LPWSAOVERLAPPED
-    # ctypedef unsigned long DWORD
-    # ctypedef DWORD *LPDWORD
+    # Macro for WSASend
+    #define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL);
     
+    int winloop_sys_write(int, WSABUF, DWORD)
+    int WSAGetLastError()
 
-    # int WSASend(SOCKET s, 
-    #     LPWSABUF lpBuffers, 
-    #     DWORD dwBufferCount, 
-    #     LPDWORD lpNumberOfBytesSent, 
-    #     DWORD dwFlags, 
-    #     LPWSAOVERLAPPED lpOverlapped, 
-    #     LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine)
 
 # The AtFork Implementation does not work and it is belived that windows already takes care of this...
 # http://locklessinc.com/articles/pthreads_on_windows/
@@ -115,13 +106,8 @@ cdef extern from "includes/nfork_handler.h":
 # TODO put uv.try_tcp_write into here instead since it's not a member of uvloop rather our own creation...
 
 
-# -- DEPRICATED --
-# socketpair.h by Vizonex 
-# cdef extern from "socketpair.h" nogil:
-#     # I implemented this for windows because I wasn't 
-#     # going to let it stop me from making Winloop not possible...
-#     int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2])
 
 cdef extern from "corecrt_io.h":
     ctypedef long long intptr_t
     intptr_t _get_osfhandle(int _FileHandle)
+
