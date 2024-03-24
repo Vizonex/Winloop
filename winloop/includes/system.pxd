@@ -73,7 +73,7 @@ cdef extern from "winsock2.h":
     # Macro for WSASend
     #define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL);
     
-    int winloop_sys_write(int, WSABUF, DWORD)
+    int winloop_sys_write(int, WSABUF, unsigned long)
     int WSAGetLastError()
 
 
