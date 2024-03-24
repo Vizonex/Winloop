@@ -411,6 +411,11 @@ cdef extern from "vendor/include/uv.h" nogil:
     int uv_tcp_connect(uv_connect_t* req, uv_tcp_t* handle,
                        const system.sockaddr* addr, uv_connect_cb cb)
 
+
+    # system errors
+    int uv_translate_sys_error(int sys_errno)
+
+
     # Pipes
 
     int uv_pipe_init(uv_loop_t* loop, uv_pipe_t* handle, int ipc)
