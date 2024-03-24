@@ -346,17 +346,15 @@ cdef class UVStream(UVBaseTransport):
 
     cdef inline _try_write(self, object data):
         cdef:
-
-            # NOTE Disabled some parts until we can fix stability so we're falling back to uv_try_write 
-
-            ssize_t written
+            ssize_t written = 0 # Silence the C4700 Warning
             bint used_buf = 0
             Py_buffer py_buf
-
+            
             int saved_errno
             int fd
+            int result
 
-            uv.uv_buf_t _buf
+            # uv.uv_buf_t _buf
             
             # UPDATE: added WSABUF Brought over from "winsock2.h"
             system.WSABUF wsa 
@@ -384,28 +382,10 @@ cdef class UVStream(UVBaseTransport):
             # Empty data, do nothing.
             return 0
 
-        # IGNORE FOR NOW, This is currently disabled until someone can come up with an actual fix for the bad file descriptors issues.
-
-        # NOTE Replaced System.write for tcp to have direct access to windows API see libuv/src/win/stream.c ...
-        # Try this unless Something else comes up then fallback to try_uv_write...
-        if (<uv.uv_stream_t*>self._handle).type == uv.UV_TCP:
-            
-            # TODO (Vizonex) WSAsend maybe possible in this part. I have a lot more experience with C/C++ now and I think we can make it happen...
-
-            # NOTE I had a strange import situtaion with uv.pxd, which is why it has the uv prefix...
-            # try_tcp_write when it is actually a custom function 
-            # I made to be a little faster than uv_try_write but since libuv cannot access it's own 
-            # try_tcp_write the only thing we can do is give it's own funciton for now... 
-            written = uv.try_tcp_write((<uv.uv_tcp_t*>self._handle), wsa)
-
-        # TODO: Try killing this section off, I don't remeber us having to use tty - Vizonex. 
-        else:
-            _buf.base = wsa.buf
-            _buf.len = wsa.len
-
-            
-            # NOTE Fallback to uv_try_write until we can come up with a better solution.
-            written = uv.uv_try_write(<uv.uv_stream_t*>self._handle, &_buf, 1)
+        fd = self._fileno()
+        # UPDATE Were trying something different...
+        if system.winloop_sys_write(fd, wsa, written) == system.SOCKET_ERROR:
+            written = uv.uv_translate_sys_error(system.WSAGetLastError())
 
         
         saved_errno = errno.errno
@@ -427,8 +407,8 @@ cdef class UVStream(UVBaseTransport):
         if UVLOOP_DEBUG:
             self._loop._debug_stream_write_tries += 1
 
-        if <size_t>written == _buf.len:
-            return 0
+        # if <size_t>written == _buf.len:
+        #     return 0
 
         return written
 
