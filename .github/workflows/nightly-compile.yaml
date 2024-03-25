@@ -1,9 +1,6 @@
 name: Nightly Build And Compile Test
   
 on: 
-  push: 
-    tags: 
-      - "*" 
   # Make sure it can be uploaded when a PR is requested - Vizonex
   pull_request:
     tags:
