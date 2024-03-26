@@ -1,4 +1,4 @@
-ffrom libc.stdint cimport int8_t, uint64_t
+from libc.stdint cimport int8_t, uint64_t
 
 
 cdef extern from "winsock2.h":
