@@ -7,9 +7,18 @@ from Cython.Build import cythonize
 
 
 HERE = pathlib.Path("winloop")
+_ROOT = pathlib.Path(__file__).parent
 
-__version__ = "0.1.3"
 
+with open(str(_ROOT / 'winloop' / '_version.py')) as f:
+    for line in f:
+        if line.startswith('__version__ ='):
+            _, _, version = line.partition('=')
+            VERSION = version.strip(" \n'\"")
+            break
+    else:
+        raise RuntimeError(
+            'unable to read the version from winloop/_version.py')
 
 
 # This is a temporary test Solution and is not the official file yet but this is to display/show what 
@@ -54,7 +63,7 @@ def do_installation():
     setup(
         name="winloop",
         author="Vizonex",
-        version=__version__,
+        version=VERSION,
         description="""An alternative library for uvloop compatibility with Windows""",
         ext_modules=cythonize(ext),
         license="MIT",
