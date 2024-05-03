@@ -182,6 +182,7 @@ This was a cool little script I put together Just to make fastapi that much fast
 
 ```python
 
+# TODO this code example is deprecated
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import winloop 
