@@ -20,7 +20,26 @@ with open(str(_ROOT / 'winloop' / '_version.py')) as f:
         raise RuntimeError(
             'unable to read the version from winloop/_version.py')
 
+# Temporary directory (For now) This will be mereged with vendor in a future update...
+def get_c_files():
+    path = pathlib.Path("winloop", "_vendor")
 
+    def c_files(p:pathlib.Path):
+        for i in p.iterdir():
+            if i.is_dir():
+                pass
+            if i.name.endswith(".c"):
+                yield i
+
+    for c in c_files(path):
+        yield c.as_posix()
+    for c in c_files(path / "win"):
+        yield c.as_posix()
+
+
+
+# This is a temporary test Solution and is not the official file yet but this is to display/show what 
+# I'm currently using to compile the winloop library...
 # This is a temporary test Solution and is not the official file yet but this is to display/show what 
 # I'm currently using to compile the winloop library...
 def do_installation():
@@ -41,15 +60,23 @@ def do_installation():
         "Dbghelp.lib",
         "Ole32.lib"
     ]
+    
+    c_files = list(get_c_files())
 
     ext = [
-        Extension("winloop.loop",["winloop\\loop.pyx"], 
+        Extension(
+            "winloop.loop",
+            ["winloop\\loop.pyx"] + c_files, 
+            # For Now (Temporarly) we have 2 vendor Directories. It is planned that _vendor will replace our current one in the future.
+            include_dirs=["winloop/_vendor/src", "winloop/_vendor/win", "winloop/vendor/include", "winloop/_vendor" , "winloop/"],
             # NOTE uv_a.lib will be user-compiled when 
             # I've fixed the install there's still been some probelms with compiling fs-poll.c on it's own...
-            extra_link_args=Windows_Libraries + ["winloop\\vendor\\libuv.lib"],
+            extra_link_args=Windows_Libraries, # + ["winloop\\vendor\\libuv.lib"], testing...
             # I have some macros setup for now to help me with debugging - Vizonex
             library_dirs=["winloop"],
             define_macros=[
+                ("_CRT_DECLARE_NONSTDC_NAMES", 0),
+                ("WIN32_LEAN_AND_MEAN", 1),
                 ('_GNU_SOURCE', 1),
                 ('WIN32', 1),
                 ("_WIN32_WINNT","0x0602")
@@ -63,7 +90,7 @@ def do_installation():
     setup(
         name="winloop",
         author="Vizonex",
-        version=VERSION,
+        version=__version__,
         description="""An alternative library for uvloop compatibility with Windows""",
         ext_modules=cythonize(ext),
         license="MIT",
