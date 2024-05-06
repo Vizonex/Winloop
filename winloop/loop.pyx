@@ -3250,7 +3250,9 @@ cdef class Loop:
                 })
 
     @cython.iterable_coroutine
-    async def shutdown_default_executor(self):
+    async def shutdown_default_executor(self, 
+        dummy=None # SEE: https://github.com/Vizonex/Winloop/issues/21
+    ):
         """Schedule the shutdown of the default executor."""
         self._executor_shutdown_called = True
         if self._default_executor is None:
