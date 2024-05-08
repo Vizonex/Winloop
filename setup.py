@@ -1,6 +1,6 @@
 from setuptools import Extension, setup, find_packages
-import pathlib 
-import sys 
+import pathlib
+import sys
 
 from Cython.Build import cythonize
 
@@ -38,9 +38,9 @@ def get_c_files():
 
 
 
-# This is a temporary test Solution and is not the official file yet but this is to display/show what 
+# This is a temporary test Solution and is not the official file yet but this is to display/show what
 # I'm currently using to compile the winloop library...
-# This is a temporary test Solution and is not the official file yet but this is to display/show what 
+# This is a temporary test Solution and is not the official file yet but this is to display/show what
 # I'm currently using to compile the winloop library...
 def do_installation():
     try:
@@ -48,7 +48,7 @@ def do_installation():
     except:
         long_description = ""
 
-    # "Thank goodness we don't have to dig out the libpath ourselves I almost vomited" - Vizonex            
+    # "Thank goodness we don't have to dig out the libpath ourselves I almost vomited" - Vizonex
     Windows_Libraries = [
         "Shell32.lib",
         "Ws2_32.lib",
@@ -60,16 +60,16 @@ def do_installation():
         "Dbghelp.lib",
         "Ole32.lib"
     ]
-    
+
     c_files = list(get_c_files())
 
     ext = [
         Extension(
             "winloop.loop",
-            ["winloop\\loop.pyx"] + c_files, 
+            ["winloop\\loop.pyx"] + c_files,
             # For Now (Temporarly) we have 2 vendor Directories. It is planned that _vendor will replace our current one in the future.
             include_dirs=["winloop/_vendor/src", "winloop/_vendor/win", "winloop/vendor/include", "winloop/_vendor" , "winloop/"],
-            # NOTE uv_a.lib will be user-compiled when 
+            # NOTE uv_a.lib will be user-compiled when
             # I've fixed the install there's still been some probelms with compiling fs-poll.c on it's own...
             extra_link_args=Windows_Libraries, # + ["winloop\\vendor\\libuv.lib"], testing...
             # I have some macros setup for now to help me with debugging - Vizonex
@@ -90,15 +90,15 @@ def do_installation():
     setup(
         name="winloop",
         author="Vizonex",
-        version=__version__,
+        version=VERSION,
         description="""An alternative library for uvloop compatibility with Windows""",
         ext_modules=cythonize(ext),
         license="MIT",
         platforms=['Microsoft Windows'],
         keywords=[
-            "winloop", 
-            "libuv", 
-            "windows", 
+            "winloop",
+            "libuv",
+            "windows",
             "cython",
             "fast-asyncio",
             "uvloop-alternative"
@@ -122,11 +122,11 @@ def do_installation():
 if __name__ == "__main__":
 
     if sys.platform not in ('win32', 'cygwin', 'cli'):
-        # TODO (Vizonex) Ask uvloop Owners/contributors if it would be ok or acceptable to recommend 
-        # this library as an alternative resource for any users on windows 
+        # TODO (Vizonex) Ask uvloop Owners/contributors if it would be ok or acceptable to recommend
+        # this library as an alternative resource for any users on windows
         raise RuntimeError("Winloop is only available for Windows users. Please try installing uvloop instead, you won't be disappointed with it...")
 
     do_installation()
-    
-    
- 
+
+
+
