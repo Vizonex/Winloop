@@ -1,4 +1,3 @@
-# from includes cimport system 
 cdef class UDPTransport(UVBaseTransport):
     cdef:
         bint __receiving
@@ -21,4 +20,3 @@ cdef class UDPTransport(UVBaseTransport):
 
     cdef _on_receive(self, bytes data, object exc, object addr)
     cdef _on_sent(self, object exc, object context=*)
-

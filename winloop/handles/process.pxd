@@ -12,7 +12,7 @@ cdef class UVProcess(UVHandle):
         bint _restore_signals
 
         list _fds_to_close
-        
+
         # Attributes used to compose uv_process_options_t:
         uv.uv_process_options_t options
         uv.uv_stdio_container_t[3] iocnt
@@ -63,9 +63,6 @@ cdef class UVProcessTransport(UVProcess):
         object stdin_proto
         object stdout_proto
         object stderr_proto
-        
-       
-
 
     cdef _file_redirect_stdio(self, int fd)
     cdef _file_devnull(self)
@@ -86,4 +83,3 @@ cdef class UVProcessTransport(UVProcess):
                                 waiter,
                                 debug_flags,
                                 preexec_fn, restore_signals)
-# from loop cimport Loop 

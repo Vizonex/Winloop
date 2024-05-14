@@ -16,5 +16,3 @@ cdef class UVTimer(UVHandle):
     @staticmethod
     cdef UVTimer new(Loop loop, method_t callback, object ctx,
                      uint64_t timeout)
-
-# from testloop cimport Loop

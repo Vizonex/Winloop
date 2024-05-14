@@ -1,6 +1,3 @@
-# from handles.stream cimport UVStream
-# from loop cimport Loop 
-
 cdef class UnixServer(UVStreamServer):
 
     cdef bind(self, str path)

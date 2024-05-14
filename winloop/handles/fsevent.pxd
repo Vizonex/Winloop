@@ -10,4 +10,3 @@ cdef class UVFSEvent(UVHandle):
 
     @staticmethod
     cdef UVFSEvent new(Loop loop, object callback, object context)
-

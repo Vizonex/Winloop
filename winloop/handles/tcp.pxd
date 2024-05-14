@@ -25,7 +25,3 @@ cdef class TCPTransport(UVStream):
     @staticmethod
     cdef TCPTransport new(Loop loop, object protocol, Server server,
                           object waiter, object context)
-
-# from handles.stream cimport UVStream
-# from handles.streamserver cimport UVStreamServer
-# from loop cimport Loop 

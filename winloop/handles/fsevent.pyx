@@ -87,8 +87,12 @@ cdef class UVFSEvent(UVHandle):
         return handle
 
 
-cdef void __uvfsevent_callback(uv.uv_fs_event_t* handle, const char *filename,
-                               int events, int status) noexcept with gil:
+cdef void __uvfsevent_callback(
+    uv.uv_fs_event_t* handle,
+    const char *filename,
+    int events,
+    int status,
+) noexcept with gil:
     if __ensure_handle_data(
         <uv.uv_handle_t*>handle, "UVFSEvent callback"
     ) == 0:
@@ -108,4 +112,3 @@ cdef void __uvfsevent_callback(uv.uv_fs_event_t* handle, const char *filename,
         h._run()
     except BaseException as ex:
         fs_event._error(ex, False)
-

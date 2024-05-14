@@ -1,7 +1,7 @@
 from libc cimport errno
 
-
 DEF __PREALLOCED_BUFS = 4
+
 
 @cython.no_gc_clear
 @cython.freelist(DEFAULT_FREELIST_SIZE)
@@ -74,7 +74,7 @@ cdef class _StreamWriteContext:
         # sometimes sends only a portion of data.
         # We then call "advance_uv_buf" on the write
         # context, and reuse it in a "uv_write" call.
-        
+
         cdef:
             uv.uv_buf_t* buf
             size_t idx
@@ -261,7 +261,6 @@ cdef class UVStream(UVBaseTransport):
                              <uv.uv_stream_t*> self._handle,
                              __uv_stream_on_shutdown)
         if err < 0:
-
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
@@ -337,7 +336,6 @@ cdef class UVStream(UVBaseTransport):
         #    called on a stopped stream.
         err = uv.uv_read_stop(<uv.uv_stream_t*>self._handle)
         if err < 0:
-
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
@@ -349,21 +347,21 @@ cdef class UVStream(UVBaseTransport):
             ssize_t written = 0 # Silence the C4700 Warning
             bint used_buf = 0
             Py_buffer py_buf
-            
+
             int saved_errno
             int fd
             int result
 
             # uv.uv_buf_t _buf
-            
+
             # UPDATE: added WSABUF Brought over from "winsock2.h"
-            system.WSABUF wsa 
-        
+            system.WSABUF wsa
+
 
         if (<uv.uv_stream_t*>self._handle).write_queue_size != 0:
             raise RuntimeError(
                 'UVStream._try_write called with data in uv buffers')
-      
+
         if PyBytes_CheckExact(data):
             # We can only use this hack for bytes since it's
             # immutable.  For everything else it is only safe to
@@ -387,7 +385,7 @@ cdef class UVStream(UVBaseTransport):
         if system.winloop_sys_write(fd, wsa, written) == system.SOCKET_ERROR:
             written = uv.uv_translate_sys_error(system.WSAGetLastError())
 
-        
+
         saved_errno = errno.errno
 
         if used_buf:
@@ -398,7 +396,7 @@ cdef class UVStream(UVBaseTransport):
             if saved_errno == errno.EAGAIN or written == uv.UV_EAGAIN:
                 # return -1 because we need to wait for handle.stream.conn.write_reqs_pending to actually be done...
                 return -1
-        
+
             else:
                 exc = convert_error(-saved_errno)
                 self._fatal_error(exc, True)
@@ -757,8 +755,11 @@ cdef void __uv_stream_on_shutdown(uv.uv_shutdown_t* req,
         return
 
 
-cdef inline bint __uv_stream_on_read_common(UVStream sc, Loop loop,
-                                            ssize_t nread) noexcept:
+cdef inline bint __uv_stream_on_read_common(
+    UVStream sc,
+    Loop loop,
+    ssize_t nread,
+) noexcept:
     if sc._closed:
         # The stream was closed, there is no reason to
         # do any work now.
@@ -808,6 +809,7 @@ cdef inline bint __uv_stream_on_read_common(UVStream sc, Loop loop,
             # See WriteUnixTransport for the explanation.
             sc._on_eof()
             return True
+
         exc = convert_error(nread)
         sc._fatal_error(
             exc, False, "error status in uv_stream_t.read callback")
@@ -816,9 +818,11 @@ cdef inline bint __uv_stream_on_read_common(UVStream sc, Loop loop,
     return False
 
 
-cdef inline void __uv_stream_on_read_impl(uv.uv_stream_t* stream,
-                                          ssize_t nread,
-                                          const uv.uv_buf_t* buf) noexcept:
+cdef inline void __uv_stream_on_read_impl(
+    uv.uv_stream_t* stream,
+    ssize_t nread,
+    const uv.uv_buf_t* buf,
+) noexcept:
     cdef:
         UVStream sc = <UVStream>stream.data
         Loop loop = sc._loop
@@ -846,7 +850,10 @@ cdef inline void __uv_stream_on_read_impl(uv.uv_stream_t* stream,
         sc._fatal_error(exc, False)
 
 
-cdef inline void __uv_stream_on_write_impl(uv.uv_write_t* req, int status) noexcept:
+cdef inline void __uv_stream_on_write_impl(
+    uv.uv_write_t* req,
+    int status,
+) noexcept:
     cdef:
         _StreamWriteContext ctx = <_StreamWriteContext> req.data
         UVStream stream = <UVStream>ctx.stream
@@ -862,7 +869,7 @@ cdef inline void __uv_stream_on_write_impl(uv.uv_write_t* req, int status) noexc
     if status < 0:
         if UVLOOP_DEBUG:
             stream._loop._debug_stream_write_errors_total += 1
-  
+
         exc = convert_error(status)
         stream._fatal_error(
             exc, False, "error status in uv_stream_t.write callback")
@@ -877,9 +884,11 @@ cdef inline void __uv_stream_on_write_impl(uv.uv_write_t* req, int status) noexc
         stream._fatal_error(exc, False)
 
 
-cdef void __uv_stream_on_read(uv.uv_stream_t* stream,
-                              ssize_t nread,
-                              const uv.uv_buf_t* buf) noexcept with gil:
+cdef void __uv_stream_on_read(
+    uv.uv_stream_t* stream,
+    ssize_t nread,
+    const uv.uv_buf_t* buf,
+) noexcept with gil:
 
     if __ensure_handle_data(<uv.uv_handle_t*>stream,
                             "UVStream read callback") == 0:
@@ -889,7 +898,10 @@ cdef void __uv_stream_on_read(uv.uv_stream_t* stream,
     __uv_stream_on_read_impl(stream, nread, buf)
 
 
-cdef void __uv_stream_on_write(uv.uv_write_t* req, int status) noexcept with gil:
+cdef void __uv_stream_on_write(
+    uv.uv_write_t* req,
+    int status,
+) noexcept with gil:
 
     if UVLOOP_DEBUG:
         if req.data is NULL:
@@ -902,9 +914,11 @@ cdef void __uv_stream_on_write(uv.uv_write_t* req, int status) noexcept with gil
     __uv_stream_on_write_impl(req, status)
 
 
-cdef void __uv_stream_buffered_alloc(uv.uv_handle_t* stream,
-                                     size_t suggested_size,
-                                     uv.uv_buf_t* uvbuf) noexcept with gil:
+cdef void __uv_stream_buffered_alloc(
+    uv.uv_handle_t* stream,
+    size_t suggested_size,
+    uv.uv_buf_t* uvbuf,
+) noexcept with gil:
 
     if __ensure_handle_data(<uv.uv_handle_t*>stream,
                             "UVStream alloc buffer callback") == 0:
@@ -950,9 +964,11 @@ cdef void __uv_stream_buffered_alloc(uv.uv_handle_t* stream,
     uvbuf.len = pybuf.len
 
 
-cdef void __uv_stream_buffered_on_read(uv.uv_stream_t* stream,
-                                       ssize_t nread,
-                                       const uv.uv_buf_t* buf) noexcept with gil:
+cdef void __uv_stream_buffered_on_read(
+    uv.uv_stream_t* stream,
+    ssize_t nread,
+    const uv.uv_buf_t* buf,
+) noexcept with gil:
 
     if __ensure_handle_data(<uv.uv_handle_t*>stream,
                             "UVStream buffered read callback") == 0:

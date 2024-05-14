@@ -370,7 +370,9 @@ cdef void __close_all_handles(Loop loop) noexcept:
 
 
 cdef void __uv_walk_close_all_handles_cb(
-        uv.uv_handle_t* handle, void* arg) noexcept with gil:
+    uv.uv_handle_t* handle,
+    void* arg,
+) noexcept with gil:
 
     cdef:
         Loop loop = <Loop>arg
