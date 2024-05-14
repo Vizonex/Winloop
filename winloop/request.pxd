@@ -1,4 +1,3 @@
-
 cdef class UVRequest:
     cdef:
         uv.uv_req_t *request
@@ -7,4 +6,3 @@ cdef class UVRequest:
 
     cdef on_done(self)
     cdef cancel(self)
-

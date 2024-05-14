@@ -1,27 +1,3 @@
-# cdef enum SSLProtocolState:
-#     UNWRAPPED = 0
-#     DO_HANDSHAKE = 1
-#     WRAPPED = 2
-#     FLUSHING = 3
-#     SHUTDOWN = 4
-
-
-# cdef enum AppProtocolState:
-#     # This tracks the state of app protocol (https://git.io/fj59P):
-#     #
-#     #     INIT -cm-> CON_MADE [-dr*->] [-er-> EOF?] -cl-> CON_LOST
-#     #
-#     # * cm: connection_made()
-#     # * dr: data_received()
-#     # * er: eof_received()
-#     # * cl: connection_lost()
-
-#     STATE_INIT = 0
-#     STATE_CON_MADE = 1
-#     STATE_EOF = 2
-#     STATE_CON_LOST = 3
-
-
 cdef _create_transport_context(server_side, server_hostname):
     if server_side:
         raise ValueError('Server side SSL needs a valid SSLContext')

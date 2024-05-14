@@ -1,5 +1,9 @@
-#cython:language_level = 3
-from winloop.includes cimport uv, system 
+# cython: language_level=3
+
+
+from .includes cimport uv
+from .includes cimport system
+
 from libc.stdint cimport uint64_t, uint32_t, int64_t
 
 
@@ -10,7 +14,7 @@ cdef extern from *:
     ctypedef int vint "volatile int"
 
 
-# TODO (Vizonex) Maybe look into using the wepoll C library with winloop?  
+# TODO (Vizonex) Maybe look into using the wepoll C library with winloop?
 
 
 # cdef class UVHandle()
@@ -128,8 +132,9 @@ cdef class Loop:
         readonly uint64_t _sock_try_write_total
 
         readonly uint64_t _debug_exception_handler_cnt
-        
+
     cdef _init_debug_fields(self)
+
     cdef _on_wake(self)
     cdef _on_idle(self)
 

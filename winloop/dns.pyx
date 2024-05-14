@@ -1,7 +1,3 @@
-# from includes cimport system , uv 
-# from includes.python cimport PyUnicode_FromString
-# from libc.string cimport memset
-# from loop cimport Loop , DEFAULT_FREELIST_SIZE, DNS_PYADDR_TO_SOCKADDR_CACHE_SIZE
 from .includes.system cimport sockaddr, sockaddr_storage
 
 cdef __port_to_int(port, proto):
@@ -423,8 +419,11 @@ cdef _intenum_converter(value, enum_klass):
         return value
 
 
-cdef void __on_addrinfo_resolved(uv.uv_getaddrinfo_t *resolver,
-                                 int status, system.addrinfo *res) noexcept with gil:
+cdef void __on_addrinfo_resolved(
+    uv.uv_getaddrinfo_t *resolver,
+    int status,
+    system.addrinfo *res,
+) noexcept with gil:
 
     if resolver.data is NULL:
         aio_logger.error(
@@ -452,10 +451,12 @@ cdef void __on_addrinfo_resolved(uv.uv_getaddrinfo_t *resolver,
         request.on_done()
 
 
-cdef void __on_nameinfo_resolved(uv.uv_getnameinfo_t* req,
-                                 int status,
-                                 const char* hostname,
-                                 const char* service) noexcept with gil:
+cdef void __on_nameinfo_resolved(
+    uv.uv_getnameinfo_t* req,
+    int status,
+    const char* hostname,
+    const char* service,
+) noexcept with gil:
     cdef:
         NameInfoRequest request = <NameInfoRequest> req.data
         Loop loop = request.loop
@@ -473,6 +474,3 @@ cdef void __on_nameinfo_resolved(uv.uv_getnameinfo_t* req,
         loop._handle_exception(ex)
     finally:
         request.on_done()
-
-
-# from loop cimport Loop , DEFAULT_FREELIST_SIZE, DNS_PYADDR_TO_SOCKADDR_CACHE_SIZE

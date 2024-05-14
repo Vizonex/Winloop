@@ -1,5 +1,3 @@
-# cimport cython 
-# from includes.stdlib cimport col_OrderedDict
 cdef object _LRU_MARKER = object()
 
 @cython.final
