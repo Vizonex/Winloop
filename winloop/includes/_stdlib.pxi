@@ -150,7 +150,7 @@ cdef int signal_NSIG = signal.NSIG
 cdef signal_signal = signal.signal
 # FIXME This will need to be handled differently on enclosure...
 # cdef signal_siginterrupt = signal.
-# "In it's replacement, I'll use SIGABRT Unless some other developer finds probelms with this" - Vizonex
+# "In it's replacement, I'll use SIGABRT Unless some other developer finds problems with this" - Vizonex
 cdef int signal_SIGABRT = signal.SIGABRT
 cdef signal_raise_signal = signal.raise_signal
 # We have set_wake_fd though so that's good...

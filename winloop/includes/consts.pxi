@@ -27,7 +27,7 @@ DEF SSL_READ_MAX_SIZE = 256 * 1024
 
 
 
-# # Cython's DEF Keywords are DEPRICATED, This is a Workaround, I'll make a pull request for uvloop to do the same - Vizonex 
+# # Cython's DEF Keywords are DEPRECATED, This is a workaround, I'll make a pull request for uvloop to do the same - Vizonex 
 
 # cdef extern from *:
 #     """

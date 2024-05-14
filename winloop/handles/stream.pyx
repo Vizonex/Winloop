@@ -396,7 +396,7 @@ cdef class UVStream(UVBaseTransport):
         if written < 0:
 
             if saved_errno == errno.EAGAIN or written == uv.UV_EAGAIN:
-                # return -1 beacuse we need to wait for handle.stream.conn.write_reqs_pending to actually be done...
+                # return -1 because we need to wait for handle.stream.conn.write_reqs_pending to actually be done...
                 return -1
         
             else:

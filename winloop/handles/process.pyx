@@ -85,14 +85,14 @@ cdef class UVProcess(UVHandle):
         
        
 
-            # Also Important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
+            # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
             # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
             # This means that we cannot use any flags with this setup 
             # Finding examples of how uv_spawn is used will be helful as well...
             # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
 
 
-            # NOTE To Make up for the loss of forking (Which I saw as an enhancment on other systems)
+            # NOTE To make up for the loss of forking (which I saw as an enhancement on other systems)
             # Try releasing the gil during the spawning phase which is what CPython does...
             # mimic forking behaviors this will likely allow us to moderate the OS better 
             # if something bad happens... - Vizonex 
@@ -102,7 +102,7 @@ cdef class UVProcess(UVHandle):
             # This might be our answer...
             # https://github.com/saghul/pyuv/blob/39342fc2fd688f2fb2120d3092dd9cf52f537de2/src/process.c
 
-            # This is simillar to how CPython handles process spawning
+            # This is similar to how CPython handles process spawning
             # It releases the gil during spawntime and then brings it back in...
             
             err = uv.uv_spawn(loop.uvloop,
@@ -805,7 +805,7 @@ cdef __socketpair():
     # libuv doesn't detect the fact that were a named UV_TCP so we're doing the same 
     # check here but optimized way down
     # NOTE: Trying without assert will be faster...
-    # TODO Optimze Guess handle down futher using -> intptr_t __cdecl _get_osfhandle(int _FileHandle)
+    # TODO Optimize guess handle down further using -> intptr_t __cdecl _get_osfhandle(int _FileHandle)
     system._get_osfhandle(<int>fds[0]) 
     system._get_osfhandle(<int>fds[1]) 
 

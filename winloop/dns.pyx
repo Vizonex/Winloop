@@ -67,7 +67,7 @@ cdef __convert_sockaddr_to_pyaddr(const system.sockaddr* addr):
             addr6.sin6_scope_id
         )
 
-    # XXX May not be compatable with windows...
+    # XXX May not be compatible with Windows...
     # elif addr.sa_family == uv.AF_UNIX:
     #     addr_un = <system.sockaddr_un*>addr
     #     return system.MakeUnixSockPyAddr(addr_un)

@@ -3,7 +3,7 @@
 Winloop
 -------
 
-A Modifed Version of uvloop for windows operating systems made to bring faster 
+A modified version of uvloop for windows operating systems made to bring faster 
 performance than that of python's stdlib asyncio EventloopPolicies such as windowsproactor and 
 windowsselector policies and beats both of them in speed by over 8 times.
 
@@ -49,7 +49,7 @@ def install() -> None:
     __asyncio.set_event_loop_policy(EventLoopPolicy())
 
 
-# Copied from uvloop for the sake of compatability
+# Copied from uvloop for the sake of compatibility
 
 if _typing.TYPE_CHECKING:
 

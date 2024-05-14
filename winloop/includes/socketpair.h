@@ -102,7 +102,7 @@ Anything that can make asyncio less shitty on windows is a win for me - Vizonex.
 
 
 /* So I did this by looking at how libcurl and some libraries do it and I liked libcurl's implementation 
-so I added my own twist to that algorythm... 
+so I added my own twist to that algorithm... 
 
 Now I understand exactly what it does! */
 
@@ -117,7 +117,7 @@ int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2]){
     } a;
 
     /* we really don't need type or protocol but 
-    I kept them here mostly for compatability reasons... */
+    I kept them here mostly for compatibility reasons... */
     (void)type;
     (void)protocol;
 
@@ -190,7 +190,7 @@ int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2]){
       char *p = &check[0];
       size_t s = sizeof(check);
       
-      /* No flags are nessesary at the end...*/
+      /* No flags are necessary at the end...*/
       nread = recv(socket_vector[1], p, s, 0);
       if(nread == -1) {
         int sockerr = SOCKET_ERROR;
@@ -228,7 +228,7 @@ int socketpair(int domain, int type, int protocol, SOCKET socket_vector[2]){
 }
 
 /* This will likely be for replacing the file descriptor api call 
-in loop.pyx I haven't decided on it yet but I wrote it incase I will be...*/
+in loop.pyx I haven't decided on it yet but I wrote it in case I will be...*/
 SOCKET get_socket_descriptor(){
   return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 }

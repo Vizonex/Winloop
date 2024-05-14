@@ -2,14 +2,14 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 # Winloop
-An Alternative library for uvloop compatability with windows because let's face it. Window's python asyncio standard libaray is garabage escpecially when Windows Defender decides to eat half your ram. 
-I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is avalible for windows [but windows was never compatable with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
+An Alternative library for uvloop compatibility with windows because let's face it. Window's python asyncio standard libaray is garabage escpecially when Windows Defender decides to eat half your ram.
+I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for windows [but windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
-Because nobody was willing to step in after so many years of waiting, I went ahead and downloaded the source code for uvloop and started modifying the source code to be windows compatable by carefully removing and changing parts that were not made for windows. Many hours of research went into making this library exist. 
+Because nobody was willing to step in after so many years of waiting, I went ahead and downloaded the source code for uvloop and started modifying the source code to be windows compatible by carefully removing and changing parts that were not made for windows. Many hours of research went into making this library exist.
 
 The differences with __uvloop__ is that forking has been fully disabled and some smaller api calls had to be changed, error handling has been carefully modified and subprocesses instead release the gil instead of forking out...
 
-There is a perfromance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problem as well. This library also has comparable performace to it's brother uvloop. 
+There is a performance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problem as well. This library also has comparable performance to it's brother uvloop.
 
 
 ## How to install Winloop on your Windows Operating System
@@ -18,18 +18,18 @@ There is a perfromance increase of about 5 times vs using the `WindowsSelectorEv
 pip install winloop
 ```
 
-You can also clone the reposity and build the extension yourself by running the command below if you wish to use or build this library locally, Note that you will need Cython and The Visual C++ extensions 
-to compile this library on your own. 
+You can also clone the reposity and build the extension yourself by running the command below if you wish to use or build this library locally, Note that you will need Cython and The Visual C++ extensions
+to compile this library on your own.
 
 ```
-python setup.py build_ext --inplace 
+python setup.py build_ext --inplace
 ```
 
 ## Issues Reporting
 
 If you find any bugs with this library be sure to open up an issue to our github repo. Me and other contributors will be happy try to help you figure out and diagnose your problems.
 
-## Making pull requests 
+## Making pull requests
 We encourage anyone to make pull-requests to winloop from spelling mistakes to vulnerability patches. Every little bit helps keep this library maintained and alive.
 Make sure that you are able to compile the library with the steps shown above. We plan to implement a nightly workflow to verify one's pull request in the future.
 
@@ -54,7 +54,7 @@ import sys
 class TestAioHTTP(unittest.TestCase):
     def __init__(self, methodName: str = "test_aiohttp_basic_1") -> None:
         super().__init__(methodName)
-       
+
 
     def setUp(self):
         self.loop = asyncio.get_event_loop()
@@ -152,31 +152,31 @@ if __name__ == "__main__":
     # asyncio.DefaultEventLoopPolicy = asyncio.WindowsSelectorEventLoopPolicy
     # asyncio.DefaultEventLoopPolicy = asyncio.WindowsProactorEventLoopPolicy
     unittest.main()
-    # Looks like winloop might be 3x faster than the Proctor Event Loop , THAT's A HUGE IMPROVEMENT! 
+    # Looks like winloop might be 3x faster than the Proctor Event Loop , THAT's A HUGE IMPROVEMENT!
     print("testing again but with winloop enabled")
     winloop.install()
     unittest.main()
 ```
 
-The benchmarks for the code above are as follows 
+The benchmarks for the code above are as follows
 
 ## Benchmarks
 
-### TCP Connections 
+### TCP Connections
 -------------------
 
-| Asyncio Event Loop Policy         | Time (in Seconds)     |          
+| Asyncio Event Loop Policy         | Time (in Seconds)     |
 |-----------------------------------|-----------------------|
 | WinLoopPolicy                     | 0.493s                |
 | WindowsProactorEventLoopPolicy    | 2.510s                |
 | WindowsSelectorEventLoopPolicy    | 2.723s                |
 
 
-That's a massive increase and jump from just TCP alone I'll be posting more benchmarks soon as 
+That's a massive increase and jump from just TCP alone I'll be posting more benchmarks soon as
 I modify more of the current test suites made by uvloop...
 
 
-## How to Use Winloop with Fastapi 
+## How to Use Winloop with Fastapi
 
 This was a cool little script I put together Just to make fastapi that much faster to handle
 
@@ -185,10 +185,10 @@ This was a cool little script I put together Just to make fastapi that much fast
 # TODO this code example is deprecated
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-import winloop 
+import winloop
 import uvicorn
-import asyncio 
-import datetime 
+import asyncio
+import datetime
 
 app = FastAPI()
 
@@ -203,7 +203,7 @@ async def test_get_request():
     return HTMLResponse("<html><body><h1>FAST API WORKS WITH WINLOOP!</h1></body></html>")
 
 
-# starllete will use asyncio.to_thread() so that this can remain asynchronous 
+# starllete will use asyncio.to_thread() so that this can remain asynchronous
 @app.get("/date")
 def test_dynamic_response():
     return str(datetime.datetime.now())
@@ -220,14 +220,14 @@ if __name__ == "__main__":
 ```
 
 
-## How To Use Winloop When Uvloop is not avalible
+## How To Use Winloop When Uvloop is not available
 
 ```python
 
-# Here's A small Example of using winloop when uvloop is not avalible to us
+# Here's A small Example of using winloop when uvloop is not available to us
 import sys
 import aiohttp
-import asyncio 
+import asyncio
 
 async def main():
     async with aiohttp.ClientSession("https://httpbin.org") as client:
@@ -239,11 +239,11 @@ if __name__ == "__main__":
         from winloop import run
     else:
         # if we're on apple or linux do this instead
-        from uvloop import run 
+        from uvloop import run
     run(main())
   ```
-  
-  
+
+
  ## TODO-List
 
 - Update Fastapi Example to a more recent version of fastapi
@@ -254,19 +254,19 @@ if __name__ == "__main__":
 
 - Drop All `DEF` Macros, I'm currently seeking help on replacements for macros where all the variables are known about at compile-time
 
-- Adding in the nessesary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
+- Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
 
 - write a workflow for compiling libuv on different versions of windows when distributing out pypi wheels.
 
-- write a workflow for nightly builds if nessesary for verification of pull requests.
+- write a workflow for nightly builds if necessary for verification of pull requests.
 
 - Sphinx Styled Documentation (Maybe I'm thinking about it...)
 
-- Update benchmarks (They are old) can't belive I maintained this project for over a year now...
+- Update benchmarks (They are old) can't believe I maintained this project for over a year now...
 
 ## Videos
 - By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have reading problems)
-- My Presentation and Virtual Confrence: https://www.youtube.com/watch?v=Cbb6trkKWXY 
+- My Presentation and Virtual Confrence: https://www.youtube.com/watch?v=Cbb6trkKWXY
 
 ## Contributing
-I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me. 
+I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me.

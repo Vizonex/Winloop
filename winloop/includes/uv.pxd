@@ -32,7 +32,7 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int EPERM
     cdef int EPIPE
     # cdef int ESHUTDOWN
-    # There's only a few of these that don't cut this execption...
+    # There's only a few of these that don't cut this exception...
     cdef int UV__ESHUTDOWN
 
     cdef int UV_ESRCH
@@ -543,7 +543,7 @@ cdef extern from "vendor/include/uv.h" nogil:
         unsigned int flags
         int stdio_count
         uv_stdio_container_t* stdio
-        # On the windows version (To my knowlege this was called uid_t on unix systems, but on windows it is called uv_uid_t)
+        # On the windows version (To my knowledge this was called uid_t on unix systems, but on windows it is called uv_uid_t)
         uv_uid_t uid
         uv_gid_t gid
 
@@ -578,5 +578,5 @@ cdef extern from "winsock2.h":
 # Since we already have system imported into here and To Prevent Looped imports
 # I'll just put try_tcp_write right here - Vizonex
 cdef extern from "includes/tcp.h":
-    # incase anyone is like "try_tcp_write doesn't exitst in libuv!" I'll put another note into stream.pyx about this function
+    # in case anyone is like "try_tcp_write doesn't exitst in libuv!" I'll put another note into stream.pyx about this function
     int try_tcp_write(uv_tcp_t* handle, system.WSABUF bufs)

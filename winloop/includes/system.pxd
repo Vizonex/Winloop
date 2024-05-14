@@ -15,7 +15,7 @@ cdef extern from "winsock2.h":
     ctypedef unsigned long long UINT_PTR
     ctypedef UINT_PTR SOCKET 
 
-    # TODO (Vizonex) Verify that these all are actually existant on windows...
+    # TODO (Vizonex) Verify that these all are actually existing on Windows...
     struct sockaddr:
         unsigned short sa_family
         char           sa_data[14]
@@ -77,10 +77,10 @@ cdef extern from "winsock2.h":
     int WSAGetLastError()
 
 
-# The AtFork Implementation does not work and it is belived that windows already takes care of this...
+# The AtFork implementation does not work and it is believed that Windows already takes care of this...
 # http://locklessinc.com/articles/pthreads_on_windows/
 
-# I'll leave this code here just to show other programers what was needed to be removed 
+# I'll leave this code here just to show other programmers what was needed to be removed 
 # Windows cannot do pthread_atfork anyways...
 # cdef extern from "pthread.h":
 # 
@@ -96,7 +96,7 @@ cdef extern from "io.h" nogil:
 cdef extern from "context.h":
     int PLATFORM_IS_APPLE
 
-# nfork_handler.h really just means "I don't do forking but I'm here for compatability reasons..."
+# nfork_handler.h really just means "I don't do forking but I'm here for compatibility reasons..."
 cdef extern from "includes/nfork_handler.h":
     uint64_t MAIN_THREAD_ID
     int8_t MAIN_THREAD_ID_SET

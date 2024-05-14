@@ -27,7 +27,7 @@ class _TestExecutors:
         fib10 = [fib(i) for i in range(10)]
         self.loop.run_until_complete(run())
 
-    # Proccess Pool Works just fine...
+    # Process pool works just fine...
     def test_executors_process_pool_01(self):
         self.run_pool_test(concurrent.futures.ProcessPoolExecutor)
 
