@@ -14,15 +14,15 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int EACCES
     cdef int UV_EAGAIN
     cdef int EALREADY
-    cdef int EBUSY
+    cdef int UV_EBUSY
     cdef int UV_ECONNABORTED
     cdef int UV_ECONNREFUSED
     cdef int ECONNRESET
     cdef int UV_ECONNRESET
-    cdef int ECANCELED
+    cdef int UV_ECANCELED
     cdef int UV_EEXIST
     cdef int UV_EINTR
-    cdef int EINVAL
+    cdef int UV_EINVAL
     cdef int UV_EISDIR
     cdef int UV__ENOENT
     cdef int ENOENT

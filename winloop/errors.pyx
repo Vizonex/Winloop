@@ -76,7 +76,7 @@ cdef int __convert_socket_error(int uverr) noexcept:
 cdef convert_error(int uverr):
     cdef int sock_err
 
-    if uverr == uv.ECANCELED:
+    if uverr == uv.UV_ECANCELED:
         return aio_CancelledError()
 
     sock_err = __convert_socket_error(uverr)

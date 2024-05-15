@@ -48,12 +48,12 @@ cdef class UVRequest:
         # We only can cancel pending requests.  Let's try.
         err = uv.uv_cancel(self.request)
         if err < 0:
-            if err == uv.EBUSY:
+            if err == uv.UV_EBUSY:
                 # Can't close the request -- it's executing (see the first
                 # comment).  Loop will have to wait until the callback
                 # fires.
                 pass
-            elif err == uv.EINVAL:
+            elif err == uv.UV_EINVAL:
                 # From libuv docs:
                 #
                 #     Only cancellation of uv_fs_t, uv_getaddrinfo_t,

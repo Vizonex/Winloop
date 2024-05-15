@@ -739,7 +739,7 @@ cdef void __uv_stream_on_shutdown(uv.uv_shutdown_t* req,
 
     cdef UVStream stream = <UVStream> req.data
 
-    if status < 0 and status != uv.ECANCELED:
+    if status < 0 and status != uv.UV_ECANCELED:
         # From libuv source code:
         #     The ECANCELED error code is a lie, the shutdown(2) syscall is a
         #     fait accompli at this point. Maybe we should revisit this in
