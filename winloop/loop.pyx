@@ -1,11 +1,10 @@
-# cython:language_level = 3,embedsignature=True
-# cython: embedsignature = True
+# cython: language_level=3, embedsignature=True
 # distutils: include_dirs = lib/include/ , includes/
 
 from __future__ import absolute_import
 from libc.string cimport memset
 
-cimport cython 
+cimport cython
 from libc.stdint cimport uint64_t, uint32_t
 from cpython.ref cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
 from cpython.version cimport PY_VERSION_HEX
@@ -17,11 +16,11 @@ from cpython.pycapsule cimport PyCapsule_New
 from cpython cimport PyThread_get_thread_ident
 from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_CheckExact
 from cpython.buffer cimport (
-    PyBuffer_Release, 
-    PyBUF_SIMPLE, 
+    PyBuffer_Release,
+    PyBUF_SIMPLE,
     PyBUF_WRITABLE,
     PyBuffer_Release,
-    Py_buffer, 
+    Py_buffer,
     PyObject_GetBuffer
 )
 from cpython.list cimport PyList_Append
@@ -46,21 +45,12 @@ from .includes._python cimport (PyMem_RawMalloc, PyMem_RawFree,
 )
 
 # cimport our modules needed in one place so that our cimports are not messy...
-from .includes cimport uv, system 
+from .includes cimport uv, system
 
 include "errors.pyx"
 include "includes/consts.pxi"
 include "includes/_stdlib.pxi"
 
-
-# ctypedef object (*method_t)(object)
-# ctypedef object (*method1_t)(object, object)
-# ctypedef object (*method2_t)(object, object, object)
-# ctypedef object (*method3_t)(object, object, object, object)
-
-
-# cdef extern from *:
-#     ctypedef int vint "volatile int"
 
 cdef:
     int PY39 = PY_VERSION_HEX >= 0x03090000
@@ -139,23 +129,23 @@ _unset = object()
 
 @cython.no_gc_clear
 cdef class Loop:
-    
+
     def __cinit__(self):
         # disable stdio_inheritence...
         __install_disable_stdio_inheritence()
-        
+
         # Install PyMem* memory allocators if they aren't installed yet.
         __install_pymem()
 
-        # Obviously we cannot truley fork on windows so workarounds 
+        # Obviously we cannot truley fork on windows so workarounds
         # or alternative Methods might be required...
 
         self.uvloop = <uv.uv_loop_t*>PyMem_RawMalloc(sizeof(uv.uv_loop_t))
         if self.uvloop is NULL:
             raise MemoryError()
 
-
         self.slow_callback_duration = 0.1
+
         self._closed = 0
         self._debug = 0
         self._thread_id = 0
@@ -179,7 +169,6 @@ cdef class Loop:
         err = uv.uv_loop_init(self.uvloop)
         if err < 0:
             raise convert_error(err)
-
         self.uvloop.data = <void*> self
 
         self._init_debug_fields()
@@ -237,7 +226,7 @@ cdef class Loop:
             sys_dev_mode or (not sys_ignore_environment
                              and bool(os_environ.get('PYTHONASYNCIODEBUG'))))
 
-    
+
     def __dealloc__(self):
         if self._running == 1:
             raise RuntimeError('deallocating a running event loop!')
@@ -246,7 +235,7 @@ cdef class Loop:
             return
         PyMem_RawFree(self.uvloop)
         self.uvloop = NULL
-    
+
     cdef bint _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
         if system.MAIN_THREAD_ID_SET == 0:
@@ -806,10 +795,10 @@ cdef class Loop:
         self._check_closed()
         fd = self._fileobj_to_fd(fileobj)
         self._ensure_fd_no_transport(fd)
-        
+
         if len(self._polls) < 1:
             poll = UVPoll.new(self, fd)
-            self._polls[fd] = poll 
+            self._polls[fd] = poll
         else:
             try:
                 poll = <UVPoll>(self._polls[fd])
@@ -1457,7 +1446,7 @@ cdef class Loop:
         Return a task object.
 
         If name is not None, task.set_name(name) will be called if the task
-        object has the set_name attribute, true for default Task in Python 3.8.
+        object has the set_name attribute, true for default Task in CPython.
 
         An optional keyword-only context argument allows specifying a custom
         contextvars.Context for the coro to run in. The current context copy is
@@ -1815,7 +1804,7 @@ cdef class Loop:
                         if reuse_address:
                             sock.setsockopt(uv.SOL_SOCKET, uv.SO_REUSEADDR, 1)
                         if reuse_port:
-                            # replaced uv.SO_REUSEPORT with uv.SO_BROADCAST beacuase it's the equvilent on windows systems...
+                            # replaced uv.SO_REUSEPORT with uv.SO_BROADCAST because it's the equivalent on windows systems...
                             sock.setsockopt(uv.SOL_SOCKET, uv.SO_BROADCAST, 1)
                         # Disable IPv4/IPv6 dual stack support (enabled by
                         # default on Linux) which makes a single socket
@@ -1931,7 +1920,6 @@ cdef class Loop:
             object protocol
             object ssl_waiter
 
-        
         if sock is not None and sock.family == uv.AF_UNIX:
             if host is not None or port is not None:
                 raise ValueError(
@@ -2843,12 +2831,12 @@ cdef class Loop:
         if not shell:
             raise ValueError("shell must be True")
 
-        
+
         # fixed to the actual solution
         if shell:
             # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
-            args = [b"cmd", b"/s /c", cmd] 
-        
+            args = [b"cmd", b"/s /c", cmd]
+
         return await self.__subprocess_run(protocol_factory, args, shell=True,
                                            **kwargs)
 
@@ -2937,7 +2925,7 @@ cdef class Loop:
             raise TypeError(
                 "coroutines cannot be used with add_signal_handler()")
 
-        # SKIP ALL THIS SHIT WE DONT HAVE A SIGCHILD IN WINDOWS LIBUV!! 
+        # SKIP ALL THIS SHIT WE DONT HAVE A SIGCHILD IN WINDOWS LIBUV!!
 
         # if sig == uv.SIGCHLD:
             # if (hasattr(callback, '__self__') and
@@ -2993,7 +2981,7 @@ cdef class Loop:
                 raise
 
     def remove_signal_handler(self, sig):
-        """Remove a handler for a signal. 
+        """Remove a handler for a signal.
 
         Return True if a signal handler was removed, False if not.
         """
@@ -3250,7 +3238,7 @@ cdef class Loop:
                 })
 
     @cython.iterable_coroutine
-    async def shutdown_default_executor(self, 
+    async def shutdown_default_executor(self,
         dummy=None # SEE: https://github.com/Vizonex/Winloop/issues/21
     ):
         """Schedule the shutdown of the default executor."""
@@ -3411,7 +3399,7 @@ cdef __install_disable_stdio_inheritence():
     __os_stdio_installed = 1
 
 
-# Helps for tests...
+# Helpers for tests
 
 @cython.iterable_coroutine
 async def _test_coroutine_1():

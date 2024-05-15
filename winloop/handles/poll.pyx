@@ -198,8 +198,11 @@ cdef class UVPoll(UVHandle):
             self._close()
 
 
-cdef void __on_uvpoll_event(uv.uv_poll_t* handle,
-                            int status, int events) noexcept with gil:
+cdef void __on_uvpoll_event(
+    uv.uv_poll_t* handle,
+    int status,
+    int events,
+) noexcept with gil:
 
     if __ensure_handle_data(<uv.uv_handle_t*>handle, "UVPoll callback") == 0:
         return

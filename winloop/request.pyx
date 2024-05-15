@@ -1,7 +1,3 @@
-# from cpython.ref cimport Py_DECREF, Py_INCREF
-# from includes.debug cimport UVLOOP_DEBUG
-# from includes cimport uv 
-
 cdef class UVRequest:
     """A base class for all libuv requests (uv_getaddrinfo_t, etc).
 
@@ -67,5 +63,3 @@ cdef class UVRequest:
             else:
                 ex = convert_error(err)
                 self.loop._handle_exception(ex)
-                
-# from loop cimport Loop 

@@ -9,7 +9,6 @@ cdef __pipe_init_uv_handle(UVStream handle, Loop loop):
     # Initialize pipe handle with ipc=0.
     # ipc=1 means that libuv will use recvmsg/sendmsg
     # instead of recv/send.
-
     err = uv.uv_pipe_init(handle._loop.uvloop,
                           <uv.uv_pipe_t*>handle._handle,
                           0)
@@ -17,7 +16,6 @@ cdef __pipe_init_uv_handle(UVStream handle, Loop loop):
     # even if it is O_WRONLY, see also #317, libuv/libuv#2058
     handle._handle.flags |= uv.UV_INTERNAL_HANDLE_READABLE
     if err < 0:
-        
         handle._abort_init()
         raise convert_error(err)
 
@@ -26,19 +24,15 @@ cdef __pipe_init_uv_handle(UVStream handle, Loop loop):
 
 cdef __pipe_open(UVStream handle, int fd):
     cdef int err
-    
     err = uv.uv_pipe_open(<uv.uv_pipe_t *>handle._handle,
                           <uv.uv_file>fd)
     if err < 0:
-        
         exc = convert_error(err)
         raise exc
 
 
 cdef __pipe_get_socket(UVSocketHandle handle):
-    # print("getting socket")
     fileno = handle._fileno()
-    # print(fileno)
     return PseudoSocket(uv.AF_UNIX, uv.SOCK_STREAM, 0, fileno)
 
 
@@ -208,7 +202,10 @@ cdef class _PipeConnectRequest(UVRequest):
                            addr,
                            __pipe_connect_callback)
 
-cdef void __pipe_connect_callback(uv.uv_connect_t* req, int status) noexcept with gil:
+cdef void __pipe_connect_callback(
+    uv.uv_connect_t* req,
+    int status,
+) noexcept with gil:
     cdef:
         _PipeConnectRequest wrapper
         UnixTransport transport
@@ -227,5 +224,3 @@ cdef void __pipe_connect_callback(uv.uv_connect_t* req, int status) noexcept wit
         wrapper.transport._fatal_error(ex, False)
     finally:
         wrapper.on_done()
-
-

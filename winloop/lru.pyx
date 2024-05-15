@@ -1,5 +1,6 @@
 cdef object _LRU_MARKER = object()
 
+
 @cython.final
 cdef class LruCache:
 

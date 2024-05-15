@@ -1,4 +1,3 @@
-#cython:language_level=3
 from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
 from . cimport system
 
@@ -162,8 +161,6 @@ cdef extern from "vendor/include/uv.h" nogil:
 
         # ...
 
-
-
     ctypedef struct uv_tcp_t:
         void* data
         uv_loop_t* loop
@@ -257,7 +254,6 @@ cdef extern from "vendor/include/uv.h" nogil:
     ctypedef enum uv_membership:
         UV_LEAVE_GROUP = 0,
         UV_JOIN_GROUP
-
 
 
     const char* uv_strerror(int err)
@@ -520,7 +516,6 @@ cdef extern from "vendor/include/uv.h" nogil:
         UV_WRITABLE_PIPE = 0x20,
         # NOTE Added in UV_NONBLOCK_PIPE for stability reasons... - Vizonex
         UV_NONBLOCK_PIPE  = 0x40
-
 
     ctypedef union uv_stdio_container_data_u:
         uv_stream_t* stream

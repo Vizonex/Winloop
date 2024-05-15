@@ -5,7 +5,6 @@ import sys
 from Cython.Build import cythonize
 
 
-
 HERE = pathlib.Path("winloop")
 _ROOT = pathlib.Path(__file__).parent
 
@@ -37,9 +36,6 @@ def get_c_files():
         yield c.as_posix()
 
 
-
-# This is a temporary test Solution and is not the official file yet but this is to display/show what
-# I'm currently using to compile the winloop library...
 # This is a temporary test Solution and is not the official file yet but this is to display/show what
 # I'm currently using to compile the winloop library...
 def do_installation():

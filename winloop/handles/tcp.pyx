@@ -1,6 +1,3 @@
-# from includes cimport system, uv 
-# from includes.python cimport PyMem_RawMalloc
-
 cdef __tcp_init_uv_handle(UVStream handle, Loop loop, unsigned int flags):
     cdef int err
 
@@ -207,7 +204,10 @@ cdef class _TCPConnectRequest(UVRequest):
             raise exc
 
 
-cdef void __tcp_connect_callback(uv.uv_connect_t* req, int status) noexcept with gil:
+cdef void __tcp_connect_callback(
+    uv.uv_connect_t* req,
+    int status,
+) noexcept with gil:
     cdef:
         _TCPConnectRequest wrapper
         TCPTransport transport
@@ -226,4 +226,3 @@ cdef void __tcp_connect_callback(uv.uv_connect_t* req, int status) noexcept with
         wrapper.transport._fatal_error(ex, False)
     finally:
         wrapper.on_done()
-

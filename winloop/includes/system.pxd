@@ -5,21 +5,21 @@ cdef extern from "winsock2.h":
     """
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
-#endif    
+#endif
 
 /* Inspired by uvloop's own work SEE: https://github.com/MagicStack/uvloop/blob/master/uvloop/handles/stream.pyx */
 #define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL)
     """
-    
-    
+
+
     ctypedef unsigned long long UINT_PTR
-    ctypedef UINT_PTR SOCKET 
+    ctypedef UINT_PTR SOCKET
 
     # TODO (Vizonex) Verify that these all are actually existing on Windows...
     struct sockaddr:
         unsigned short sa_family
         char           sa_data[14]
-    
+
     struct addrinfo:
         int            ai_flags
         int            ai_family
@@ -53,13 +53,13 @@ cdef extern from "winsock2.h":
 
     int setsockopt(SOCKET socket, int level, int option_name,
                    const void *option_value, int option_len)
-    
+
     unsigned long ntohl(unsigned long)
     unsigned long ntohl(unsigned long)
     unsigned long htonl(unsigned long)
     unsigned long ntohs(unsigned long)
-    
-    # SOCKET_ERROR = -1 
+
+    # SOCKET_ERROR = -1
     int SOCKET_ERROR
 
     # Added WSABUF for uv__try_write TCP Implementation more directly inside of cython...
@@ -69,10 +69,10 @@ cdef extern from "winsock2.h":
 
     # ADDED In the others since we plan to optimize uv__try_write down to just simply window's api...
     ctypedef WSABUF *LPWSABUF
-    
+
     # Macro for WSASend
     #define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL);
-    
+
     int winloop_sys_write(int, WSABUF, unsigned long)
     int WSAGetLastError()
 
@@ -80,10 +80,10 @@ cdef extern from "winsock2.h":
 # The AtFork implementation does not work and it is believed that Windows already takes care of this...
 # http://locklessinc.com/articles/pthreads_on_windows/
 
-# I'll leave this code here just to show other programmers what was needed to be removed 
+# I'll leave this code here just to show other programmers what was needed to be removed
 # Windows cannot do pthread_atfork anyways...
 # cdef extern from "pthread.h":
-# 
+#
 #     int pthread_atfork(
 #         void (*prepare)(),
 #         void (*parent)(),
