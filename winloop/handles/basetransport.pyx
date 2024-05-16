@@ -18,7 +18,7 @@ cdef class UVBaseTransport(UVSocketHandle):
 
         self._closing = 0
 
-    cdef size_t _get_write_buffer_size(self) noexcept:
+    cdef size_t _get_write_buffer_size(self):
         return 0
 
     cdef inline _schedule_call_connection_made(self):
@@ -211,7 +211,7 @@ cdef class UVBaseTransport(UVSocketHandle):
             self._extra_info = {}
         self._extra_info[name] = obj
 
-    cdef bint _is_reading(self) noexcept:
+    cdef bint _is_reading(self):
         raise NotImplementedError
 
     cdef _start_reading(self):

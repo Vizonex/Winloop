@@ -25,7 +25,7 @@ cdef __convert_python_error(int uverr):
     return OSError(err, uv.uv_strerror(uverr).decode())
 
 
-cdef int __convert_socket_error(int uverr) noexcept:
+cdef int __convert_socket_error(int uverr):
     cdef int sock_err = 0
 
     if uverr == uv.UV__EAI_ADDRFAMILY:

@@ -281,7 +281,7 @@ cdef class UVStream(UVBaseTransport):
     cdef inline _close_on_read_error(self):
         self.__read_error_close = 1
 
-    cdef bint _is_reading(self) noexcept:
+    cdef bint _is_reading(self):
         return self.__reading
 
     cdef _start_reading(self):
@@ -549,7 +549,6 @@ cdef class UVStream(UVBaseTransport):
 
                 elif err != uv.UV_EAGAIN:
                     ctx.close()
-                    # print("Something failed in line 519 uv.uv_try_write")
                     exc = convert_error(err)
                     self._fatal_error(exc, True)
                     self._buffer.clear()
@@ -575,14 +574,13 @@ cdef class UVStream(UVBaseTransport):
         if err < 0:
             # close write context
             ctx.close()
-            # print("something failed on line 562")
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
 
         self._maybe_resume_protocol()
 
-    cdef size_t _get_write_buffer_size(self) noexcept:
+    cdef size_t _get_write_buffer_size(self):
         if self._handle is NULL:
             return 0
         return ((<uv.uv_stream_t*>self._handle).write_queue_size +
@@ -748,7 +746,6 @@ cdef void __uv_stream_on_shutdown(uv.uv_shutdown_t* req,
 
         if UVLOOP_DEBUG:
             stream._loop._debug_stream_shutdown_errors_total += 1
-        # print("something failed and caused __uv_stream_on_shutdown (line 727) to be invoked")
         exc = convert_error(status)
         stream._fatal_error(
             exc, False, "error status in uv_stream_t.shutdown callback")
@@ -759,7 +756,7 @@ cdef inline bint __uv_stream_on_read_common(
     UVStream sc,
     Loop loop,
     ssize_t nread,
-) noexcept:
+):
     if sc._closed:
         # The stream was closed, there is no reason to
         # do any work now.
@@ -822,7 +819,7 @@ cdef inline void __uv_stream_on_read_impl(
     uv.uv_stream_t* stream,
     ssize_t nread,
     const uv.uv_buf_t* buf,
-) noexcept:
+):
     cdef:
         UVStream sc = <UVStream>stream.data
         Loop loop = sc._loop
@@ -853,7 +850,7 @@ cdef inline void __uv_stream_on_read_impl(
 cdef inline void __uv_stream_on_write_impl(
     uv.uv_write_t* req,
     int status,
-) noexcept:
+):
     cdef:
         _StreamWriteContext ctx = <_StreamWriteContext> req.data
         UVStream stream = <UVStream>ctx.stream
