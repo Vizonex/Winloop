@@ -62,7 +62,7 @@ cdef extern from "vendor/include/uv.h" nogil:
 
     # TODO Vizonex Get SO_RESUSEADDR FROM ANOTHER HEADER FILE IF NEEDED!
     # cdef int SO_REUSEADDR
-    # cdef int SO_REUSEPORT We already have this avalibe inside of "_stdlib.pxi" so no need to have it here...
+    # cdef int SO_REUSEPORT We already have this available inside of "stdlib.pxi" so no need to have it here...
     # and I'm going to replace it with SO_BROADCAST
     cdef int AF_INET
     cdef int AF_INET6

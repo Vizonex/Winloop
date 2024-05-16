@@ -32,7 +32,7 @@ from . import _noop
 from .includes.flowcontrol cimport add_flowcontrol_defaults
 
 
-from .includes._python cimport (PyMem_RawMalloc, PyMem_RawFree,
+from .includes.python cimport (PyMem_RawMalloc, PyMem_RawFree,
     PyMem_RawCalloc, PyMem_RawRealloc,
     PyUnicode_EncodeFSDefault,
     PyErr_SetInterrupt,
@@ -49,7 +49,7 @@ from .includes cimport uv, system
 
 include "errors.pyx"
 include "includes/consts.pxi"
-include "includes/_stdlib.pxi"
+include "includes/stdlib.pxi"
 
 
 cdef:

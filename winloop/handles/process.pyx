@@ -1,6 +1,6 @@
 from libc.string cimport memset, memcpy
 from cpython.bytes cimport PyBytes_AsString
-from .includes._python cimport PyUnicode_FromString
+from .includes.python cimport PyUnicode_FromString
 
 @cython.no_gc_clear
 cdef class UVProcess(UVHandle):
