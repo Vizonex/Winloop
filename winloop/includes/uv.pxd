@@ -566,10 +566,3 @@ cdef enum uv_fs_event:
 cdef extern from "winsock2.h":
     cdef int SO_REUSEADDR
     cdef int SO_BROADCAST
-
-
-# Since we already have system imported into here and To Prevent Looped imports
-# I'll just put try_tcp_write right here - Vizonex
-cdef extern from "includes/tcp.h":
-    # in case anyone is like "try_tcp_write doesn't exitst in libuv!" I'll put another note into stream.pyx about this function
-    int try_tcp_write(uv_tcp_t* handle, system.WSABUF bufs)
