@@ -93,7 +93,7 @@ cdef extern from "io.h" nogil:
     int  _write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount)
     void _exit(int status)
 
-cdef extern from "context.h":
+cdef extern from "compat.h":
     int PLATFORM_IS_APPLE
 
 # nfork_handler.h really just means "I don't do forking but I'm here for compatibility reasons..."
