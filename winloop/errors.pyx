@@ -76,8 +76,12 @@ cdef int __convert_socket_error(int uverr):
 cdef convert_error(int uverr):
     cdef int sock_err
 
-    if uverr == uv.UV_ECANCELED:
-        return aio_CancelledError()
+# The next two lines are used in uvloop:
+##    if uverr == uv.UV_ECANCELED:
+##        return aio_CancelledError()
+# Deleting these lines needed to pass test_aiohttp_graceful_shutdown (test_aiohttp.Test_AIO_AioHTTP)
+# And deleting these lines does not seem to cause any other issues on Windows.
+# TODO: find out why these lines are needed on Linux?
 
     sock_err = __convert_socket_error(uverr)
     if sock_err:
