@@ -23,7 +23,7 @@ cdef extern from "Python.h":
 
     
 
-cdef extern from "includes/context.h":
+cdef extern from "includes/compat.h":
     object Context_CopyCurrent()
     int Context_Enter(object ctx)
     int Context_Exit(object ctx)
