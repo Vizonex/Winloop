@@ -28,46 +28,46 @@ cdef __convert_python_error(int uverr):
 cdef int __convert_socket_error(int uverr):
     cdef int sock_err = 0
 
-    if uverr == uv.UV__EAI_ADDRFAMILY:
+    if uverr == uv.UV_EAI_ADDRFAMILY:
         sock_err = socket_EAI_ADDRFAMILY
 
-    elif uverr == uv.EAI_AGAIN:
+    elif uverr == uv.UV_EAI_AGAIN:
         sock_err = socket_EAI_AGAIN
 
-    elif uverr == uv.EAI_BADFLAGS:
+    elif uverr == uv.UV_EAI_BADFLAGS:
         sock_err = socket_EAI_BADFLAGS
 
-    elif uverr == uv.UV__EAI_BADHINTS:
+    elif uverr == uv.UV_EAI_BADHINTS:
         sock_err = socket_EAI_BADHINTS
 
-    elif uverr == uv.UV__EAI_CANCELED:
+    elif uverr == uv.UV_EAI_CANCELED:
         sock_err = socket_EAI_CANCELED
 
-    elif uverr == uv.EAI_FAIL:
+    elif uverr == uv.UV_EAI_FAIL:
         sock_err = socket_EAI_FAIL
 
-    elif uverr == uv.EAI_FAMILY:
+    elif uverr == uv.UV_EAI_FAMILY:
         sock_err = socket_EAI_FAMILY
 
-    elif uverr == uv.EAI_MEMORY:
+    elif uverr == uv.UV_EAI_MEMORY:
         sock_err = socket_EAI_MEMORY
 
-    elif uverr == uv.EAI_NODATA:
+    elif uverr == uv.UV_EAI_NODATA:
         sock_err = socket_EAI_NODATA
 
-    elif uverr == uv.EAI_NONAME:
+    elif uverr == uv.UV_EAI_NONAME:
         sock_err = socket_EAI_NONAME
 
-    elif uverr == uv.UV__EAI_OVERFLOW:
+    elif uverr == uv.UV_EAI_OVERFLOW:
         sock_err = socket_EAI_OVERFLOW
 
-    elif uverr == uv.UV__EAI_PROTOCOL:
+    elif uverr == uv.UV_EAI_PROTOCOL:
         sock_err = socket_EAI_PROTOCOL
 
-    elif uverr == uv.EAI_SERVICE:
+    elif uverr == uv.UV_EAI_SERVICE:
         sock_err = socket_EAI_SERVICE
 
-    elif uverr == uv.EAI_SOCKTYPE:
+    elif uverr == uv.UV_EAI_SOCKTYPE:
         sock_err = socket_EAI_SOCKTYPE
 
     return sock_err

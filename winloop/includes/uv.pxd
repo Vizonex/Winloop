@@ -1,4 +1,5 @@
 from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
+
 from . cimport system
 
 cdef enum:
@@ -11,13 +12,12 @@ cdef extern from "vendor/include/uv.h" nogil:
     # NOTE: This is from errno.h as well...
 
 	# ... maybe possible to change these back all to UV_EACCES etcetera like in uvloop
-    cdef int EACCES
+    cdef int UV_EACCES
     cdef int UV_EAGAIN
-    cdef int EALREADY
+    cdef int UV_EALREADY
     cdef int UV_EBUSY
     cdef int UV_ECONNABORTED
     cdef int UV_ECONNREFUSED
-    cdef int ECONNRESET
     cdef int UV_ECONNRESET
     cdef int UV_ECANCELED
     cdef int UV_EEXIST
@@ -25,37 +25,35 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int UV_EINVAL
     cdef int UV_EISDIR
     cdef int UV__ENOENT
-    cdef int ENOENT
-    cdef int EOF
+    cdef int UV_ENOENT
     cdef int UV_EOF
-    cdef int EPERM
-    cdef int EPIPE
+    cdef int UV_EPERM
+    cdef int UV_EPIPE
     # cdef int ESHUTDOWN
     # There's only a few of these that don't cut this exception...
-    cdef int UV__ESHUTDOWN
+    cdef int UV_ESHUTDOWN
 
     cdef int UV_ESRCH
-    cdef int ETIMEDOUT
-    cdef int EBADF
+    cdef int UV_ETIMEDOUT
+    cdef int UV_EBADF
     cdef int UV_ENOBUFS
-    cdef int EWOULDBLOCK
+#    cdef int UV_EWOULDBLOCK  # not needed because UV_EGAIN is used for this ?!
 
     # socket-errors
-    # cdef int EAI_ADDRFAMILY
-    cdef int UV__EAI_ADDRFAMILY
-    cdef int EAI_AGAIN
-    cdef int EAI_BADFLAGS
-    cdef int UV__EAI_BADHINTS
-    cdef int UV__EAI_CANCELED
-    cdef int EAI_FAIL
-    cdef int EAI_FAMILY
-    cdef int EAI_MEMORY
-    cdef int EAI_NODATA
-    cdef int EAI_NONAME
-    cdef int UV__EAI_OVERFLOW
-    cdef int UV__EAI_PROTOCOL
-    cdef int EAI_SERVICE
-    cdef int EAI_SOCKTYPE
+    cdef int UV_EAI_ADDRFAMILY
+    cdef int UV_EAI_AGAIN
+    cdef int UV_EAI_BADFLAGS
+    cdef int UV_EAI_BADHINTS
+    cdef int UV_EAI_CANCELED
+    cdef int UV_EAI_FAIL
+    cdef int UV_EAI_FAMILY
+    cdef int UV_EAI_MEMORY
+    cdef int UV_EAI_NODATA
+    cdef int UV_EAI_NONAME
+    cdef int UV_EAI_OVERFLOW
+    cdef int UV_EAI_PROTOCOL
+    cdef int UV_EAI_SERVICE
+    cdef int UV_EAI_SOCKTYPE
 
     cdef int SOL_SOCKET
     cdef int SO_ERROR
