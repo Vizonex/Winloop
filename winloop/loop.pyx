@@ -3395,7 +3395,8 @@ cdef __install_disable_stdio_inheritence():
     global __os_stdio_installed
     if __os_stdio_installed:
         return
-    uv.uv_disable_stdio_inheritance()
+# Removing the next line resolves issue #18, hence help() works again.		
+#    uv.uv_disable_stdio_inheritance()
     __os_stdio_installed = 1
 
 cdef _set_signal_wakeup_fd(fd):
