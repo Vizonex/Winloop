@@ -38,7 +38,6 @@ from cpython cimport (
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 
 from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
-from cpython.list cimport PyList_Append
 
 from . import _noop
 
@@ -1969,7 +1968,7 @@ cdef class Loop:
                     uv.SOCK_STREAM, proto, flags,
                     0)  # 0 == don't unpack
 
-                PyList_Append(fs, f1)
+                fs.append(f1)
             else:
                 rai_static.ai_addr = <system.sockaddr*>&rai_addr_static
                 rai_static.ai_next = NULL
@@ -1991,7 +1990,7 @@ cdef class Loop:
                         uv.SOCK_STREAM, proto, flags,
                         0)  # 0 == don't unpack
 
-                    PyList_Append(fs, f2)
+                    fs.append(f2)
                 else:
                     lai_static.ai_addr = <system.sockaddr*>&lai_addr_static
                     lai_static.ai_next = NULL
@@ -2029,7 +2028,7 @@ cdef class Loop:
                                 tr.bind(lai_iter.ai_addr)
                                 break
                             except OSError as exc:
-                                PyList_Append(exceptions, exc)
+                                exceptions.append(exc)
                             lai_iter = lai_iter.ai_next
                         else:
                             tr._close()
@@ -2045,7 +2044,7 @@ cdef class Loop:
                     if tr is not None:
                         tr._close()
                         tr = None
-                    PyList_Append(exceptions, exc)
+                    exceptions.append(exc)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except BaseException:
@@ -3136,7 +3135,7 @@ cdef class Loop:
                         raise
                     except BaseException as ex:
                         lai = lai.ai_next
-                        PyList_Append(excs, ex)
+                        excs.append(ex)
                         continue
                     else:
                         break
