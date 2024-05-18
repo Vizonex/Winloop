@@ -1,38 +1,14 @@
 # cython: language_level=3, embedsignature=True
-# distutils: include_dirs = lib/include/ , includes/
 
-from __future__ import absolute_import
-from libc.string cimport memset
-
+import asyncio
 cimport cython
-from libc.stdint cimport uint64_t, uint32_t
-from cpython.ref cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
-from cpython.version cimport PY_VERSION_HEX
-from cpython cimport PyErr_CheckSignals, PyErr_Occurred
+
 from .includes.debug cimport UVLOOP_DEBUG
-from cpython.object cimport Py_SIZE, PyObject
-from cpython.pycapsule cimport PyCapsule_New
-
-from cpython cimport PyThread_get_thread_ident
-from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_CheckExact
-from cpython.buffer cimport (
-    PyBuffer_Release,
-    PyBUF_SIMPLE,
-    PyBUF_WRITABLE,
-    PyBuffer_Release,
-    Py_buffer,
-    PyObject_GetBuffer
-)
-from cpython.list cimport PyList_Append
-
-from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
-
-from . import _noop
-
-from .includes.flowcontrol cimport add_flowcontrol_defaults
-
-
-from .includes.python cimport (PyMem_RawMalloc, PyMem_RawFree,
+from .includes cimport uv
+from .includes cimport system
+from .includes.python cimport (
+    PY_VERSION_HEX,
+    PyMem_RawMalloc, PyMem_RawFree,
     PyMem_RawCalloc, PyMem_RawRealloc,
     PyUnicode_EncodeFSDefault,
     PyErr_SetInterrupt,
@@ -43,14 +19,34 @@ from .includes.python cimport (PyMem_RawMalloc, PyMem_RawFree,
     PyMemoryView_FromMemory, PyBUF_WRITE,
     PyMemoryView_FromObject, PyMemoryView_Check
 )
+from .includes.flowcontrol cimport add_flowcontrol_defaults
 
-# cimport our modules needed in one place so that our cimports are not messy...
-from .includes cimport uv, system
+from libc.stdint cimport uint64_t
+from libc.string cimport memset, strerror, memcpy
+from libc cimport errno
 
-include "errors.pyx"
+from cpython cimport PyObject
+from cpython cimport PyErr_CheckSignals, PyErr_Occurred
+from cpython cimport PyThread_get_thread_ident
+from cpython cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
+from cpython cimport (
+    PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE,
+    Py_buffer, PyBytes_AsString, PyBytes_CheckExact,
+    PyBytes_AsStringAndSize,
+    Py_SIZE, PyBytes_AS_STRING, PyBUF_WRITABLE
+)
+from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
+
+from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
+from cpython.list cimport PyList_Append
+
+from . import _noop
+
+
 include "includes/consts.pxi"
 include "includes/stdlib.pxi"
 
+include "errors.pyx"
 
 cdef:
     int PY39 = PY_VERSION_HEX >= 0x03090000
@@ -58,11 +54,41 @@ cdef:
     uint64_t MAX_SLEEP = 3600 * 24 * 365 * 100
 
 
+cdef _is_sock_stream(sock_type):
+    if SOCK_NONBLOCK == -1:
+        return sock_type == uv.SOCK_STREAM
+    else:
+        # Linux's socket.type is a bitmask that can include extra info
+        # about socket (like SOCK_NONBLOCK bit), therefore we can't do simple
+        # `sock_type == socket.SOCK_STREAM`, see
+        # https://github.com/torvalds/linux/blob/v4.13/include/linux/net.h#L77
+        # for more details.
+        return (sock_type & 0xF) == uv.SOCK_STREAM
+
+
+cdef _is_sock_dgram(sock_type):
+    if SOCK_NONBLOCK == -1:
+        return sock_type == uv.SOCK_DGRAM
+    else:
+        # Read the comment in `_is_sock_stream`.
+        return (sock_type & 0xF) == uv.SOCK_DGRAM
+
+
 cdef isfuture(obj):
     if aio_isfuture is None:
         return isinstance(obj, aio_Future)
     else:
         return aio_isfuture(obj)
+
+
+cdef inline socket_inc_io_ref(sock):
+    if isinstance(sock, socket_socket):
+        sock._io_refs += 1
+
+
+cdef inline socket_dec_io_ref(sock):
+    if isinstance(sock, socket_socket):
+        sock._decref_socketios()
 
 
 cdef run_in_context(context, method):
@@ -93,35 +119,6 @@ cdef run_in_context2(context, method, arg1, arg2):
         Py_DECREF(method)
 
 
-cdef _is_sock_stream(sock_type):
-    if SOCK_NONBLOCK == -1:
-        return sock_type == uv.SOCK_STREAM
-    else:
-        # Linux's socket.type is a bitmask that can include extra info
-        # about socket (like SOCK_NONBLOCK bit), therefore we can't do simple
-        # `sock_type == socket.SOCK_STREAM`, see
-        # https://github.com/torvalds/linux/blob/v4.13/include/linux/net.h#L77
-        # for more details.
-        return (sock_type & 0xF) == uv.SOCK_STREAM
-
-
-cdef _is_sock_dgram(sock_type):
-    if SOCK_NONBLOCK == -1:
-        return sock_type == uv.SOCK_DGRAM
-    else:
-        # Read the comment in `_is_sock_stream`.
-        return (sock_type & 0xF) == uv.SOCK_DGRAM
-
-
-
-cdef inline socket_inc_io_ref(sock):
-    if isinstance(sock, socket_socket):
-        sock._io_refs += 1
-
-cdef inline socket_dec_io_ref(sock):
-    if isinstance(sock, socket_socket):
-        sock._decref_socketios()
-
 # Used for deprecation and removal of `loop.create_datagram_endpoint()`'s
 # *reuse_address* parameter
 _unset = object()
@@ -129,7 +126,6 @@ _unset = object()
 
 @cython.no_gc_clear
 cdef class Loop:
-
     def __cinit__(self):
         # disable stdio_inheritence...
         __install_disable_stdio_inheritence()
@@ -137,8 +133,8 @@ cdef class Loop:
         # Install PyMem* memory allocators if they aren't installed yet.
         __install_pymem()
 
-        # Obviously we cannot truley fork on windows so workarounds
-        # or alternative Methods might be required...
+        # Obviously we cannot truly fork on windows so workarounds
+        # or alternative methods might be required...
 
         self.uvloop = <uv.uv_loop_t*>PyMem_RawMalloc(sizeof(uv.uv_loop_t))
         if self.uvloop is NULL:
@@ -2925,7 +2921,7 @@ cdef class Loop:
             raise TypeError(
                 "coroutines cannot be used with add_signal_handler()")
 
-        # SKIP ALL THIS SHIT WE DONT HAVE A SIGCHILD IN WINDOWS LIBUV!!
+        # SKIP ALL THIS, WE DONT HAVE A SIGCHILD IN WINDOWS LIBUV!!
 
         # if sig == uv.SIGCHLD:
             # if (hasattr(callback, '__self__') and
@@ -3282,6 +3278,27 @@ def libuv_get_version():
     return uv.uv_version()
 
 
+cdef void __loop_alloc_buffer(
+    uv.uv_handle_t* uvhandle,
+    size_t suggested_size,
+    uv.uv_buf_t* buf
+) noexcept with gil:
+    cdef:
+        Loop loop = (<UVHandle>uvhandle.data)._loop
+
+    if loop._recv_buffer_in_use == 1:
+        buf.len = 0
+        exc = RuntimeError('concurrent allocations')
+        loop._handle_exception(exc)
+        return
+
+    loop._recv_buffer_in_use = 1
+    buf.base = loop._recv_buffer
+    buf.len = sizeof(loop._recv_buffer)
+
+
+cdef inline void __loop_free_buffer(Loop loop):
+    loop._recv_buffer_in_use = 0
 
 
 class _SyncSocketReaderFuture(aio_Future):
@@ -3330,40 +3347,10 @@ class _SyncSocketWriterFuture(aio_Future):
             aio_Future.cancel(self)
 
 
-
-
-
-cdef void __loop_alloc_buffer(uv.uv_handle_t* uvhandle,
-                              size_t suggested_size,
-                              uv.uv_buf_t* buf) noexcept with gil:
-    cdef:
-        Loop loop = (<UVHandle>uvhandle.data)._loop
-
-    if loop._recv_buffer_in_use == 1:
-        buf.len = 0
-        exc = RuntimeError('concurrent allocations')
-        loop._handle_exception(exc)
-        return
-
-    loop._recv_buffer_in_use = 1
-    buf.base = loop._recv_buffer
-    buf.len = sizeof(loop._recv_buffer)
-
-
-cdef inline void __loop_free_buffer(Loop loop):
-    loop._recv_buffer_in_use = 0
-
-
-cdef _set_signal_wakeup_fd(fd):
-    if fd >= 0:
-        return signal_set_wakeup_fd(fd, warn_on_full_buffer=False)
-    else:
-        return signal_set_wakeup_fd(fd)
-
-
-
 include "cbhandles.pyx"
 include "pseudosock.pyx"
+include "lru.pyx"
+
 include "handles/handle.pyx"
 include "handles/async_.pyx"
 include "handles/idle.pyx"
@@ -3377,15 +3364,17 @@ include "handles/tcp.pyx"
 include "handles/pipe.pyx"
 include "handles/process.pyx"
 include "handles/fsevent.pyx"
-include "handles/udp.pyx"
 
-include "lru.pyx"
 include "request.pyx"
 include "dns.pyx"
 include "sslproto.pyx"
+
+include "handles/udp.pyx"
+
 include "server.pyx"
 
 
+# Install PyMem* memory allocators
 cdef vint __mem_installed = 0
 cdef __install_pymem():
     global __mem_installed
@@ -3409,6 +3398,12 @@ cdef __install_disable_stdio_inheritence():
         return
     uv.uv_disable_stdio_inheritance()
     __os_stdio_installed = 1
+
+cdef _set_signal_wakeup_fd(fd):
+    if fd >= 0:
+        return signal_set_wakeup_fd(fd, warn_on_full_buffer=False)
+    else:
+        return signal_set_wakeup_fd(fd)
 
 
 # Helpers for tests

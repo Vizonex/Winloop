@@ -33,7 +33,6 @@ ctypedef object (*method2_t)(object, object, object)
 ctypedef object (*method3_t)(object, object, object, object)
 
 
-
 cdef class Loop:
     cdef:
         uv.uv_loop_t *uvloop
@@ -209,11 +208,8 @@ cdef class Loop:
 
     cdef _print_debug_info(self)
 
+
 include "cbhandles.pxd"
-include "request.pxd"
-# include "dns.pyx"
-include "sslproto.pxd"
-include "server.pxd"
 
 include "handles/handle.pxd"
 include "handles/async_.pxd"
@@ -228,8 +224,13 @@ include "handles/tcp.pxd"
 include "handles/pipe.pxd"
 include "handles/process.pxd"
 include "handles/fsevent.pxd"
+
+include "request.pxd"
+include "sslproto.pxd"
+
 include "handles/udp.pxd"
 
+include "server.pxd"
 
 cdef __install_pymem()
 cdef __install_disable_stdio_inheritence()
