@@ -14,11 +14,8 @@ cdef extern from *:
     ctypedef int vint "volatile int"
 
 
-# TODO (Vizonex) Maybe look into using the wepoll C library with winloop?
 
-
-# cdef class UVHandle()
-
+# cdef class UVHandle
 # cdef class UVSocketHandle(UVHandle)
 
 # cdef class UVAsync(UVHandle)
@@ -144,24 +141,24 @@ cdef class Loop:
     cdef _stop(self, exc)
     cdef uint64_t _time(self)
 
-    cdef _queue_write(self, UVStream stream)
+    cdef inline _queue_write(self, UVStream stream)
     cdef _exec_queued_writes(self)
 
-    cdef _call_soon(self, object callback, object args, object context)
-    cdef _append_ready_handle(self, Handle handle)
-    cdef _call_soon_handle(self, Handle handle)
+    cdef inline _call_soon(self, object callback, object args, object context)
+    cdef inline _append_ready_handle(self, Handle handle)
+    cdef inline _call_soon_handle(self, Handle handle)
 
     cdef _call_later(self, uint64_t delay, object callback, object args,
                      object context)
 
     cdef void _handle_exception(self, object ex)
 
-    cdef bint _is_main_thread(self)
+    cdef inline bint _is_main_thread(self)
 
-    cdef _new_future(self)
-    cdef _check_signal(self, sig)
-    cdef _check_closed(self)
-    cdef _check_thread(self)
+    cdef inline _new_future(self)
+    cdef inline _check_signal(self, sig)
+    cdef inline _check_closed(self)
+    cdef inline _check_thread(self)
 
     cdef _getaddrinfo(self, object host, object port,
                       int family, int type,
@@ -201,7 +198,7 @@ cdef class Loop:
 
     cdef _handle_signal(self, sig)
     cdef _read_from_self(self)
-    cdef _ceval_process_signals(self)
+    cdef inline _ceval_process_signals(self)
     cdef _invoke_signals(self, bytes data)
 
     cdef _set_coroutine_debug(self, bint enabled)

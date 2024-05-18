@@ -91,7 +91,7 @@ cdef inline socket_dec_io_ref(sock):
         sock._decref_socketios()
 
 
-cdef run_in_context(context, method):
+cdef inline run_in_context(context, method):
     # This method is internally used to workaround a reference issue that in
     # certain circumstances, inlined context.run() will not hold a reference to
     # the given method instance, which - if deallocated - will cause segfault.
@@ -103,7 +103,7 @@ cdef run_in_context(context, method):
         Py_DECREF(method)
 
 
-cdef run_in_context1(context, method, arg):
+cdef inline run_in_context1(context, method, arg):
     Py_INCREF(method)
     try:
         return context.run(method, arg)
@@ -111,7 +111,7 @@ cdef run_in_context1(context, method, arg):
         Py_DECREF(method)
 
 
-cdef run_in_context2(context, method, arg1, arg2):
+cdef inline run_in_context2(context, method, arg1, arg2):
     Py_INCREF(method)
     try:
         return context.run(method, arg1, arg2)
@@ -232,7 +232,7 @@ cdef class Loop:
         PyMem_RawFree(self.uvloop)
         self.uvloop = NULL
 
-    cdef bint _is_main_thread(self):
+    cdef inline bint _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
         if system.MAIN_THREAD_ID_SET == 0:
             main_thread_id = <uint64_t>threading_main_thread().ident
@@ -388,7 +388,7 @@ cdef class Loop:
     def __sighandler(self, signum, frame):
         self._signals.add(signum)
 
-    cdef _ceval_process_signals(self):
+    cdef inline _ceval_process_signals(self):
         # Invoke CPython eval loop to let process signals.
         PyErr_CheckSignals()
         # Calling a pure-Python function will invoke
@@ -654,7 +654,7 @@ cdef class Loop:
         uv.uv_update_time(self.uvloop)  # void
         return uv.uv_now(self.uvloop)
 
-    cdef _queue_write(self, UVStream stream):
+    cdef inline _queue_write(self, UVStream stream):
         self._queued_streams.add(stream)
         if not self.handler_check__exec_writes.running:
             self.handler_check__exec_writes.start()
@@ -682,18 +682,18 @@ cdef class Loop:
             if len(self._queued_streams) == 0:
                 self.handler_check__exec_writes.stop()
 
-    cdef _call_soon(self, object callback, object args, object context):
+    cdef inline _call_soon(self, object callback, object args, object context):
         cdef Handle handle
         handle = new_Handle(self, callback, args, context)
         self._call_soon_handle(handle)
         return handle
 
-    cdef _append_ready_handle(self, Handle handle):
+    cdef inline _append_ready_handle(self, Handle handle):
         self._check_closed()
         self._ready.append(handle)
         self._ready_len += 1
 
-    cdef _call_soon_handle(self, Handle handle):
+    cdef inline _call_soon_handle(self, Handle handle):
         self._append_ready_handle(handle)
         if not self.handler_idle.running:
             self.handler_idle.start()
@@ -711,7 +711,7 @@ cdef class Loop:
             # Exit ASAP
             self._stop(None)
 
-    cdef _check_signal(self, sig):
+    cdef inline _check_signal(self, sig):
         if not isinstance(sig, int):
             raise TypeError('sig must be an int, not {!r}'.format(sig))
 
@@ -719,11 +719,11 @@ cdef class Loop:
             raise ValueError(
                 'sig {} out of range(1, {})'.format(sig, signal_NSIG))
 
-    cdef _check_closed(self):
+    cdef inline _check_closed(self):
         if self._closed == 1:
             raise RuntimeError('Event loop is closed')
 
-    cdef _check_thread(self):
+    cdef inline _check_thread(self):
         if self._thread_id == 0:
             return
 
@@ -735,7 +735,7 @@ cdef class Loop:
                 "Non-thread-safe operation invoked on an event loop other "
                 "than the current one")
 
-    cdef _new_future(self):
+    cdef inline _new_future(self):
         return aio_Future(loop=self)
 
     cdef _track_transport(self, UVBaseTransport transport):
