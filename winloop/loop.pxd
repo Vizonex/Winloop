@@ -13,16 +13,14 @@ include "includes/consts.pxi"
 cdef extern from *:
     ctypedef int vint "volatile int"
 
+cdef class UVHandle
+cdef class UVSocketHandle(UVHandle)
 
+cdef class UVAsync(UVHandle)
+cdef class UVTimer(UVHandle)
+cdef class UVIdle(UVHandle)
 
-# cdef class UVHandle
-# cdef class UVSocketHandle(UVHandle)
-
-# cdef class UVAsync(UVHandle)
-# cdef class UVTimer(UVHandle)
-# cdef class UVIdle(UVHandle)
-
-# cdef class UVBaseTransport(UVSocketHandle)
+cdef class UVBaseTransport(UVSocketHandle)
 
 ctypedef object (*method_t)(object)
 ctypedef object (*method1_t)(object, object)
@@ -153,7 +151,7 @@ cdef class Loop:
 
     cdef void _handle_exception(self, object ex)
 
-    cdef inline bint _is_main_thread(self)
+    cdef inline _is_main_thread(self)
 
     cdef inline _new_future(self)
     cdef inline _check_signal(self, sig)

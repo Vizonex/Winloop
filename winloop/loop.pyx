@@ -126,6 +126,8 @@ _unset = object()
 @cython.no_gc_clear
 cdef class Loop:
     def __cinit__(self):
+        cdef int err
+
         # Install PyMem* memory allocators if they aren't installed yet.
         __install_pymem()
 
@@ -213,7 +215,7 @@ cdef class Loop:
 
         self._servers = set()
 
-    cdef inline bint _is_main_thread(self):
+    cdef inline _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
         if system.MAIN_THREAD_ID_SET == 0:
             main_thread_id = <uint64_t>threading_main_thread().ident
@@ -773,15 +775,11 @@ cdef class Loop:
         fd = self._fileobj_to_fd(fileobj)
         self._ensure_fd_no_transport(fd)
 
-        if len(self._polls) < 1:
+        try:
+            poll = <UVPoll>(self._polls[fd])
+        except KeyError:
             poll = UVPoll.new(self, fd)
             self._polls[fd] = poll
-        else:
-            try:
-                poll = <UVPoll>(self._polls[fd])
-            except KeyError:
-                poll = UVPoll.new(self, fd)
-                self._polls[fd] = poll
 
         poll.start_reading(handle)
 
@@ -3257,6 +3255,10 @@ def libuv_get_loop_t_ptr(loop):
 
 def libuv_get_version():
     return uv.uv_version()
+
+
+def _testhelper_unwrap_capsuled_pointer(obj):
+    return <uint64_t>PyCapsule_GetPointer(obj, NULL)
 
 
 cdef void __loop_alloc_buffer(
