@@ -213,21 +213,6 @@ cdef class Loop:
 
         self._servers = set()
 
-    def __init__(self):
-        self.set_debug(
-            sys_dev_mode or (not sys_ignore_environment
-                             and bool(os_environ.get('PYTHONASYNCIODEBUG'))))
-
-
-    def __dealloc__(self):
-        if self._running == 1:
-            raise RuntimeError('deallocating a running event loop!')
-        if self._closed == 0:
-            aio_logger.error("deallocating an open event loop")
-            return
-        PyMem_RawFree(self.uvloop)
-        self.uvloop = NULL
-
     cdef inline bint _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
         if system.MAIN_THREAD_ID_SET == 0:
