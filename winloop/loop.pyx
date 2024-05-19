@@ -126,9 +126,6 @@ _unset = object()
 @cython.no_gc_clear
 cdef class Loop:
     def __cinit__(self):
-        # disable stdio_inheritence...
-        __install_disable_stdio_inheritence()
-
         # Install PyMem* memory allocators if they aren't installed yet.
         __install_pymem()
 
@@ -3390,14 +3387,6 @@ cdef __install_pymem():
         __mem_installed = 0
         raise convert_error(err)
 
-cdef vint __os_stdio_installed = 0
-cdef __install_disable_stdio_inheritence():
-    global __os_stdio_installed
-    if __os_stdio_installed:
-        return
-# Removing the next line resolves issue #18, hence help() works again.		
-#    uv.uv_disable_stdio_inheritance()
-    __os_stdio_installed = 1
 
 cdef _set_signal_wakeup_fd(fd):
     if fd >= 0:

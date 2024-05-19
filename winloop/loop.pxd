@@ -228,6 +228,3 @@ include "sslproto.pxd"
 include "handles/udp.pxd"
 
 include "server.pxd"
-
-cdef __install_pymem()
-cdef __install_disable_stdio_inheritence()
