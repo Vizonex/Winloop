@@ -93,11 +93,18 @@ cdef extern from "io.h" nogil:
     int  _write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount)
     void _exit(int status)
 
-cdef extern from "includes/compat.h":
+cdef extern from "includes/compat.h" nogil:
 
-    int PLATFORM_IS_APPLE
-    int PLATFORM_IS_LINUX
-    int PLATFORM_IS_WINDOWS
+    cdef int PLATFORM_IS_APPLE
+    cdef int PLATFORM_IS_LINUX
+    cdef int PLATFORM_IS_WINDOWS
+
+    struct epoll_event:
+        # We don't use the fields
+        pass
+
+    int EPOLL_CTL_DEL
+    int epoll_ctl(int epfd, int op, int fd, epoll_event *event)
 
 
 # nfork_handler.h really just means "I don't do forking but I'm here for compatibility reasons..."

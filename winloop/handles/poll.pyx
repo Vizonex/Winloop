@@ -10,11 +10,11 @@ cdef class UVPoll(UVHandle):
             self._abort_init()
             raise MemoryError()
 
-        
-        # SOLVED FOR WINDOWS!: turns out actually that file/socket 
-        # descriptors are already invoked so  no need to do jack shit 
-        # to what we already have in place...
-        err = uv.uv_poll_init_socket(self._loop.uvloop,
+        if system.PLATFORM_IS_WINDOWS:
+            err = uv.uv_poll_init_socket(self._loop.uvloop,
+                              <uv.uv_poll_t *>self._handle, fd)
+        else:
+            err = uv.uv_poll_init(self._loop.uvloop,
                               <uv.uv_poll_t *>self._handle, fd)
         if err < 0:
             self._abort_init()
@@ -60,36 +60,32 @@ cdef class UVPoll(UVHandle):
 
         err = uv.uv_poll_stop(<uv.uv_poll_t*>self._handle)
         if err < 0:
-            # Leave exc embedded into here instead...
-            self._fatal_error(convert_error(err), True)
+            exc = convert_error(err)
+            self._fatal_error(exc, True)
             return
-        
-        # XXX On windows we can ignore this for right now if there's problems in 
-        # the future then wepoll will be used...
-        
-        # cdef:
-            # int backend_id
-            # system.epoll_event dummy_event
 
-         
-        # if system.PLATFORM_IS_LINUX:
-        #     # libuv doesn't remove the FD from epoll immediately
-        #     # after uv_poll_stop or uv_poll_close, causing hard
-        #     # to debug issue with dup-ed file descriptors causing
-        #     # CPU burn in epoll/epoll_ctl:
-        #     #    https://github.com/MagicStack/uvloop/issues/61
-        #     #
-        #     # It's safe though to manually call epoll_ctl here,
-        #     # after calling uv_poll_stop.
+        cdef:
+            int backend_id
+            system.epoll_event dummy_event
 
-        #     backend_id = uv.uv_backend_fd(self._loop.uvloop)
-        #     if backend_id != -1:
-        #         memset(&dummy_event, 0, sizeof(dummy_event))
-        #         system.epoll_ctl(
-        #             backend_id,
-        #             system.EPOLL_CTL_DEL,
-        #             self.fd,
-        #             &dummy_event)  # ignore errors
+        if system.PLATFORM_IS_LINUX:
+            # libuv doesn't remove the FD from epoll immediately
+            # after uv_poll_stop or uv_poll_close, causing hard
+            # to debug issue with dup-ed file descriptors causing
+            # CPU burn in epoll/epoll_ctl:
+            #    https://github.com/MagicStack/uvloop/issues/61
+            #
+            # It's safe though to manually call epoll_ctl here,
+            # after calling uv_poll_stop.
+
+            backend_id = uv.uv_backend_fd(self._loop.uvloop)
+            if backend_id != -1:
+                memset(&dummy_event, 0, sizeof(dummy_event))
+                system.epoll_ctl(
+                    backend_id,
+                    system.EPOLL_CTL_DEL,
+                    self.fd,
+                    &dummy_event)  # ignore errors
 
     cdef is_reading(self):
         return self._is_alive() and self.reading_handle is not None

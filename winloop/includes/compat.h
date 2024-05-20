@@ -23,6 +23,16 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) {
 };
 #endif
 
+#ifdef _WIN32
+#  define EPOLL_CTL_DEL 2
+/* error C2016: C requires that a struct or union have at least one member on Windows
+with default compilation flags. Therefore put dummy field for now. */
+struct epoll_event {int dummyfield;};
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) {
+    return 0;
+};
+#endif
+
 /* TODO: add missing parts of uvloop/includes/compat.h */
 
 #ifdef _WIN32
