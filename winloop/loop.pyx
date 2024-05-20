@@ -17,7 +17,8 @@ from .includes.python cimport (
     Context_Enter,
     Context_Exit,
     PyMemoryView_FromMemory, PyBUF_WRITE,
-    PyMemoryView_FromObject, PyMemoryView_Check
+    PyMemoryView_FromObject, PyMemoryView_Check,
+	PyUnicode_FromString
 )
 from .includes.flowcontrol cimport add_flowcontrol_defaults
 

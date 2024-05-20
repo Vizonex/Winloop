@@ -1,7 +1,3 @@
-from libc.string cimport memset, memcpy
-from cpython.bytes cimport PyBytes_AsString
-from .includes.python cimport PyUnicode_FromString
-
 @cython.no_gc_clear
 cdef class UVProcess(UVHandle):
     """Abstract class; wrapper over uv_process_t handle."""
@@ -337,7 +333,6 @@ cdef class UVProcess(UVHandle):
         else:
             self.__env = None
 
-    # Maybe give noexcept keyword ?
     cdef _init_files(self, _stdin, _stdout, _stderr):
         self.options.stdio_count = 0
 
@@ -366,18 +361,11 @@ cdef class UVProcess(UVHandle):
         finally:
             UVHandle._close(self)
 
-# DROP DEF Keywords (Vizonex)
-cdef extern from *:
-    """
-    #define _CALL_PIPE_DATA_RECEIVED 0
-    #define _CALL_PIPE_CONNECTION_LOST 1
-    #define _CALL_PROCESS_EXITED 2
-    #define _CALL_CONNECTION_LOST 3
-    """
-    int _CALL_PIPE_DATA_RECEIVED
-    int _CALL_PIPE_CONNECTION_LOST
-    int _CALL_PROCESS_EXITED
-    int _CALL_CONNECTION_LOST
+
+DEF _CALL_PIPE_DATA_RECEIVED = 0
+DEF _CALL_PIPE_CONNECTION_LOST = 1
+DEF _CALL_PROCESS_EXITED = 2
+DEF _CALL_CONNECTION_LOST = 3
 
 
 @cython.no_gc_clear

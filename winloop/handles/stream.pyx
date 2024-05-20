@@ -1,5 +1,3 @@
-from libc cimport errno
-
 DEF __PREALLOCED_BUFS = 4
 
 
@@ -574,6 +572,7 @@ cdef class UVStream(UVBaseTransport):
         if err < 0:
             # close write context
             ctx.close()
+
             exc = convert_error(err)
             self._fatal_error(exc, True)
             return
@@ -746,6 +745,7 @@ cdef void __uv_stream_on_shutdown(uv.uv_shutdown_t* req,
 
         if UVLOOP_DEBUG:
             stream._loop._debug_stream_shutdown_errors_total += 1
+
         exc = convert_error(status)
         stream._fatal_error(
             exc, False, "error status in uv_stream_t.shutdown callback")
