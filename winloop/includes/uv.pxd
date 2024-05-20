@@ -2,16 +2,19 @@ from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
 
 from . cimport system
 
+# This is an internal enum UV_HANDLE_READABLE from uv-common.h, used only by
+# handles/pipe.pyx to temporarily workaround a libuv issue libuv/libuv#2058,
+# before there is a proper fix in libuv. In short, libuv disallowed feeding a
+# write-only pipe to uv_read_start(), which was needed by uvloop to detect a
+# broken pipe without having to send anything on the write-only end. We're
+# setting UV_HANDLE_READABLE on pipe_t to workaround this limitation
+# temporarily, please see also #317.
 cdef enum:
-
     UV_INTERNAL_HANDLE_READABLE = 0x00004000
 
 cdef extern from "vendor/include/uv.h" nogil:
     cdef int UV_TCP_IPV6ONLY
 
-    # NOTE: This is from errno.h as well...
-
-	# ... maybe possible to change these back all to UV_EACCES etcetera like in uvloop
     cdef int UV_EACCES
     cdef int UV_EAGAIN
     cdef int UV_EALREADY
@@ -24,22 +27,17 @@ cdef extern from "vendor/include/uv.h" nogil:
     cdef int UV_EINTR
     cdef int UV_EINVAL
     cdef int UV_EISDIR
-    cdef int UV__ENOENT
     cdef int UV_ENOENT
     cdef int UV_EOF
     cdef int UV_EPERM
     cdef int UV_EPIPE
-    # cdef int ESHUTDOWN
-    # There's only a few of these that don't cut this exception...
     cdef int UV_ESHUTDOWN
-
     cdef int UV_ESRCH
     cdef int UV_ETIMEDOUT
     cdef int UV_EBADF
     cdef int UV_ENOBUFS
 #    cdef int UV_EWOULDBLOCK  # not needed because UV_EGAIN is used for this ?!
 
-    # socket-errors
     cdef int UV_EAI_ADDRFAMILY
     cdef int UV_EAI_AGAIN
     cdef int UV_EAI_BADFLAGS
@@ -77,7 +75,7 @@ cdef extern from "vendor/include/uv.h" nogil:
 
     cdef int SIGINT
     cdef int SIGHUP
-    # cdef int SIGCHLD
+    cdef int SIGCHLD
     cdef int SIGKILL
     cdef int SIGTERM
 
