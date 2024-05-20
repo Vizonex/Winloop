@@ -74,11 +74,8 @@ def do_installation():
                 ("_CRT_DECLARE_NONSTDC_NAMES", 0),
                 ("WIN32_LEAN_AND_MEAN", 1),
                 ('_GNU_SOURCE', 1),
-                ('WIN32', 1),
                 ("_WIN32_WINNT","0x0602")
-            ],
-            # Just in case, try optimizing a bit further....
-            extra_compile_args=["/O2"]
+            ]
         )
     ]
 
