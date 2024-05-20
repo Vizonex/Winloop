@@ -349,14 +349,11 @@ cdef void __uv_udp_on_receive(
     if addr is NULL:
         pyaddr = None
     elif addr.sa_family == uv.AF_UNSPEC:
-        # DISABLE THIS PART IT'S Depericated and will be removed soon...
-        # SEE: https://github.com/cython/cython/issues/4310
-        
-        # # https://github.com/MagicStack/uvloop/issues/304
-        # IF UNAME_SYSNAME == "Linux":
-        #     pyaddr = None
-        # ELSE:
-        pyaddr = ''
+        # https://github.com/MagicStack/uvloop/issues/304
+        if system.PLATFORM_IS_LINUX:
+            pyaddr = None
+        else:
+            pyaddr = ''
     else:
         try:
             pyaddr = __convert_sockaddr_to_pyaddr(addr)

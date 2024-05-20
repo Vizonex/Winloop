@@ -1,5 +1,3 @@
-from libc.stdint cimport uint32_t
-
 cdef class UVBaseTransport(UVSocketHandle):
 
     cdef:
