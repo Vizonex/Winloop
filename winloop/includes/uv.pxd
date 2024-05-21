@@ -12,7 +12,7 @@ from . cimport system
 cdef enum:
     UV_INTERNAL_HANDLE_READABLE = 0x00004000
 
-cdef extern from "vendor/include/uv.h" nogil:
+cdef extern from "uv.h" nogil:
     cdef int UV_TCP_IPV6ONLY
 
     cdef int UV_EACCES

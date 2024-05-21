@@ -21,9 +21,7 @@ with open(str(_ROOT / 'winloop' / '_version.py')) as f:
 
 
 def get_c_files():
-    # Temporary directory (For now)
-    # This will be merged with vendor in a future update...
-    path = pathlib.Path("winloop", "_vendor")
+    path = pathlib.Path("vendor", "libuv", "src")
 
     def c_files(p: pathlib.Path):
         for i in p.iterdir():
@@ -66,11 +64,8 @@ def do_installation():
         Extension(
             "winloop.loop",
             ["winloop\\loop.pyx"] + c_files,
-            # For now (temporarily) we have 2 vendor directories. It is planned
-            # that _vendor will replace our current one in the future.
-            include_dirs=["winloop/_vendor/src", "winloop/_vendor/win",
-                          "winloop/vendor/include", "winloop/_vendor",
-                          "winloop/"],
+            include_dirs=["vendor/libuv/src", "vendor/libuv/src/win",
+                          "vendor/libuv/include"],
             # NOTE uv_a.lib will be user-compiled when
             # I've fixed the install there's still been some problems with
             # compiling fs-poll.c on it's own...
