@@ -15,6 +15,7 @@ from winloop import _testbase as tb
 
 # TODO: Fix or patch DeprecationWarning
 
+
 class _TestAioHTTP:
 
     def test_aiohttp_basic_1(self):
@@ -126,6 +127,7 @@ class Test_UV_AioHTTP(_TestAioHTTP, tb.UVTestCase):
 @unittest.skipIf(skip_tests, "no aiohttp module")
 class Test_AIO_AioHTTP(_TestAioHTTP, tb.AIOTestCase):
     pass
+
 
 if __name__ == "__main__":
     unittest.main()

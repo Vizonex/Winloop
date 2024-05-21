@@ -19,11 +19,13 @@ with open(str(_ROOT / 'winloop' / '_version.py')) as f:
         raise RuntimeError(
             'unable to read the version from winloop/_version.py')
 
-# Temporary directory (For now) This will be mereged with vendor in a future update...
+
 def get_c_files():
+    # Temporary directory (For now)
+    # This will be merged with vendor in a future update...
     path = pathlib.Path("winloop", "_vendor")
 
-    def c_files(p:pathlib.Path):
+    def c_files(p: pathlib.Path):
         for i in p.iterdir():
             if i.is_dir():
                 pass
@@ -36,15 +38,16 @@ def get_c_files():
         yield c.as_posix()
 
 
-# This is a temporary test Solution and is not the official file yet but this is to display/show what
-# I'm currently using to compile the winloop library...
+# This is a temporary test solution and is not the official file yet but this
+# is to display/show what I'm currently using to compile the winloop library...
 def do_installation():
     try:
         long_description = (HERE.parent / 'readme.md').open("r").read()
-    except:
+    except Exception:
         long_description = ""
 
-    # "Thank goodness we don't have to dig out the libpath ourselves I almost vomited" - Vizonex
+    # "Thank goodness we don't have to dig out the libpath ourselves I almost
+    # vomited" - Vizonex
     Windows_Libraries = [
         "Shell32.lib",
         "Ws2_32.lib",
@@ -63,28 +66,31 @@ def do_installation():
         Extension(
             "winloop.loop",
             ["winloop\\loop.pyx"] + c_files,
-            # For now (temporarily) we have 2 vendor directories. It is planned that _vendor will replace our current one in the future.
-            include_dirs=["winloop/_vendor/src", "winloop/_vendor/win", "winloop/vendor/include", "winloop/_vendor" , "winloop/"],
+            # For now (temporarily) we have 2 vendor directories. It is planned
+            # that _vendor will replace our current one in the future.
+            include_dirs=["winloop/_vendor/src", "winloop/_vendor/win",
+                          "winloop/vendor/include", "winloop/_vendor",
+                          "winloop/"],
             # NOTE uv_a.lib will be user-compiled when
-            # I've fixed the install there's still been some problems with compiling fs-poll.c on it's own...
-            extra_link_args=Windows_Libraries, # + ["winloop\\vendor\\libuv.lib"], testing...
-            # I have some macros setup for now to help me with debugging - Vizonex
+            # I've fixed the install there's still been some problems with
+            # compiling fs-poll.c on it's own...
+            extra_link_args=Windows_Libraries,  # "winloop\\vendor\\libuv.lib"
+            # I have some macros setup for now to help me
+            # with debugging -Vizonex
             library_dirs=["winloop"],
             define_macros=[
-                ("_CRT_DECLARE_NONSTDC_NAMES", 0),
                 ("WIN32_LEAN_AND_MEAN", 1),
-                ('_GNU_SOURCE', 1),
-                ("_WIN32_WINNT","0x0602")
+                ("_WIN32_WINNT", "0x0602")
             ]
         )
     ]
-
 
     setup(
         name="winloop",
         author="Vizonex",
         version=VERSION,
-        description="""An alternative library for uvloop compatibility with Windows""",
+        description="An alternative library for uvloop"
+                    "compatibility with Windows",
         ext_modules=cythonize(ext),
         license="MIT",
         platforms=['Microsoft Windows'],
@@ -103,6 +109,7 @@ def do_installation():
         long_description_content_type='text/markdown',
         long_description=long_description,
         classifiers=[
+            'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
             'Programming Language :: Python :: 3.11',
@@ -112,14 +119,15 @@ def do_installation():
         ]
     )
 
+
 if __name__ == "__main__":
 
     if sys.platform not in ('win32', 'cygwin', 'cli'):
-        # TODO (Vizonex) Ask uvloop Owners/contributors if it would be ok or acceptable to recommend
-        # this library as an alternative resource for any users on windows
-        raise RuntimeError("Winloop is only available for Windows users. Please try installing uvloop instead, you won't be disappointed with it...")
+        # TODO (Vizonex) Ask uvloop Owners/contributors if it would be ok or
+        # acceptable to recommend this library as an alternative resource for
+        # any users on windows
+        raise RuntimeError("Winloop is only available for Windows users."
+                           " Please try installing uvloop instead, you"
+                           " won't be disappointed with it...")
 
     do_installation()
-
-
-

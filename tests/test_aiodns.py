@@ -1,5 +1,6 @@
-# NOTE: I forked the aiodns Repository you will have to use that for now 
-# or wait for the pull request I recently made to go through: https://github.com/saghul/aiodns/pull/116
+# NOTE: I forked the aiodns Repository you will have to use that for now
+# or wait for the pull request I recently made to go through:
+# https://github.com/saghul/aiodns/pull/116
 
 try:
     import aiodns
@@ -8,10 +9,7 @@ except ImportError:
 else:
     skip_tests = False
 
-import asyncio
-import sys
 import unittest
-import weakref
 
 from winloop import _testbase as tb
 
@@ -36,6 +34,7 @@ class Test_UV_Aiodns(_TestAiodns, tb.UVTestCase):
     pass
 
 
-@unittest.skip("aiodns needs a SelectorEventLoop on Windows. See more: https://github.com/saghul/aiodns/issues/86")
+@unittest.skip("aiodns needs a SelectorEventLoop on Windows."
+               " See more: https://github.com/saghul/aiodns/issues/86")
 class Test_AIO_Aiodns(_TestAiodns, tb.AIOTestCase):
     pass
