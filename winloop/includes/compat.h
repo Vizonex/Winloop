@@ -1,5 +1,12 @@
+#include <errno.h>
+#include <stddef.h>
 #include "Python.h"
+#include "uv.h"
 
+
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK EAGAIN
+#endif
 
 #ifdef __APPLE__
 #define PLATFORM_IS_APPLE 1

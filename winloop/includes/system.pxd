@@ -95,6 +95,8 @@ cdef extern from "io.h" nogil:
 
 cdef extern from "includes/compat.h" nogil:
 
+    cdef int EWOULDBLOCK
+
     cdef int PLATFORM_IS_APPLE
     cdef int PLATFORM_IS_LINUX
     cdef int PLATFORM_IS_WINDOWS
@@ -112,10 +114,6 @@ cdef extern from "includes/nfork_handler.h":
     uint64_t MAIN_THREAD_ID
     int8_t MAIN_THREAD_ID_SET
     void setMainThreadID(uint64_t id)
-
-
-# TODO put uv.try_tcp_write into here instead since it's not a member of uvloop rather our own creation...
-
 
 
 cdef extern from "corecrt_io.h":

@@ -501,13 +501,8 @@ cdef class Loop:
         # never deallocate during the run -- so we do some
         # manual refs management.
         Py_INCREF(self)
-
-        # Gil Cannot be repleased until we get rid of self...
-        cdef uv.uv_loop_t* _loop = self.uvloop
-
         with nogil:
-            err = uv.uv_run(_loop, mode)
-
+            err = uv.uv_run(self.uvloop, mode)
         Py_DECREF(self)
 
         if err < 0:
