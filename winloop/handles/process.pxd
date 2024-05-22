@@ -1,5 +1,3 @@
-from cpython.pystate cimport PyGILState_STATE
-
 cdef class UVProcess(UVHandle):
     cdef:
         object _returncode
@@ -21,8 +19,6 @@ cdef class UVProcess(UVHandle):
         char **uv_opt_args
         char *uv_opt_file
         bytes __cwd
-
-        PyGILState_STATE py_gil_state
 
     cdef _close_process_handle(self)
 

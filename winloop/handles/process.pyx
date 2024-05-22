@@ -33,7 +33,7 @@ cdef class UVProcess(UVHandle):
         self._start_init(loop)
 
         self._handle = <uv.uv_handle_t*>PyMem_RawMalloc(
-		    sizeof(uv.uv_process_t))
+            sizeof(uv.uv_process_t))
         if self._handle is NULL:
             self._abort_init()
             raise MemoryError()
@@ -87,38 +87,44 @@ cdef class UVProcess(UVHandle):
             self._restore_signals = restore_signals
 
             loop.active_process_handler = self
-        
-       
+
+
 
             # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
             # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
-            # This means that we cannot use any flags with this setup 
+            # This means that we cannot use any flags with this setup
             # Finding examples of how uv_spawn is used will be helful as well...
             # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
 
 
             # NOTE To make up for the loss of forking (which I saw as an enhancement on other systems)
             # Try releasing the gil during the spawning phase which is what CPython does...
-            # mimic forking behaviors this will likely allow us to moderate the OS better 
-            # if something bad happens... - Vizonex 
+            # mimic forking behaviors this will likely allow us to moderate the OS better
+            # if something bad happens... - Vizonex
 
             # I cannot seem to get with nogil to work here so this was my workaround...
-            self.py_gil_state = PyGILState_Ensure()
+            py_gil_state = PyGILState_Ensure()
             # This might be our answer...
             # https://github.com/saghul/pyuv/blob/39342fc2fd688f2fb2120d3092dd9cf52f537de2/src/process.c
 
             # This is similar to how CPython handles process spawning
             # It releases the gil during spawntime and then brings it back in...
-            
+
             err = uv.uv_spawn(loop.uvloop,
                               <uv.uv_process_t*>self._handle,
                               &self.options)
 
-            # NOTE I broght the PyGILState_Release here instead of later 
+            # NOTE I brought the PyGILState_Release here instead of later
             # so that we can have better control over the os module... - Vizonex
-
-            PyGILState_Release(self.py_gil_state)
-
+            PyGILState_Release(py_gil_state)
+            # This GIL release couldn't be deferred to self._after_fork() anyway because the latter call
+            # only happens if forking is enabled (call via system.handleAtFork which is set
+            # using system.setForkHandler).
+            # Actually, since self._after_fork() is not called in this Windows version,
+            # and that call is the part executed with gil in the nonWindows version, see:
+            # https://github.com/MagicStack/uvloop/blob/6c770dc3fbdd281d15c2ad46588c139696f9269c/uvloop/loop.pyx#L3353-L3357
+            # the question is why the GIL is needed at all here?
+            
             loop.active_process_handler = None
 
             if err < 0:
@@ -194,15 +200,11 @@ cdef class UVProcess(UVHandle):
         if self._restore_signals:
             _Py_RestoreSignals()
 
-       
         # PyOS_AfterFork_Child()
-        
+
         # err = uv.uv_loop_fork(self._loop.uvloop)
         # if err < 0:
         #     raise convert_error(err)
-
-        # we're finished under the freed up gil and we can now release it...
-        # PyGILState_Release(self.py_gil_state)
 
         if self._preexec_fn is not None:
             try:
@@ -279,7 +281,7 @@ cdef class UVProcess(UVHandle):
             # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
             # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
             # enabling VERBATIM_ARGUMENTS is helpful here because we're not enabling children...
-            self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS 
+            self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS
 
         if force_fork:
             # This is a hack to work around the change in libuv 1.44:
@@ -802,25 +804,25 @@ cdef __socketpair():
         # Using uv.uv_os_sock_t for stability reasons...
         uv.uv_os_sock_t fds[2]
         int err
-    
+
     # TODO: Optimize uv_socket_pair function
     # Added uv_socketpair instead my function since we kept seeing a bad file descriptor
     err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
-    
-  
+
+
     if err:
         # TODO See if this is still correctly done or not...
         exc = convert_error(-err)
         raise exc
-        
-    # See: https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c 
-    # in libuv... 
-    # libuv doesn't detect the fact that were a named UV_TCP so we're doing the same 
+
+    # See: https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c
+    # in libuv...
+    # libuv doesn't detect the fact that were a named UV_TCP so we're doing the same
     # check here but optimized way down
     # NOTE: Trying without assert will be faster...
     # TODO Optimize guess handle down further using -> intptr_t __cdecl _get_osfhandle(int _FileHandle)
-    system._get_osfhandle(<int>fds[0]) 
-    system._get_osfhandle(<int>fds[1]) 
+    system._get_osfhandle(<int>fds[0])
+    system._get_osfhandle(<int>fds[1])
 
     os_set_inheritable(fds[0], False)
     os_set_inheritable(fds[1], False)
