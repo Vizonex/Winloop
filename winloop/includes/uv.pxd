@@ -1,4 +1,6 @@
 from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
+cdef extern from "includes/compat.h" nogil:
+   int getuid()
 
 from . cimport system
 

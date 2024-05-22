@@ -43,9 +43,17 @@ cdef class UVProcess(UVHandle):
         # callbacks have a chance to avoid casting *something* into UVHandle.
         self._handle.data = NULL
 
+        force_fork = False
+        if system.PLATFORM_IS_APPLE and not (
+            preexec_fn is None
+            and not pass_fds
+        ):
+            # see _execute_child() in CPython/subprocess.py
+            force_fork = True
+
         try:
             self._init_options(args, env, cwd, start_new_session,
-                               _stdin, _stdout, _stderr)
+                               _stdin, _stdout, _stderr, force_fork)
 
             restore_inheritable = set()
             if pass_fds:
@@ -252,7 +260,7 @@ cdef class UVProcess(UVHandle):
         return ret
 
     cdef _init_options(self, list args, dict env, cwd, start_new_session,
-                       _stdin, _stdout, _stderr):
+                       _stdin, _stdout, _stderr, bint force_fork):
 
         memset(&self.options, 0, sizeof(uv.uv_process_options_t))
 
@@ -270,9 +278,23 @@ cdef class UVProcess(UVHandle):
             # "All of these flags have been set because they're all meaningful on windows systems...
             # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
             # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
-            # enabiling VERBATIM_ARGUMENTS is helpful here because we're not enabiling children...
+            # enabling VERBATIM_ARGUMENTS is helpful here because we're not enabling children...
             self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS 
 
+        if force_fork:
+            # This is a hack to work around the change in libuv 1.44:
+            #    > macos: use posix_spawn instead of fork
+            # where Python subprocess options like preexec_fn are
+            # crippled. CPython only uses posix_spawn under a pretty
+            # strict list of conditions (see subprocess.py), and falls
+            # back to using fork() otherwise. We'd like to simulate such
+            # behavior with libuv, but unfortunately libuv doesn't
+            # provide explicit API to choose such implementation detail.
+            # Based on current (libuv 1.46) behavior, setting
+            # UV_PROCESS_SETUID or UV_PROCESS_SETGID would reliably make
+            # libuv fallback to use fork, so let's just use it for now.
+            self.options.flags |= uv.UV_PROCESS_SETUID
+            self.options.uid = uv.getuid()
 
         if cwd is not None:
             cwd = os_fspath(cwd)

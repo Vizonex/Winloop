@@ -44,6 +44,9 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) {
 
 #ifdef _WIN32
 #define PLATFORM_IS_WINDOWS 1
+int getuid() {
+	return 0;
+}
 #else
 #define PLATFORM_IS_WINDOWS 0
 #endif
