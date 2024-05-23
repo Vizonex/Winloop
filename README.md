@@ -11,6 +11,11 @@ The differences with __uvloop__ is that forking has been fully disabled and some
 
 There is a performance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problem as well. This library also has comparable performance to it's brother uvloop.
 
+## We are currently in the process of something big
+our contributors have been more dedicated then ever to merging uvloop & winloop together which is the final goal with this library, we want to thank everyone who has
+participated over the last year but 0.1.3 might be the last update and 0.1.4 might be a redirect back to uvloop depending on when merging is done, I want to thank
+everyone who has supported me and the others who worked on this project and inspired us to do it in the first place - Vizonex.
+
 
 ## How to install Winloop on your Windows Operating System
 
@@ -32,7 +37,6 @@ If you find any bugs with this library be sure to open up an issue to our github
 ## Making pull requests
 We encourage anyone to make pull-requests to winloop from spelling mistakes to vulnerability patches. Every little bit helps keep this library maintained and alive.
 Make sure that you are able to compile the library with the steps shown above. We plan to implement a nightly workflow to verify one's pull request in the future.
-
 
 
 
