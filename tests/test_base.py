@@ -1,17 +1,22 @@
 import asyncio
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    skip_test_fcntl = True
+else:
+    skip_test_fcntl = False
 import logging
 import os
 import random
 import sys
 import threading
 import time
-import uvloop
+import winloop as uvloop
 import unittest
 import weakref
 
 from unittest import mock
-from uvloop._testbase import UVTestCase, AIOTestCase
+from winloop._testbase import UVTestCase, AIOTestCase
 
 
 class _TestBase:
@@ -132,6 +137,10 @@ class _TestBase:
 
         delta = self.loop.run_until_complete(run())
         self.assertTrue(delta > 0.049 and delta < 0.6)
+        # General comment: the bound 0.6 is probably a typo, instead of 0.06.
+        # WINLOOP comment: this test sometimes fails on Windows with delta
+        # below 0.049. Also delta sometimes exceeeds 0.06. This happens
+        # with the AIO loop and with the UV loop.
 
     def test_call_later_1(self):
         calls = []
@@ -218,6 +227,9 @@ class _TestBase:
             self.loop.run_forever()
             finished = int(round(self.loop.time() * 1000))
             self.assertGreaterEqual(finished - started, 69)
+        # WINLOOP comment: this test sometimes fails on Windows with delta
+        # below 69, e.g. delta=62. Only observed to happen
+        # with the AIO loop so far.
 
     def test_call_at(self):
         if (os.environ.get('TRAVIS_OS_NAME')
@@ -245,8 +257,24 @@ class _TestBase:
 
         self.assertLess(finished - started, 0.07)
         self.assertGreater(finished - started, 0.045)
+        # WINLOOP comment: similarly, this test sometimes fails on Windows,
+        # observed both with the AIO loop and with the UV loop.
 
     def test_check_thread(self):
+        # WINLOOP comment: this test fails on Windows when used with
+        # the UV loop (i.e., test_base.TestBaseUV.test_check_thread)
+        # and only if winloop is compiled using cython 3.0.10 say.
+        # If cython 0.29.37 is used, the test succeeds.
+        # The error message is
+        #   TypeError: wrap() takes exactly 2 positional arguments (3 given)
+        # and also this exception occurs
+        #   Exception in callback <bound method __Pyx_CFunc_7winloop_4loop_\
+        #   4Loop_object__lParenLoop__comma_bint__rParen_to_py_4self_7enabled\
+        #   .<locals>.wrap
+        # A similar issue for cython 0.29.? was fixed, see
+        #   https://github.com/cython/cython/pull/4988/files
+        # but the code for this part in cython 3.0.10 has been changed at some
+        # point, apparently causing the present problem.
         def check_thread(loop, debug):
             def cb():
                 pass
@@ -729,6 +757,11 @@ class _TestBase:
         self.loop.run_forever()
         thread.join()
         self.assertEqual(counter[0], ITERATIONS)
+        # WINLOOP comment: this test takes around 5 to 6 seconds
+        # under Linux (Windows Subsystem for Linux actually). On
+        # Windows it takes around 8 seconds when used with Python 3.11+.
+        # For Python 3.8-10 it takes much longer, say 64 seconds,
+        # maybe because h.cancel above does not work somehow.
 
 
 class TestBaseUV(_TestBase, UVTestCase):
@@ -763,6 +796,7 @@ class TestBaseUV(_TestBase, UVTestCase):
         self.run_loop_briefly(delay=0.05)
         self.assertFalse(handle.cancelled())
 
+    @unittest.skipIf(skip_test_fcntl, "no fcntl module")
     def test_loop_std_files_cloexec(self):
         # See https://github.com/MagicStack/uvloop/issues/40 for details.
         for fd in {0, 1, 2}:
