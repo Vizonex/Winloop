@@ -69,7 +69,7 @@ else:
             # is using `winloop.run()` intentionally.
             loop = __asyncio._get_running_loop()
             if not isinstance(loop, Loop):
-                raise TypeError('winloop.run() uses a non-winloop event loop')
+                raise TypeError(' a non-uvloop event loop')
             return await main
 
         vi = _sys.version_info[:2]
