@@ -802,13 +802,14 @@ cdef void __uvprocess_on_exit_callback(
 cdef __socketpair():
     cdef:
         # Using uv.uv_os_sock_t for stability reasons...
-        uv.uv_os_sock_t fds[2]
+#        uv.uv_os_sock_t fds[2] 
+        uv.uv_file fds[2]
         int err
 
     # TODO: Optimize uv_socket_pair function
     # Added uv_socketpair instead my function since we kept seeing a bad file descriptor
-    err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
-
+#    err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
+    err = uv.uv_pipe(fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
 
     if err:
         # TODO See if this is still correctly done or not...
@@ -821,8 +822,8 @@ cdef __socketpair():
     # check here but optimized way down
     # NOTE: Trying without assert will be faster...
     # TODO Optimize guess handle down further using -> intptr_t __cdecl _get_osfhandle(int _FileHandle)
-    system._get_osfhandle(<int>fds[0])
-    system._get_osfhandle(<int>fds[1])
+#    system._get_osfhandle(<int>fds[0])
+#    system._get_osfhandle(<int>fds[1])
 
     os_set_inheritable(fds[0], False)
     os_set_inheritable(fds[1], False)
