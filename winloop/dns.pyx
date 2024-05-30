@@ -157,7 +157,7 @@ cdef __convert_pyaddr_to_sockaddr(int family, object addr,
         (<system.sockaddr_in6*>&ret.addr).sin6_flowinfo = flowinfo
         (<system.sockaddr_in6*>&ret.addr).sin6_scope_id = scope_id
 
-    # XXX Same thing as said above 
+    # XXX Same thing as said above
 
     # elif family == uv.AF_UNIX:
     #     if isinstance(addr, str):
@@ -363,7 +363,15 @@ cdef class AddrInfoRequest(UVRequest):
 
         if cport is NULL and chost is NULL:
             self.on_done()
-            msg = system.gai_strerror(socket_EAI_NONAME).decode('utf-8')
+            # Winloop comment: on Windows, cPython has a simpler error
+            # message than uvlib (via winsock probably) instead of
+            # EAI_NONAME [ErrNo 10001] "No such host is known. ".
+            # We replace the message with "getaddrinfo failed".
+            # See also errors.pyx.
+            if sys.platform == 'win32':
+                msg = 'getaddrinfo failed'
+            else:
+                msg = system.gai_strerror(socket_EAI_NONAME).decode('utf-8')
             ex = socket_gaierror(socket_EAI_NONAME, msg)
             callback(ex)
             return

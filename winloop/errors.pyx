@@ -86,6 +86,14 @@ cdef convert_error(int uverr):
     sock_err = __convert_socket_error(uverr)
     if sock_err:
         msg = system.gai_strerror(sock_err).decode('utf-8')
+        # Winloop comment: on Windows, cPython has a simpler error
+        # message than uvlib (via winsock probably) in these two cases:
+        # EAI_FAMILY [ErrNo 10047] "An address incompatible with the requested protocol was used. "
+        # EAI_NONAME [ErrNo 10001] "No such host is known. "
+        # We replace these messages with "getaddrinfo failed"
+        if sys.platform == 'win32':
+            if sock_err in (socket_EAI_FAMILY, socket_EAI_NONAME):
+                msg = 'getaddrinfo failed'
         return socket_gaierror(sock_err, msg)
 
     return __convert_python_error(uverr)
