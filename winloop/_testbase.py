@@ -167,7 +167,8 @@ class BaseTestCase(unittest.TestCase, metaclass=BaseTestCaseMeta):
                    max_clients=10):
 
         if addr is None:
-            if family == socket.AF_UNIX:
+            # Winloop comment: Windows has no Unix scokets
+            if hasattr(socket, 'AF_UNIX') and family == socket.AF_UNIX:
                 with tempfile.NamedTemporaryFile() as tmp:
                     addr = tmp.name
             else:
