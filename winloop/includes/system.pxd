@@ -109,8 +109,7 @@ cdef extern from "includes/compat.h" nogil:
     int epoll_ctl(int epfd, int op, int fd, epoll_event *event)
 
 
-# nfork_handler.h really just means "I don't do forking but I'm here for compatibility reasons..."
-cdef extern from "includes/nfork_handler.h":
+cdef extern from "includes/fork_handler.h":
     uint64_t MAIN_THREAD_ID
     int8_t MAIN_THREAD_ID_SET
     void setMainThreadID(uint64_t id)
