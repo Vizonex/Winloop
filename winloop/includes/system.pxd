@@ -48,7 +48,6 @@ cdef extern from "winsock2.h":
 
     const char *gai_strerror(int errcode)
 
-    # All except for one... luckily I did this one already...
     # int socketpair(int domain, int type, int protocol, int socket_vector[2])
 
     int setsockopt(SOCKET socket, int level, int option_name,
@@ -113,9 +112,3 @@ cdef extern from "includes/fork_handler.h":
     uint64_t MAIN_THREAD_ID
     int8_t MAIN_THREAD_ID_SET
     void setMainThreadID(uint64_t id)
-
-
-cdef extern from "corecrt_io.h":
-    ctypedef long long intptr_t
-    intptr_t _get_osfhandle(int _FileHandle)
-

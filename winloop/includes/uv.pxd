@@ -554,7 +554,7 @@ cdef extern from "uv.h" nogil:
     void uv_disable_stdio_inheritance()
 
 
-    int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
+#    int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
     int uv_pipe(uv_file fds[2], int read_flags, int write_flags)
 		
     uv_handle_type uv_guess_handle(uv_file)

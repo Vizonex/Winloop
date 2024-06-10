@@ -801,29 +801,15 @@ cdef void __uvprocess_on_exit_callback(
 
 cdef __socketpair():
     cdef:
-        # Using uv.uv_os_sock_t for stability reasons...
-#        uv.uv_os_sock_t fds[2] 
         uv.uv_file fds[2]
         int err
 
-    # TODO: Optimize uv_socket_pair function
-    # Added uv_socketpair instead my function since we kept seeing a bad file descriptor
-#    err = uv.uv_socketpair(uv.SOCK_STREAM, 0, fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
+	# Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
+	# instead of system.socketpair().
     err = uv.uv_pipe(fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
-
     if err:
-        # TODO See if this is still correctly done or not...
         exc = convert_error(-err)
         raise exc
-
-    # See: https://github.com/libuv/libuv/blob/91a7e49846f8786132da08e48cfd92bdd12f8cf7/test/test-ping-pong.c
-    # in libuv...
-    # libuv doesn't detect the fact that were a named UV_TCP so we're doing the same
-    # check here but optimized way down
-    # NOTE: Trying without assert will be faster...
-    # TODO Optimize guess handle down further using -> intptr_t __cdecl _get_osfhandle(int _FileHandle)
-#    system._get_osfhandle(<int>fds[0])
-#    system._get_osfhandle(<int>fds[1])
 
     os_set_inheritable(fds[0], False)
     os_set_inheritable(fds[1], False)
