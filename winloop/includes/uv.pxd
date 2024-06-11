@@ -15,6 +15,11 @@ cdef enum:
     UV_INTERNAL_HANDLE_READABLE = 0x00004000
 
 cdef extern from "uv.h" nogil:
+    """
+// hack for now, todo clean solution
+int SIGCHLD = 0;
+    """
+
     cdef int UV_TCP_IPV6ONLY
 
     cdef int UV_EACCES
@@ -81,29 +86,6 @@ cdef extern from "uv.h" nogil:
     cdef int SIGKILL
     cdef int SIGTERM
 
-    ctypedef enum uv_handle_type:
-        UV_UNKNOWN_HANDLE = 0,
-        UV_ASYNC,
-        UV_CHECK,
-        UV_FS_EVENT,
-        UV_FS_POLL,
-        UV_HANDLE,
-        UV_IDLE,
-        UV_NAMED_PIPE,
-        UV_POLL,
-        UV_PREPARE,
-        UV_PROCESS,
-        UV_STREAM,
-        UV_TCP,
-        UV_TIMER,
-        UV_TTY,
-        UV_UDP,
-        UV_SIGNAL,
-        UV_FILE,
-        UV_HANDLE_TYPE_MAX
-        # int UV_TCP
-
-    # uv_poll_init() has problems on windows luckily uv_os_sock_t saves the day...
     ctypedef int uv_os_sock_t
     ctypedef int uv_file
     ctypedef int uv_os_fd_t
@@ -151,12 +133,6 @@ cdef extern from "uv.h" nogil:
         void* data
         size_t write_queue_size
         uv_loop_t* loop
-
-        # NOTE Introduced flags and type into uv_stream so that
-        # we can implement a faster / more direct version of uv_try_write
-        unsigned int flags
-        uv_handle_type type
-
         # ...
 
     ctypedef struct uv_tcp_t:
@@ -253,6 +229,9 @@ cdef extern from "uv.h" nogil:
         UV_LEAVE_GROUP = 0,
         UV_JOIN_GROUP
 
+    cpdef enum uv_fs_event:
+        UV_RENAME = 1,
+        UV_CHANGE = 2
 
     const char* uv_strerror(int err)
     const char* uv_err_name(int err)
@@ -547,23 +526,9 @@ cdef extern from "uv.h" nogil:
 
     unsigned int uv_version()
 
-    uv_loop_t* uv_default_loop()
-
-    # This will be an experimental replacement for the loss of pthread_atfork()
-    # see here for more details: https://docs.libuv.org/en/v1.x/process.html#c.uv_disable_stdio_inheritance
-    void uv_disable_stdio_inheritance()
-
-
-#    int uv_socketpair(int type, int protocol, uv_os_sock_t socket_vector[2], int flags0, int flags1)
     int uv_pipe(uv_file fds[2], int read_flags, int write_flags)
-		
-    uv_handle_type uv_guess_handle(uv_file)
-
-cdef enum uv_fs_event:
-    UV_RENAME = 1,
-    UV_CHANGE = 2
 
 
-cdef extern from "winsock2.h":
+cdef extern from "winsock2.h" nogil:
     cdef int SO_REUSEADDR
     cdef int SO_BROADCAST

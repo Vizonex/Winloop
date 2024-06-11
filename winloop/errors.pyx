@@ -1,9 +1,3 @@
-# cython:language_level = 3
-from libc.string cimport strerror
-# from includes._stdlib cimport *
-from .includes cimport uv , system
-
-
 cdef __convert_python_error(int uverr):
     # XXX Won't work for Windows:
     # From libuv docs:
@@ -11,16 +5,10 @@ cdef __convert_python_error(int uverr):
     #      negated errno (or -errno), while on Windows they
     #      are defined by libuv to arbitrary negative numbers.
 
-    # NOTE (Vizonex): I DEBUNKED IT, IT CAN! As long as we can find it's actual Diagnosis...
-    # by substituting the 'UV_E' macros to Just 'E' we can then find the errors we need and
-    # then diagnose them...
-
-    # TODO VERIFY THAT THE ERRORS ARE CORRECTLY MAPPED!!!
-
-    # ...
-    # The following approach seems to work for Windows: translation from uverr,
-    # which is a negative number like -4088 or -4071 defined by libuv (as mentioned above),
-    # to error numbers obtained via the Python module errno.
+    # Winloop comment: The following approach seems to work for Windows:
+	# translation from uverr, which is a negative number like -4088 or -4071
+    # defined by libuv (as mentioned above), to error numbers obtained via 
+    # the Python module errno.
     err = getattr(errno, uv.uv_err_name(uverr).decode(), uverr)
     return OSError(err, uv.uv_strerror(uverr).decode())
 
@@ -76,9 +64,9 @@ cdef int __convert_socket_error(int uverr):
 cdef convert_error(int uverr):
     cdef int sock_err
 
-# The next two lines are used in uvloop:
-##    if uverr == uv.UV_ECANCELED:
-##        return aio_CancelledError()
+# Winloop comment: The next two lines are used in uvloop:
+#    if uverr == uv.UV_ECANCELED:
+#        return aio_CancelledError()
 # Deleting these lines needed to pass test_aiohttp_graceful_shutdown (test_aiohttp.Test_AIO_AioHTTP)
 # And deleting these lines does not seem to cause any other issues on Windows.
 # TODO: find out why these lines are needed on Linux?

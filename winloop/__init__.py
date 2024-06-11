@@ -1,15 +1,3 @@
-"""
-
-Winloop
--------
-
-A modified version of uvloop for windows operating systems made to bring faster
-performance than that of python's stdlib asyncio EventloopPolicies such as
-windowsproactor and windowsselector policies and beats both of them in speed by
-over 8 times.
-
-"""
-
 import asyncio as __asyncio
 import typing as _typing
 import sys as _sys
@@ -69,7 +57,7 @@ else:
             # is using `winloop.run()` intentionally.
             loop = __asyncio._get_running_loop()
             if not isinstance(loop, Loop):
-                raise TypeError(' a non-uvloop event loop')
+                raise TypeError('winloop.run() uses a non-uvloop event loop')
             return await main
 
         vi = _sys.version_info[:2]

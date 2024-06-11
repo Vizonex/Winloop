@@ -1,5 +1,9 @@
 #include <errno.h>
 #include <stddef.h>
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <sys/un.h>
+#endif
 #include "Python.h"
 #include "uv.h"
 
@@ -40,7 +44,40 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) {
 };
 #endif
 
-/* TODO: add missing parts of uvloop/includes/compat.h */
+#ifdef _WIN32
+struct sockaddr_un {unsigned short sun_family; char* sun_path;};
+
+int socketpair(int domain, int type, int protocol, int socket_vector[2]) {
+    return 0;
+}
+#endif
+
+PyObject *
+MakeUnixSockPyAddr(struct sockaddr_un *addr)
+{
+#ifdef _WIN32
+	return NULL;
+#else
+    if (addr->sun_family != AF_UNIX) {
+        PyErr_SetString(
+            PyExc_ValueError, "a UNIX socket addr was expected");
+        return NULL;
+    }
+
+#ifdef __linux__
+    int addrlen = sizeof (struct sockaddr_un);
+    size_t linuxaddrlen = addrlen - offsetof(struct sockaddr_un, sun_path);
+    if (linuxaddrlen > 0 && addr->sun_path[0] == 0) {
+        return PyBytes_FromStringAndSize(addr->sun_path, linuxaddrlen);
+    }
+    else
+#endif /* linux */
+    {
+        /* regular NULL-terminated string */
+        return PyUnicode_DecodeFSDefault(addr->sun_path);
+    }
+#endif /* _WIN32 */
+}
 
 #ifdef _WIN32
 #define PLATFORM_IS_WINDOWS 1
@@ -78,6 +115,19 @@ int Context_Enter(PyObject *ctx) {
 
 int Context_Exit(PyObject *ctx) {
     return PyContext_Exit(ctx);
+}
+
+#endif
+
+#ifdef _WIN32
+void PyOS_BeforeFork() {
+    return;
+}	
+void PyOS_AfterFork_Parent() {
+    return;
+}
+void PyOS_AfterFork_Child() {
+    return;
 }
 
 #endif

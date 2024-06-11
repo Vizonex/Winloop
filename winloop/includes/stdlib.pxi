@@ -44,8 +44,7 @@ cdef aio_isfuture = getattr(asyncio, 'isfuture', None)
 cdef aio_get_running_loop = getattr(asyncio, '_get_running_loop', None)
 cdef aio_set_running_loop = getattr(asyncio, '_set_running_loop', None)
 cdef aio_debug_wrapper = getattr(asyncio.coroutines, 'debug_wrapper', None)
-# windows doesn't have a child watcher and therefore may need a workaround of some kind if required...
-# cdef aio_AbstractChildWatcher = asyncio.AbstractChildWatcher
+cdef aio_AbstractChildWatcher = getattr(asyncio, 'AbstractChildWatcher', None)
 cdef aio_Transport = asyncio.Transport
 cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
 

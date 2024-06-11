@@ -27,6 +27,10 @@ cdef class UVProcess(UVHandle):
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
                pass_fds, debug_flags, preexec_fn, restore_signals):
 
+        global __forking
+        if not system.PLATFORM_IS_WINDOWS:
+            global __forking_loop
+            global __forkHandler
 
         cdef int err
 
@@ -65,8 +69,7 @@ cdef class UVProcess(UVHandle):
             self._abort_init()
             raise
 
-        # NOTE GOT RID OF __forking parameter...
-        if loop.active_process_handler is not None:
+        if  __forking or loop.active_process_handler is not None:
             # Our pthread_atfork handlers won't work correctly when
             # another loop is forking in another thread (even though
             # GIL should help us to avoid that.)
@@ -87,44 +90,54 @@ cdef class UVProcess(UVHandle):
             self._restore_signals = restore_signals
 
             loop.active_process_handler = self
+            if not system.PLATFORM_IS_WINDOWS:
+                __forking = 1
+                __forking_loop = loop
+                system.setForkHandler(<system.OnForkHandler>&__get_fork_handler)
+                PyOS_BeforeFork()
+            else:
+                py_gil_state = PyGILState_Ensure()
 
-
-
-            # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
-            # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
-            # This means that we cannot use any flags with this setup
-            # Finding examples of how uv_spawn is used will be helful as well...
-            # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
-
-
-            # NOTE To make up for the loss of forking (which I saw as an enhancement on other systems)
-            # Try releasing the gil during the spawning phase which is what CPython does...
-            # mimic forking behaviors this will likely allow us to moderate the OS better
-            # if something bad happens... - Vizonex
-
-            # I cannot seem to get with nogil to work here so this was my workaround...
-            py_gil_state = PyGILState_Ensure()
-            # This might be our answer...
-            # https://github.com/saghul/pyuv/blob/39342fc2fd688f2fb2120d3092dd9cf52f537de2/src/process.c
-
-            # This is similar to how CPython handles process spawning
-            # It releases the gil during spawntime and then brings it back in...
+                # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
+                # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
+                # This means that we cannot use any flags with this setup
+                # Finding examples of how uv_spawn is used will be helful as well...
+                # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
+                
+                # NOTE To make up for the loss of forking (which I saw as an enhancement on other systems)
+                # Try releasing the gil during the spawning phase which is what CPython does...
+                # mimic forking behaviors this will likely allow us to moderate the OS better
+                # if something bad happens... - Vizonex
+                
+                # I cannot seem to get with nogil to work here so this was my workaround...
+                # This might be our answer...
+                # https://github.com/saghul/pyuv/blob/39342fc2fd688f2fb2120d3092dd9cf52f537de2/src/process.c
+                
+                # This is similar to how CPython handles process spawning
+                # It releases the gil during spawntime and then brings it back in...
 
             err = uv.uv_spawn(loop.uvloop,
                               <uv.uv_process_t*>self._handle,
                               &self.options)
 
-            # NOTE I brought the PyGILState_Release here instead of later
-            # so that we can have better control over the os module... - Vizonex
-            PyGILState_Release(py_gil_state)
-            # This GIL release couldn't be deferred to self._after_fork() anyway because the latter call
-            # only happens if forking is enabled (call via system.handleAtFork which is set
-            # using system.setForkHandler).
-            # Actually, since self._after_fork() is not called in this Windows version,
-            # and that call is the part executed with gil in the nonWindows version, see:
-            # https://github.com/MagicStack/uvloop/blob/6c770dc3fbdd281d15c2ad46588c139696f9269c/uvloop/loop.pyx#L3353-L3357
-            # the question is why the GIL is needed at all here?
-            
+            if not system.PLATFORM_IS_WINDOWS:
+                __forking = 0
+                __forking_loop = None
+                system.resetForkHandler()
+                PyOS_AfterFork_Parent()
+            else:
+                PyGILState_Release(py_gil_state)
+                # NOTE I brought the PyGILState_Release here instead of later
+                # so that we can have better control over the os module... - Vizonex
+                
+                # This GIL release couldn't be deferred to self._after_fork() anyway because the latter call
+                # only happens if forking is enabled (call via system.handleAtFork which is set
+                # using system.setForkHandler).
+                # Actually, since self._after_fork() is not called in this Windows version,
+                # and that call is the part executed with gil in the nonWindows version, see:
+                # https://github.com/MagicStack/uvloop/blob/6c770dc3fbdd281d15c2ad46588c139696f9269c/uvloop/loop.pyx#L3353-L3357
+                # the question is why the GIL is needed at all here?
+
             loop.active_process_handler = None
 
             if err < 0:
@@ -168,9 +181,9 @@ cdef class UVProcess(UVHandle):
         # untrack this handle.
         self._loop._track_process(self)
 
-        # NOTE We aren't Forking so this check is irrelevant...
-        # if debug_flags & __PROCESS_DEBUG_SLEEP_AFTER_FORK:
-        #     time_sleep(1)
+        if not system.PLATFORM_IS_WINDOWS:
+            if debug_flags & __PROCESS_DEBUG_SLEEP_AFTER_FORK:
+                time_sleep(1)
 
         if preexec_fn is not None and errpipe_data:
             # preexec_fn has raised an exception.  The child
@@ -200,11 +213,12 @@ cdef class UVProcess(UVHandle):
         if self._restore_signals:
             _Py_RestoreSignals()
 
-        # PyOS_AfterFork_Child()
+        if not system.PLATFORM_IS_WINDOWS:
+            PyOS_AfterFork_Child()
 
-        # err = uv.uv_loop_fork(self._loop.uvloop)
-        # if err < 0:
-        #     raise convert_error(err)
+            err = uv.uv_loop_fork(self._loop.uvloop)
+            if err < 0:
+                raise convert_error(err)
 
         if self._preexec_fn is not None:
             try:
@@ -276,12 +290,13 @@ cdef class UVProcess(UVHandle):
         if start_new_session:
             self.options.flags |= uv.UV_PROCESS_DETACHED
 
-            # TODO Forget these flags for right now until we have figured out/diagnosed the real issue...
-            # "All of these flags have been set because they're all meaningful on windows systems...
-            # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
-            # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
-            # enabling VERBATIM_ARGUMENTS is helpful here because we're not enabling children...
-            self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS
+            if not system.PLATFORM_IS_WINDOWS:
+                # TODO Forget these flags for right now until we have figured out/diagnosed the real issue...
+                # "All of these flags have been set because they're all meaningful on windows systems...
+                # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
+                # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
+                # enabling VERBATIM_ARGUMENTS is helpful here because we're not enabling children...
+                self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS
 
         if force_fork:
             # This is a hack to work around the change in libuv 1.44:
@@ -801,12 +816,16 @@ cdef void __uvprocess_on_exit_callback(
 
 cdef __socketpair():
     cdef:
-        uv.uv_file fds[2]
+        int fds[2]
         int err
 
-	# Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
-	# instead of system.socketpair().
-    err = uv.uv_pipe(fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
+    # Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
+    # instead of system.socketpair().
+    if system.PLATFORM_IS_WINDOWS:
+        # NB: uv.uv_file is int type on Windows
+        err = uv.uv_pipe(fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)
+    else:
+        err = system.socketpair(uv.AF_UNIX, uv.SOCK_STREAM, 0, fds)
     if err:
         exc = convert_error(-err)
         raise exc

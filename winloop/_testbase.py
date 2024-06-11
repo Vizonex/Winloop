@@ -317,15 +317,13 @@ class AIOTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        if (sys.platform not in ('win32', 'cygwin', 'cli')
-           and sys.version_info < (3, 12)):
+        if sys.platform != 'win32' and sys.version_info < (3, 12):
             watcher = asyncio.SafeChildWatcher()
             watcher.attach_loop(self.loop)
             asyncio.set_child_watcher(watcher)
 
     def tearDown(self):
-        if (sys.platform not in ('win32', 'cygwin', 'cli')
-           and sys.version_info < (3, 12)):
+        if sys.platform != 'win32' and sys.version_info < (3, 12):
             asyncio.set_child_watcher(None)
         super().tearDown()
 

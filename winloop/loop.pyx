@@ -18,6 +18,8 @@ from .includes.python cimport (
     Context_Exit,
     PyMemoryView_FromMemory, PyBUF_WRITE,
     PyMemoryView_FromObject, PyMemoryView_Check,
+    PyOS_AfterFork_Parent, PyOS_AfterFork_Child,
+    PyOS_BeforeFork,
 	PyUnicode_FromString
 )
 from .includes.flowcontrol cimport add_flowcontrol_defaults
@@ -132,8 +134,9 @@ cdef class Loop:
         # Install PyMem* memory allocators if they aren't installed yet.
         __install_pymem()
 
-        # Obviously we cannot truly fork on windows so workarounds
-        # or alternative methods might be required...
+        if not system.PLATFORM_IS_WINDOWS:
+            # Install pthread_atfork handlers
+            __install_atfork()
 
         self.uvloop = <uv.uv_loop_t*>PyMem_RawMalloc(sizeof(uv.uv_loop_t))
         if self.uvloop is NULL:
@@ -2802,11 +2805,13 @@ cdef class Loop:
         if not shell:
             raise ValueError("shell must be True")
 
-
-        # fixed to the actual solution
+        args = [cmd]
         if shell:
-            # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
-            args = [b"cmd", b"/s /c", cmd]
+            if system.PLATFORM_IS_WINDOWS:
+                # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
+                args = [b'cmd', b'/s /c'] + args
+            else:
+                args = [b'/bin/sh', b'-c'] + args
 
         return await self.__subprocess_run(protocol_factory, args, shell=True,
                                            **kwargs)
@@ -2896,30 +2901,28 @@ cdef class Loop:
             raise TypeError(
                 "coroutines cannot be used with add_signal_handler()")
 
-        # SKIP ALL THIS, WE DONT HAVE A SIGCHILD IN WINDOWS LIBUV!!
+        if not system.PLATFORM_IS_WINDOWS and sig == uv.SIGCHLD:
+            if (hasattr(callback, '__self__') and
+                    isinstance(callback.__self__, aio_AbstractChildWatcher)):
 
-        # if sig == uv.SIGCHLD:
-            # if (hasattr(callback, '__self__') and
-            #         isinstance(callback.__self__, aio_AbstractChildWatcher)):
+                warnings_warn(
+                    "!!! asyncio is trying to install its ChildWatcher for "
+                    "SIGCHLD signal !!!\n\nThis is probably because a uvloop "
+                    "instance is used with asyncio.set_event_loop(). "
+                    "The correct way to use uvloop is to install its policy: "
+                    "`asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())`"
+                    "\n\n", RuntimeWarning, source=self)
 
-            #     warnings_warn(
-            #         "!!! asyncio is trying to install its ChildWatcher for "
-            #         "SIGCHLD signal !!!\n\nThis is probably because a uvloop "
-            #         "instance is used with asyncio.set_event_loop(). "
-            #         "The correct way to use uvloop is to install its policy: "
-            #         "`asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())`"
-            #         "\n\n", RuntimeWarning, source=self)
+                # TODO: ideally we should always raise an error here,
+                # but that would be a backwards incompatible change,
+                # because we recommended using "asyncio.set_event_loop()"
+                # in our README.  Need to start a deprecation period
+                # at some point to turn this warning into an error.
+                return
 
-            #     # TODO: ideally we should always raise an error here,
-            #     # but that would be a backwards incompatible change,
-            #     # because we recommended using "asyncio.set_event_loop()"
-            #     # in our README.  Need to start a deprecation period
-            #     # at some point to turn this warning into an error.
-            #     return
-
-            # raise RuntimeError(
-            #     'cannot add a signal handler for SIGCHLD: it is used '
-            #     'by the event loop to track subprocesses')
+            raise RuntimeError(
+                'cannot add a signal handler for SIGCHLD: it is used '
+                'by the event loop to track subprocesses')
 
         self._check_signal(sig)
         self._check_closed()
@@ -3351,6 +3354,33 @@ include "sslproto.pyx"
 include "handles/udp.pyx"
 
 include "server.pyx"
+
+
+# Used in UVProcess
+cdef vint __atfork_installed = 0
+cdef vint __forking = 0
+cdef Loop __forking_loop = None
+
+
+cdef void __get_fork_handler() noexcept nogil:
+    with gil:
+        if (__forking and __forking_loop is not None and
+                __forking_loop.active_process_handler is not None):
+            __forking_loop.active_process_handler._after_fork()
+
+cdef __install_atfork():
+    global __atfork_installed
+
+    if __atfork_installed:
+        return
+    __atfork_installed = 1
+
+    cdef int err
+
+    err = system.pthread_atfork(NULL, NULL, &system.handleAtFork)
+    if err:
+        __atfork_installed = 0
+        raise convert_error(-err)
 
 
 # Install PyMem* memory allocators

@@ -1,7 +1,7 @@
 from libc.stdint cimport int8_t, uint64_t
 
 
-cdef extern from "winsock2.h":
+cdef extern from "winsock2.h" nogil:
     """
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -11,6 +11,9 @@ cdef extern from "winsock2.h":
 #define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL)
     """
 
+    unsigned long ntohl(unsigned long)
+    unsigned long htonl(unsigned long)
+    unsigned long ntohs(unsigned long)
 
     ctypedef unsigned long long UINT_PTR
     ctypedef UINT_PTR SOCKET
@@ -48,15 +51,8 @@ cdef extern from "winsock2.h":
 
     const char *gai_strerror(int errcode)
 
-    # int socketpair(int domain, int type, int protocol, int socket_vector[2])
-
     int setsockopt(SOCKET socket, int level, int option_name,
                    const void *option_value, int option_len)
-
-    unsigned long ntohl(unsigned long)
-    unsigned long ntohl(unsigned long)
-    unsigned long htonl(unsigned long)
-    unsigned long ntohs(unsigned long)
 
     # SOCKET_ERROR = -1
     int SOCKET_ERROR
@@ -69,28 +65,14 @@ cdef extern from "winsock2.h":
     # ADDED In the others since we plan to optimize uv__try_write down to just simply window's api...
     ctypedef WSABUF *LPWSABUF
 
-    # Macro for WSASend
-    #define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL);
-
     int winloop_sys_write(int, WSABUF, unsigned long)
     int WSAGetLastError()
 
 
-# The AtFork implementation does not work and it is believed that Windows already takes care of this...
-# http://locklessinc.com/articles/pthreads_on_windows/
-
-# I'll leave this code here just to show other programmers what was needed to be removed
-# Windows cannot do pthread_atfork anyways...
-# cdef extern from "pthread.h":
-#
-#     int pthread_atfork(
-#         void (*prepare)(),
-#         void (*parent)(),
-#         void (*child)())
-
 cdef extern from "io.h" nogil:
     int  _write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount)
     void _exit(int status)
+
 
 cdef extern from "includes/compat.h" nogil:
 
@@ -107,8 +89,27 @@ cdef extern from "includes/compat.h" nogil:
     int EPOLL_CTL_DEL
     int epoll_ctl(int epfd, int op, int fd, epoll_event *event)
 
+    struct sockaddr_un:
+        unsigned short sun_family
+        char*          sun_path
+        # ...
+
+    object MakeUnixSockPyAddr(sockaddr_un *addr)
+
+    int socketpair(int domain, int type, int protocol, int socket_vector[2])
+
 
 cdef extern from "includes/fork_handler.h":
+
     uint64_t MAIN_THREAD_ID
     int8_t MAIN_THREAD_ID_SET
+    ctypedef void (*OnForkHandler)()
+    void handleAtFork()
+    void setForkHandler(OnForkHandler handler)
+    void resetForkHandler()
     void setMainThreadID(uint64_t id)
+
+    int pthread_atfork(
+        void (*prepare)(),
+        void (*parent)(),
+        void (*child)())
