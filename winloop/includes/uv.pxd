@@ -229,7 +229,7 @@ int SIGCHLD = 0;
         UV_LEAVE_GROUP = 0,
         UV_JOIN_GROUP
 
-    cpdef enum uv_fs_event:
+    cdef enum uv_fs_event:
         UV_RENAME = 1,
         UV_CHANGE = 2
 
