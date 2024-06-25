@@ -181,9 +181,8 @@ cdef class UVProcess(UVHandle):
         # untrack this handle.
         self._loop._track_process(self)
 
-        if not system.PLATFORM_IS_WINDOWS:
-            if debug_flags & __PROCESS_DEBUG_SLEEP_AFTER_FORK:
-                time_sleep(1)
+        if debug_flags & __PROCESS_DEBUG_SLEEP_AFTER_FORK:
+            time_sleep(1)
 
         if preexec_fn is not None and errpipe_data:
             # preexec_fn has raised an exception.  The child
@@ -290,7 +289,7 @@ cdef class UVProcess(UVHandle):
         if start_new_session:
             self.options.flags |= uv.UV_PROCESS_DETACHED
 
-            if not system.PLATFORM_IS_WINDOWS:
+            if system.PLATFORM_IS_WINDOWS:
                 # TODO Forget these flags for right now until we have figured out/diagnosed the real issue...
                 # "All of these flags have been set because they're all meaningful on windows systems...
                 # see uv_process_fags for more reasons why I had to set all of these up this way" - Vizonex
@@ -821,6 +820,8 @@ cdef __socketpair():
 
     # Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
     # instead of system.socketpair().
+	# TODO: fix remaining issues, see e.g., test_pipes, test_process,
+	# now have UV_EPERM = -4048 error for stdin pipe.
     if system.PLATFORM_IS_WINDOWS:
         # NB: uv.uv_file is int type on Windows
         err = uv.uv_pipe(fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)

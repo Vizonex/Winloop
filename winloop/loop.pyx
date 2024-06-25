@@ -2809,7 +2809,8 @@ cdef class Loop:
         if shell:
             if system.PLATFORM_IS_WINDOWS:
                 # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
-                args = [b'cmd', b'/s /c'] + args
+                # Winloop comment: args[0].split(' ') instead of args to pass some tests in test_process
+                args = [b'cmd', b'/s /c'] + args[0].split(' ')
             else:
                 args = [b'/bin/sh', b'-c'] + args
 

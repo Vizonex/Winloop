@@ -350,11 +350,18 @@ cdef class UVStream(UVBaseTransport):
             int fd
             int result
 
-            # uv.uv_buf_t _buf
+#            uv.uv_buf_t _buf
 
             # UPDATE: added WSABUF Brought over from "winsock2.h"
             system.WSABUF wsa
 
+        # Winloop comment: WSASend below does not work wirh pipes.
+        # For pipes, using Writefile() from Windows fileapi.h would
+        # be an option, but the corresponding files have been created
+        # FILE_FLAG_OVERLAPPED set, but we don't want to go that way here.
+        # We detect pipes on Windows as pseudosockets.
+        if self._get_socket().family == uv.AF_UNIX:
+            return -1
 
         if (<uv.uv_stream_t*>self._handle).write_queue_size != 0:
             raise RuntimeError(
