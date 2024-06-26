@@ -18,7 +18,6 @@ cdef extern from "winsock2.h" nogil:
     ctypedef unsigned long long UINT_PTR
     ctypedef UINT_PTR SOCKET
 
-    # TODO (Vizonex) Verify that these all are actually existing on Windows...
     struct sockaddr:
         unsigned short sa_family
         char           sa_data[14]
