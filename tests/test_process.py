@@ -502,7 +502,7 @@ print('err', file=sys.stderr, flush=True)
         # docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
         if sys.platform == 'win32':
             opener = lambda name, flags: os.open(
-            name, os.O_TEMPORARY, os.O_RDONLY | os.O_BINARY)
+                name, os.O_TEMPORARY, os.O_RDONLY | os.O_BINARY)
         else:
             opener = None
 

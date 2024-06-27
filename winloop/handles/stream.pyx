@@ -620,13 +620,6 @@ cdef class UVStream(UVBaseTransport):
             meth = self._protocol.eof_received
         except AttributeError:
             keep_open = False
-            if system.PLATFORM_IS_WINDOWS:
-                # Winloop comment: we set keep_open = True anyway to pass
-                # test_pipes.Test_UV_Pipes.test_write_pipe
-                # This does not appear to break other tests.
-                # And also helps to pass tests in test_process.py.
-                # TODO: find a proper fix.
-                keep_open = True
         else:
             keep_open = run_in_context(self.context, meth)
 
