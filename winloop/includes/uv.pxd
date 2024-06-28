@@ -58,10 +58,7 @@ cdef extern from "uv.h" nogil:
     cdef int SOL_SOCKET
     cdef int SO_ERROR
 
-    # TODO Vizonex Get SO_RESUSEADDR FROM ANOTHER HEADER FILE IF NEEDED!
-    # cdef int SO_REUSEADDR
-    # cdef int SO_REUSEPORT We already have this available inside of "stdlib.pxi" so no need to have it here...
-    # and I'm going to replace it with SO_BROADCAST
+
     cdef int AF_INET
     cdef int AF_INET6
     cdef int AF_UNIX
