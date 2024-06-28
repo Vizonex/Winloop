@@ -3,6 +3,8 @@
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <sys/un.h>
+#else
+#include <winsock2.h>
 #endif
 #include "Python.h"
 #include "uv.h"
@@ -45,10 +47,29 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) {
 #endif
 
 #ifdef _WIN32
+int SIGCHLD = 0;
+
 struct sockaddr_un {unsigned short sun_family; char* sun_path;};
 
 int socketpair(int domain, int type, int protocol, int socket_vector[2]) {
     return 0;
+}
+
+/* redefine write as counterpart of unistd.h/write */
+int write(int fd, const void *buf, unsigned int count) {
+    WSABUF wsa;
+    unsigned long dbytes;
+    wsa.buf = (char*)buf;
+    wsa.len = (unsigned long)count;
+    errno = WSASend(fd, &wsa, 1, &dbytes, 0, NULL, NULL);
+    if (errno == SOCKET_ERROR) {
+      errno = WSAGetLastError();
+      if (errno == 10035)
+        errno = EAGAIN;
+      return -1;
+    }
+    else
+      return dbytes;
 }
 #endif
 

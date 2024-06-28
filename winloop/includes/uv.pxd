@@ -1,6 +1,7 @@
 from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
 cdef extern from "includes/compat.h" nogil:
    int getuid()
+   int SIGCHLD
 
 from . cimport system
 
@@ -15,11 +16,6 @@ cdef enum:
     UV_INTERNAL_HANDLE_READABLE = 0x00004000
 
 cdef extern from "uv.h" nogil:
-    """
-// hack for now, todo clean solution
-int SIGCHLD = 0;
-    """
-
     cdef int UV_TCP_IPV6ONLY
 
     cdef int UV_EACCES
@@ -43,7 +39,6 @@ int SIGCHLD = 0;
     cdef int UV_ETIMEDOUT
     cdef int UV_EBADF
     cdef int UV_ENOBUFS
-#    cdef int UV_EWOULDBLOCK  # not needed because UV_EGAIN is used for this ?!
 
     cdef int UV_EAI_ADDRFAMILY
     cdef int UV_EAI_AGAIN
@@ -82,7 +77,6 @@ int SIGCHLD = 0;
 
     cdef int SIGINT
     cdef int SIGHUP
-    cdef int SIGCHLD
     cdef int SIGKILL
     cdef int SIGTERM
 
@@ -491,7 +485,6 @@ int SIGCHLD = 0;
         UV_INHERIT_STREAM = 0x04,
         UV_READABLE_PIPE = 0x10,
         UV_WRITABLE_PIPE = 0x20,
-        # NOTE Added in UV_NONBLOCK_PIPE for stability reasons... - Vizonex
         UV_NONBLOCK_PIPE  = 0x40
 
     ctypedef union uv_stdio_container_data_u:

@@ -6,9 +6,6 @@ cdef extern from "winsock2.h" nogil:
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
-/* Inspired by uvloop's own work SEE: https://github.com/MagicStack/uvloop/blob/master/uvloop/handles/stream.pyx */
-#define winloop_sys_write(fd, bufs, dbytes) WSASend(fd, &bufs, 1, &dbytes, 0, NULL, NULL)
     """
 
     unsigned long ntohl(unsigned long)
@@ -53,20 +50,6 @@ cdef extern from "winsock2.h" nogil:
     int setsockopt(SOCKET socket, int level, int option_name,
                    const void *option_value, int option_len)
 
-    # SOCKET_ERROR = -1
-    int SOCKET_ERROR
-
-    # Added WSABUF for uv__try_write TCP Implementation more directly inside of cython...
-    ctypedef struct WSABUF:
-        char * buf
-        unsigned long len
-
-    # ADDED In the others since we plan to optimize uv__try_write down to just simply window's api...
-    ctypedef WSABUF *LPWSABUF
-
-    int winloop_sys_write(int, WSABUF, unsigned long)
-    int WSAGetLastError()
-
 
 cdef extern from "io.h" nogil:
     int  _write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount)
@@ -97,6 +80,7 @@ cdef extern from "includes/compat.h" nogil:
 
     int socketpair(int domain, int type, int protocol, int socket_vector[2])
 
+    int write(int fd, const void *buf, unsigned int count)
 
 cdef extern from "includes/fork_handler.h":
 

@@ -94,6 +94,7 @@ cdef class UVProcess(UVHandle):
                 __forking = 1
                 __forking_loop = loop
                 system.setForkHandler(<system.OnForkHandler>&__get_fork_handler)
+
                 PyOS_BeforeFork()
             else:
                 py_gil_state = PyGILState_Ensure()
@@ -819,9 +820,9 @@ cdef __socketpair():
         int err
 
     # Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
-    # instead of system.socketpair().
-	# TODO: fix remaining issues, see e.g., test_pipes, test_process,
-	# now have UV_EPERM = -4048 error for stdin pipe.
+    # instead of system.socketpair(). Also, see changes to 
+    # libuv/src/win/pipe.c to deal with UV_EPERM = -4048 errors
+    # for stdin pipe.
     if system.PLATFORM_IS_WINDOWS:
         # NB: uv.uv_file is int type on Windows
         err = uv.uv_pipe(fds, uv.UV_NONBLOCK_PIPE, uv.UV_NONBLOCK_PIPE)

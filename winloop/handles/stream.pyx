@@ -342,26 +342,22 @@ cdef class UVStream(UVBaseTransport):
 
     cdef inline _try_write(self, object data):
         cdef:
-            ssize_t written = 0 # Silence the C4700 Warning
+            ssize_t written
             bint used_buf = 0
             Py_buffer py_buf
-
+            void* buf
+            size_t blen
             int saved_errno
             int fd
-            int result
 
-#            uv.uv_buf_t _buf
-
-            # UPDATE: added WSABUF Brought over from "winsock2.h"
-            system.WSABUF wsa
-
-        # Winloop comment: WSASend below does not work wirh pipes.
-        # For pipes, using Writefile() from Windows fileapi.h would
-        # be an option, but the corresponding files have been created
-        # FILE_FLAG_OVERLAPPED set, but we don't want to go that way here.
-        # We detect pipes on Windows as pseudosockets.
-        if self._get_socket().family == uv.AF_UNIX:
-            return -1
+        if system.PLATFORM_IS_WINDOWS:
+            # Winloop comment: WSASend below does not work wirh pipes.
+            # For pipes, using Writefile() from Windows fileapi.h would
+            # be an option, but the corresponding files have been created
+            # FILE_FLAG_OVERLAPPED set, but we don't want to go that way here.
+            # We detect pipes on Windows as pseudosockets.
+            if self._get_socket().family == uv.AF_UNIX:
+                return -1
 
         if (<uv.uv_stream_t*>self._handle).write_queue_size != 0:
             raise RuntimeError(
@@ -371,47 +367,58 @@ cdef class UVStream(UVBaseTransport):
             # We can only use this hack for bytes since it's
             # immutable.  For everything else it is only safe to
             # use buffer protocol.
-            wsa.buf = <char*>PyBytes_AS_STRING(data)
-            wsa.len = <unsigned long>Py_SIZE(data)
-
+            buf = <void*>PyBytes_AS_STRING(data)
+            blen = Py_SIZE(data)
         else:
             PyObject_GetBuffer(data, &py_buf, PyBUF_SIMPLE)
             used_buf = 1
+            buf  = py_buf.buf
+            blen = py_buf.len
 
-            wsa.buf  = <char*>py_buf.buf
-            wsa.len = <unsigned long>py_buf.len
-
-        if wsa.len == 0:
+        if blen == 0:
             # Empty data, do nothing.
             return 0
 
         fd = self._fileno()
-        # UPDATE Were trying something different...
-        if system.winloop_sys_write(fd, wsa, written) == system.SOCKET_ERROR:
-            written = uv.uv_translate_sys_error(system.WSAGetLastError())
-
-
+        # Use `unistd.h/write` directly, it's faster than
+        # uv_try_write -- less layers of code.  The error
+        # checking logic is copied from libuv.
+        # Winloop comment: similarly, use WSASend directly
+        # on Windows via call to system.write.
+        written = system.write(fd, buf, blen)
+        if not system.PLATFORM_IS_WINDOWS:
+            while written == -1 and (
+                    errno.errno == errno.EINTR or
+                    (system.PLATFORM_IS_APPLE and
+                        errno.errno == errno.EPROTOTYPE)):
+                # From libuv code (unix/stream.c):
+                #   Due to a possible kernel bug at least in OS X 10.10 "Yosemite",
+                #   EPROTOTYPE can be returned while trying to write to a socket
+                #   that is shutting down. If we retry the write, we should get
+                #   the expected EPIPE instead.
+                written = system.write(fd, buf, blen)
         saved_errno = errno.errno
 
         if used_buf:
             PyBuffer_Release(&py_buf)
 
         if written < 0:
-
-            if saved_errno == errno.EAGAIN or written == uv.UV_EAGAIN:
-                # return -1 because we need to wait for handle.stream.conn.write_reqs_pending to actually be done...
+            if saved_errno == errno.EAGAIN or \
+                    saved_errno == system.EWOULDBLOCK:
                 return -1
-
             else:
-                exc = convert_error(-saved_errno)
+                # Winloop comment: use uv_translate_sys_error for
+                # correct results on all platforms as -saved_errno
+                # only works for POSIX.
+                exc = convert_error(uv.uv_translate_sys_error(saved_errno))
                 self._fatal_error(exc, True)
                 return
 
         if UVLOOP_DEBUG:
             self._loop._debug_stream_write_tries += 1
 
-        # if <size_t>written == _buf.len:
-        #     return 0
+        if <size_t>written == blen:
+            return 0
 
         return written
 
