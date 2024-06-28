@@ -137,6 +137,7 @@ cdef class UVProcess(UVHandle):
                 # and that call is the part executed with gil in the nonWindows version, see:
                 # https://github.com/MagicStack/uvloop/blob/6c770dc3fbdd281d15c2ad46588c139696f9269c/uvloop/loop.pyx#L3353-L3357
                 # the question is why the GIL is needed at all here?
+                # (Answer) Cython does not like when class objects from python are being handled whenever the gil is being released.
 
             loop.active_process_handler = None
 
