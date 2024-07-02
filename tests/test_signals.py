@@ -215,7 +215,7 @@ finally:
             PROG = R"""\
 import asyncio
 import signal
-import uvloop
+import winloop
 
 srv = None
 
@@ -269,7 +269,7 @@ finally:
             PROG = R"""\
 import asyncio
 import signal
-import uvloop
+import winloop
 
 srv = None
 

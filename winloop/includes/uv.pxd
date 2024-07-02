@@ -2,6 +2,7 @@ from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
 cdef extern from "includes/compat.h" nogil:
    int getuid()
    int SIGCHLD
+   int SO_REUSEPORT
 
 from . cimport system
 
@@ -57,8 +58,8 @@ cdef extern from "uv.h" nogil:
 
     cdef int SOL_SOCKET
     cdef int SO_ERROR
-
-
+    cdef int SO_REUSEADDR
+    cdef int SO_BROADCAST
     cdef int AF_INET
     cdef int AF_INET6
     cdef int AF_UNIX
@@ -226,6 +227,7 @@ cdef extern from "uv.h" nogil:
 
     const char* uv_strerror(int err)
     const char* uv_err_name(int err)
+    int uv_translate_sys_error(int sys_errno)
 
     ctypedef void (*uv_walk_cb)(uv_handle_t* handle, void* arg) with gil
 
@@ -375,11 +377,6 @@ cdef extern from "uv.h" nogil:
     int uv_tcp_connect(uv_connect_t* req, uv_tcp_t* handle,
                        const system.sockaddr* addr, uv_connect_cb cb)
 
-
-    # system errors
-    int uv_translate_sys_error(int sys_errno)
-
-
     # Pipes
 
     int uv_pipe_init(uv_loop_t* loop, uv_pipe_t* handle, int ipc)
@@ -517,8 +514,3 @@ cdef extern from "uv.h" nogil:
     unsigned int uv_version()
 
     int uv_pipe(uv_file fds[2], int read_flags, int write_flags)
-
-
-cdef extern from "winsock2.h" nogil:
-    cdef int SO_REUSEADDR
-    cdef int SO_BROADCAST

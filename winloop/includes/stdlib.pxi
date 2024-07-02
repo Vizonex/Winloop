@@ -147,14 +147,13 @@ cdef subprocess_SubprocessError = subprocess.SubprocessError
 
 cdef int signal_NSIG = signal.NSIG
 cdef signal_signal = signal.signal
-# FIXME This will need to be handled differently on enclosure...
-# cdef signal_siginterrupt = signal.siginterrupt
-# "In it's replacement, I'll use SIGABRT Unless some other developer finds problems with this" - Vizonex
-#cdef int signal_SIGABRT = signal.SIGABRT
+cdef signal_siginterrupt = getattr(signal, 'siginterrupt', None)
+# "I'll use SIGABRT Unless some other developer finds problems with this" - Vizonex
+cdef signal_SIGABRT = signal.SIGABRT
+cdef signal_SIGINT = signal.SIGINT
 cdef signal_set_wakeup_fd = signal.set_wakeup_fd
 cdef signal_default_int_handler = signal.default_int_handler
 cdef signal_SIG_DFL = signal.SIG_DFL
-cdef signal_SIGINT = signal.SIGINT
 
 cdef time_sleep = time.sleep
 cdef time_monotonic = time.monotonic

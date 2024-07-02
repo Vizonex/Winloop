@@ -154,7 +154,7 @@ cdef __convert_pyaddr_to_sockaddr(int family, object addr,
         (<system.sockaddr_in6*>&ret.addr).sin6_flowinfo = flowinfo
         (<system.sockaddr_in6*>&ret.addr).sin6_scope_id = scope_id
 
-    elif not system.PLATFORM_IS_WINDOWS and addr.sa_family == uv.AF_UNIX:
+    elif not system.PLATFORM_IS_WINDOWS and family == uv.AF_UNIX:
         if isinstance(addr, str):
             addr = addr.encode(sys_getfilesystemencoding())
         elif not isinstance(addr, bytes):

@@ -1778,8 +1778,11 @@ cdef class Loop:
                         if reuse_address:
                             sock.setsockopt(uv.SOL_SOCKET, uv.SO_REUSEADDR, 1)
                         if reuse_port:
-                            # replaced uv.SO_REUSEPORT with uv.SO_BROADCAST because it's the equivalent on windows systems...
-                            sock.setsockopt(uv.SOL_SOCKET, uv.SO_BROADCAST, 1)
+                            if system.PLATFORM_IS_WINDOWS:
+                                # replaced uv.SO_REUSEPORT with uv.SO_BROADCAST because it's the equivalent on windows systems...
+                                sock.setsockopt(uv.SOL_SOCKET, uv.SO_BROADCAST, 1)
+                            else:
+                                sock.setsockopt(uv.SOL_SOCKET, uv.SO_REUSEPORT, 1)
                         # Disable IPv4/IPv6 dual stack support (enabled by
                         # default on Linux) which makes a single socket
                         # listen on both address families.
@@ -2932,15 +2935,16 @@ cdef class Loop:
         self._signal_handlers[sig] = h
 
         try:
-            # Register a dummy signal handler to ask Python to write the signal
-            # number in the wakeup file descriptor.
-            # signal_signal(sig, self.__sighandler)
+            if not system.PLATFORM_IS_WINDOWS:
+                # Register a dummy signal handler to ask Python to write the signal
+                # number in the wakeup file descriptor.
+                signal_signal(sig, self.__sighandler)
 
-            # Set SA_RESTART to limit EINTR occurrences.
-            # signal_siginterrupt(sig, False)
-
-            # XXX "WINDOWS DOESN'T Have a signal_siginterrupt so I'll do this until someone smarter than me wants a tackle at it" - Vizonex
-            signal_signal(signal_SIGINT, self.__sighandler)
+                # Set SA_RESTART to limit EINTR occurrences.
+                signal_siginterrupt(sig, False)
+            else:
+                # XXX "WINDOWS DOESN'T Have a signal_siginterrupt so I'll do this until someone smarter than me wants a tackle at it" - Vizonex
+                signal_signal(signal_SIGINT, self.__sighandler)
 
         except OSError as exc:
             del self._signal_handlers[sig]

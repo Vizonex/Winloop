@@ -3,7 +3,13 @@
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #else
+#include <io.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <winsock2.h>
 #endif
 #include "Python.h"
@@ -48,6 +54,7 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) {
 
 #ifdef _WIN32
 int SIGCHLD = 0;
+int SO_REUSEPORT = 0;
 
 struct sockaddr_un {unsigned short sun_family; char* sun_path;};
 

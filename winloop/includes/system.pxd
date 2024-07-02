@@ -1,19 +1,10 @@
 from libc.stdint cimport int8_t, uint64_t
 
+cdef extern from "includes/compat.h" nogil:
 
-cdef extern from "winsock2.h" nogil:
-    """
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-    """
-
-    unsigned long ntohl(unsigned long)
-    unsigned long htonl(unsigned long)
-    unsigned long ntohs(unsigned long)
-
-    ctypedef unsigned long long UINT_PTR
-    ctypedef UINT_PTR SOCKET
+    int ntohl(int)
+    int htonl(int)
+    int ntohs(int)
 
     struct sockaddr:
         unsigned short sa_family
@@ -47,16 +38,18 @@ cdef extern from "winsock2.h" nogil:
 
     const char *gai_strerror(int errcode)
 
-    int setsockopt(SOCKET socket, int level, int option_name,
+    int socketpair(int domain, int type, int protocol, int socket_vector[2])
+
+    int setsockopt(int socket, int level, int option_name,
                    const void *option_value, int option_len)
 
+    struct sockaddr_un:
+        unsigned short sun_family
+        char*          sun_path
+        # ...
 
-cdef extern from "io.h" nogil:
-    int  _write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount)
+    ssize_t write(int fd, const void *buf, size_t count)
     void _exit(int status)
-
-
-cdef extern from "includes/compat.h" nogil:
 
     cdef int EWOULDBLOCK
 
@@ -70,17 +63,8 @@ cdef extern from "includes/compat.h" nogil:
 
     int EPOLL_CTL_DEL
     int epoll_ctl(int epfd, int op, int fd, epoll_event *event)
-
-    struct sockaddr_un:
-        unsigned short sun_family
-        char*          sun_path
-        # ...
-
     object MakeUnixSockPyAddr(sockaddr_un *addr)
 
-    int socketpair(int domain, int type, int protocol, int socket_vector[2])
-
-    int write(int fd, const void *buf, unsigned int count)
 
 cdef extern from "includes/fork_handler.h":
 

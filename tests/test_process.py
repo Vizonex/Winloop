@@ -995,11 +995,12 @@ class Test_UV_Process_Delayed(tb.UVTestCase):
                 ('CM', transport),
                 'PROC_EXIT',
                 ('STDOUT', b'1' + NL),
-                ('STDOUT', 'LOST'),
+                ('STDOUT', 'LOST')
+            }.union(
                 # Winloop comment: connection lost is not called because of
                 # issues with stdin pipe. See process.__socketpair().
-                # ('CL', 0, None)
-            })
+                {('CL', 0, None)} if sys.platform != 'win32' else {}
+            ))
 
     def test_process_delayed_stdio__paused__no_stdin(self):
         transport, proto = self.loop.run_until_complete(
