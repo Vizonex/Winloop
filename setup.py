@@ -56,9 +56,10 @@ def _libuv_autogen(env):
 
 class uvloop_sdist(sdist):
     def run(self):
-        # Make sure sdist archive contains configure
-        # to avoid the dependency on autotools.
-        _libuv_autogen(_libuv_build_env())
+        if sys.platform != 'win32':
+            # Make sure sdist archive contains configure
+            # to avoid the dependency on autotools.
+            _libuv_autogen(_libuv_build_env())
         super().run()
 
 
