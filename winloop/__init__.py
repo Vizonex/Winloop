@@ -5,7 +5,9 @@ import warnings as _warnings
 
 from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
 
-from . import includes as __includes  # NOQA
+# Winloop comment: next line commented out for now. Somehow winloop\includes
+# is not included in the Winloop wheel, affecting version 0.1.6 on PyPI.
+#from . import includes as __includes  # NOQA
 from .loop import Loop as __BaseLoop  # NOQA
 from ._version import __version__  # NOQA
 
