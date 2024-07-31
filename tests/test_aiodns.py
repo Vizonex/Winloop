@@ -9,6 +9,8 @@ except ImportError:
 else:
     skip_tests = False
 
+import sys
+import asyncio
 import unittest
 
 from winloop import _testbase as tb
@@ -34,7 +36,10 @@ class Test_UV_Aiodns(_TestAiodns, tb.UVTestCase):
     pass
 
 
-@unittest.skip("aiodns needs a SelectorEventLoop on Windows."
-               " See more: https://github.com/saghul/aiodns/issues/86")
+@unittest.skipIf(skip_tests, "no aiodns module")
 class Test_AIO_Aiodns(_TestAiodns, tb.AIOTestCase):
-    pass
+    # Winloop comment: switching to selector loop (instead of proactor),
+    # see https://github.com/saghul/aiodns/issues/86
+    if sys.platform == 'win32':
+        def new_policy(self):
+            return asyncio.WindowsSelectorEventLoopPolicy()

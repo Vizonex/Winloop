@@ -818,7 +818,14 @@ cdef inline bint __uv_stream_on_read_common(
         if sc.__read_error_close:
             # Used for getting notified when a pipe is closed.
             # See WriteUnixTransport for the explanation.
-            sc._on_eof()
+            # Winloop comment: 0-reads on pipes used, e.g., for stdin
+            # ("write only") give ERROR_ACCESS_DENIED, and in this case
+            # we should keep the transport open for further writes.
+            if (system.PLATFORM_IS_WINDOWS and nread == uv.UV_EPERM
+                and uv.uv_is_writable(<uv.uv_stream_t*> sc._handle)):
+                sc._stop_reading()
+            else:
+                sc._on_eof()
             return True
 
         exc = convert_error(nread)

@@ -126,7 +126,11 @@ class Test_UV_AioHTTP(_TestAioHTTP, tb.UVTestCase):
 
 @unittest.skipIf(skip_tests, "no aiohttp module")
 class Test_AIO_AioHTTP(_TestAioHTTP, tb.AIOTestCase):
-    pass
+    # Winloop comment: switching to selector loop (instead of proactor),
+    # see https://github.com/saghul/aiodns/issues/86
+    if sys.platform == 'win32':
+        def new_policy(self):
+            return asyncio.WindowsSelectorEventLoopPolicy()
 
 
 if __name__ == "__main__":
