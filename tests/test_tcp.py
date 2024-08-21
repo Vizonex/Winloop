@@ -251,11 +251,14 @@ class _TestTCP:
             # "[Errno 10048] error while attempting to bind on address
             #  ('127.0.0.1', 31098): only one usage of each socket address
             #  (protocol/network address/port) is normally permitted"
+            # NB: Python 3.12.5+ adds "[winerror 10048] " before "only one ..."
             with self.assertRaisesRegex(OSError,
-                                        r"error while attempting.*\('127.*: " +
-                                        (r"only one usage of each"
-                                         if sys.platform == 'win32'
-                                         else r"address( already)? in use")):
+                                        r"error while attempting.*\('127.*:" +
+                                        (r"( \[errno \d+\])? address"
+                                         r"( already)? in use"
+                                         if sys.platform != 'win32' else
+                                         r"( \[winerror \d+\])? "
+                                         r"only one usage of each")):
                 self.loop.run_until_complete(
                     self.loop.create_server(object, *addr))
 
