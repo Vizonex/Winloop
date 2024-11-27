@@ -2,14 +2,14 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 # Winloop
-An Alternative library for uvloop compatibility with windows because let's face it. Window's python asyncio standard libaray is garabage escpecially when Windows Defender decides to eat half your ram.
-I never really liked the fact that I couldn't make anything run faster escpecially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for windows [but windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
+An Alternative library for uvloop compatibility with windows because let's face it. Window's python asyncio standard library is garbage especially when Windows Defender decides to eat half your ram.
+I never really liked the fact that I couldn't make anything run faster especially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for windows [but windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
 Because nobody was willing to step in after so many years of waiting, I went ahead and downloaded the source code for uvloop and started modifying the source code to be windows compatible by carefully removing and changing parts that were not made for windows. Many hours of research went into making this library exist.
 
 The differences with __uvloop__ is that forking has been fully disabled and some smaller api calls had to be changed, error handling has been carefully modified and subprocesses instead release the gil instead of forking out...
 
-There is a performance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problem as well. This library also has comparable performance to it's brother uvloop.
+There is a performance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problems as well. This library also has comparable performance to it's brother uvloop.
 
 
 
