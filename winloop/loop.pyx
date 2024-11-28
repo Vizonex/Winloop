@@ -1400,7 +1400,11 @@ cdef class Loop:
         self._debug = bool(enabled)
         if self.is_running():
             self.call_soon_threadsafe(
-                self._set_coroutine_debug, self, self._debug)
+# Fixing problem mentioned in test/test_base.py in function test_check_thread().
+# We remove the spurious argument "self" from the next line:
+#                self._set_coroutine_debug, self, self._debug)
+# This paves the way for moving to Cython 3.0.
+                self._set_coroutine_debug, self._debug)
 
     def is_running(self):
         """Return whether the event loop is currently running."""

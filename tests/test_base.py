@@ -275,6 +275,13 @@ class _TestBase:
         #   https://github.com/cython/cython/pull/4988/files
         # but the code for this part in cython 3.0.10 has been changed at some
         # point, apparently causing the present problem.
+        
+        # WINLOOP comment: see the above comment. Work-in-progress.
+        # Problem is caused by a spurious argument in this call in loop.pyx:
+        #     self.call_soon_threadsafe(
+        #                self._set_coroutine_debug, self, self._debug)
+        #                                          ^^^^^^
+        # Removing it removes the problem.        
         def check_thread(loop, debug):
             def cb():
                 pass
