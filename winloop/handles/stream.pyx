@@ -351,7 +351,7 @@ cdef class UVStream(UVBaseTransport):
             int fd
 
         if system.PLATFORM_IS_WINDOWS:
-            # Winloop comment: WSASend below does not work wirh pipes.
+            # Winloop comment: WSASend below does not work with pipes.
             # For pipes, using Writefile() from Windows fileapi.h would
             # be an option, but the corresponding files have been created
             # FILE_FLAG_OVERLAPPED set, but we don't want to go that way here.

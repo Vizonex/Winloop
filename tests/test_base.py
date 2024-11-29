@@ -139,7 +139,7 @@ class _TestBase:
         self.assertTrue(delta > 0.049 and delta < 0.6)
         # General comment: the bound 0.6 is probably a typo, instead of 0.06.
         # WINLOOP comment: this test sometimes fails on Windows with delta
-        # below 0.049. Also delta sometimes exceeeds 0.06. This happens
+        # below 0.049. Also delta sometimes exceeds 0.06. This happens
         # with the AIO loop and with the UV loop.
 
     def test_call_later_1(self):
@@ -275,13 +275,13 @@ class _TestBase:
         #   https://github.com/cython/cython/pull/4988/files
         # but the code for this part in cython 3.0.10 has been changed at some
         # point, apparently causing the present problem.
-        
+
         # WINLOOP comment: see the above comment. Work-in-progress.
         # Problem is caused by a spurious argument in this call in loop.pyx:
         #     self.call_soon_threadsafe(
         #                self._set_coroutine_debug, self, self._debug)
         #                                          ^^^^^^
-        # Removing it removes the problem.        
+        # Removing it removes the problem.
         def check_thread(loop, debug):
             def cb():
                 pass
