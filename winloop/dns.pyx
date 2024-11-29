@@ -302,7 +302,7 @@ cdef class AddrInfo:
             uv.uv_freeaddrinfo(self.data)  # returns void
             self.data = NULL
 
-    cdef void set_data(self, system.addrinfo *data):
+    cdef void set_data(self, system.addrinfo *data) noexcept:
         self.data = data
 
     cdef unpack(self):
@@ -352,6 +352,11 @@ cdef class AddrInfoRequest(UVRequest):
 
         if host is None:
             chost = NULL
+        elif host == b'' and sys.platform == 'darwin':
+            # It seems `getaddrinfo("", ...)` on macOS is equivalent to
+            # `getaddrinfo("localhost", ...)`. This is inconsistent with
+            # libuv 1.48 which treats empty nodename as EINVAL.
+            chost = <char*>'localhost'
         else:
             chost = <char*>host
 
@@ -359,21 +364,6 @@ cdef class AddrInfoRequest(UVRequest):
             cport = NULL
         else:
             cport = <char*>port
-
-        if cport is NULL and chost is NULL:
-            self.on_done()
-            # Winloop comment: on Windows, cPython has a simpler error
-            # message than uvlib (via winsock probably) instead of
-            # EAI_NONAME [ErrNo 10001] "No such host is known. ".
-            # We replace the message with "getaddrinfo failed".
-            # See also errors.pyx.
-            if sys.platform == 'win32':
-                msg = 'getaddrinfo failed'
-            else:
-                msg = system.gai_strerror(socket_EAI_NONAME).decode('utf-8')
-            ex = socket_gaierror(socket_EAI_NONAME, msg)
-            callback(ex)
-            return
 
         memset(&self.hints, 0, sizeof(system.addrinfo))
         self.hints.ai_flags = flags
@@ -394,7 +384,25 @@ cdef class AddrInfoRequest(UVRequest):
 
         if err < 0:
             self.on_done()
-            callback(convert_error(err))
+            try:
+                if err == uv.UV_EINVAL:
+                    # Convert UV_EINVAL to EAI_NONAME to match libc behavior
+                    # Winloop comment: on Windows, cPython has a simpler error
+                    # message than uvlib (via winsock probably) instead of
+                    # EAI_NONAME [ErrNo 10001] "No such host is known. ".
+                    # We replace the message with "getaddrinfo failed".
+                    # See also errors.pyx.
+                    if sys.platform == 'win32':
+                        msg = 'getaddrinfo failed'
+                    else:
+                        msg = system.gai_strerror(socket_EAI_NONAME).decode('utf-8')
+                    ex = socket_gaierror(socket_EAI_NONAME, msg)
+                else:
+                    ex = convert_error(err)
+            except Exception as ex:
+                callback(ex)
+            else:
+                callback(ex)
 
 
 cdef class NameInfoRequest(UVRequest):

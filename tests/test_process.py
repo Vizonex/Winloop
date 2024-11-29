@@ -988,7 +988,7 @@ class Test_UV_Process_Delayed(tb.UVTestCase):
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                _uvloop_sleep_after_fork=True))
+                __uvloop_sleep_after_fork=True))
         self.assertIsNot(transport, None)
         self.assertEqual(transport.get_returncode(), 0)
         self.assertEqual(
@@ -1010,7 +1010,7 @@ class Test_UV_Process_Delayed(tb.UVTestCase):
                 stdin=None,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                _uvloop_sleep_after_fork=True))
+                __uvloop_sleep_after_fork=True))
         self.assertIsNot(transport, None)
         self.assertEqual(transport.get_returncode(), 0)
         self.assertEqual(
