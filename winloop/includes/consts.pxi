@@ -17,6 +17,7 @@ cdef enum:
     LOG_THRESHOLD_FOR_CONNLOST_WRITES = 5
     SSL_READ_MAX_SIZE = 256 * 1024
 
+
 cdef extern from *:
     '''
     // Number of seconds to wait for SSL handshake to complete

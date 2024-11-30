@@ -69,7 +69,7 @@ cdef class UVProcess(UVHandle):
             self._abort_init()
             raise
 
-        if  __forking or loop.active_process_handler is not None:
+        if __forking or loop.active_process_handler is not None:
             # Our pthread_atfork handlers won't work correctly when
             # another loop is forking in another thread (even though
             # GIL should help us to avoid that.)

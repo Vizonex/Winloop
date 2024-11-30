@@ -373,7 +373,7 @@ cdef class UVStream(UVBaseTransport):
         else:
             PyObject_GetBuffer(data, &py_buf, PyBUF_SIMPLE)
             used_buf = 1
-            buf  = py_buf.buf
+            buf = py_buf.buf
             blen = py_buf.len
 
         if blen == 0:

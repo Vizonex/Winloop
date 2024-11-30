@@ -21,8 +21,7 @@ class TestSourceCode(unittest.TestCase):
         except ImportError:
             raise unittest.SkipTest('flake8 module is missing')
 
-#        for subdir in ['examples', 'uvloop', 'tests']:
-        for subdir in ['winloop', 'tests']:
+        for subdir in ['examples', 'winloop', 'tests']:
             try:
                 subprocess.run(
                     [sys.executable, '-m', 'flake8', '--config', config_path],

@@ -255,8 +255,6 @@ class Test_UV_DNS(BaseTestDNS, tb.UVTestCase):
 
 # Winloop comment: the two tests below no longer work with uvlib>=1.48.0.
 # See github.com/libuv/libuv/commit/3530bcc30350d4a6ccf35d2f7b33e23292b9de70
-# These tests will also fail for uvloop, once uvlib is upgraded,
-# currently uvloop 0.19.0 uses uvlib 1.46.0.
 class Test_AIO_DNS(BaseTestDNS, tb.AIOTestCase):
 
     def test_getaddrinfo_8(self):
