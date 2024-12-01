@@ -32,13 +32,13 @@ class BaseTestDNS:
                 a1 = patched_getaddrinfo(*args, **kwargs)
             else:
                 a1 = socket.getaddrinfo(*args, **kwargs)
-        except socket.gaierror as ex:
+        except (socket.gaierror, UnicodeError) as ex:
             err = ex
 
         try:
             a2 = self.loop.run_until_complete(
                 self.loop.getaddrinfo(*args, **kwargs))
-        except socket.gaierror as ex:
+        except (socket.gaierror, UnicodeError) as ex:
             if err is not None:
                 self.assertEqual(ex.args, err.args)
             else:
@@ -198,6 +198,18 @@ class BaseTestDNS:
                                    proto=6 if sys.platform == 'win32' else 0,
                                    flags=socket.AI_CANONNAME, _patch=patch)
 
+    # https://github.com/libuv/libuv/security/advisories/GHSA-f74f-cvh7-c6q6
+    # See also: https://github.com/MagicStack/uvloop/pull/600
+    def test_getaddrinfo_21(self):
+        payload = f'0x{"0" * 246}7f000001.example.com'.encode('ascii')
+        self._test_getaddrinfo(payload, 80)
+        self._test_getaddrinfo(payload, 80, type=socket.SOCK_STREAM)
+
+    def test_getaddrinfo_22(self):
+        payload = f'0x{"0" * 246}7f000001.example.com'
+        self._test_getaddrinfo(payload, 80)
+        self._test_getaddrinfo(payload, 80, type=socket.SOCK_STREAM)
+
     ######
 
     def test_getnameinfo_1(self):
@@ -243,8 +255,6 @@ class Test_UV_DNS(BaseTestDNS, tb.UVTestCase):
 
 # Winloop comment: the two tests below no longer work with uvlib>=1.48.0.
 # See github.com/libuv/libuv/commit/3530bcc30350d4a6ccf35d2f7b33e23292b9de70
-# These tests will also fail for uvloop, once uvlib is upgraded,
-# currently uvloop 0.19.0 uses uvlib 1.46.0.
 class Test_AIO_DNS(BaseTestDNS, tb.AIOTestCase):
 
     def test_getaddrinfo_8(self):

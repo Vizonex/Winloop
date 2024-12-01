@@ -479,6 +479,8 @@ print("OK")
 
         self.loop.run_until_complete(main())
 
+    @unittest.skipIf(sys.platform == 'win32' and sys.version_info < (3, 10, 0),
+                     'no fix for Python 3.9- on Windows')
     def test_process_streams_redirect(self):
         async def test():
             prog = bR'''

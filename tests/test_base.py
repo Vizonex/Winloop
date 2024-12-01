@@ -139,7 +139,7 @@ class _TestBase:
         self.assertTrue(delta > 0.049 and delta < 0.6)
         # General comment: the bound 0.6 is probably a typo, instead of 0.06.
         # WINLOOP comment: this test sometimes fails on Windows with delta
-        # below 0.049. Also delta sometimes exceeeds 0.06. This happens
+        # below 0.049. Also delta sometimes exceeds 0.06. This happens
         # with the AIO loop and with the UV loop.
 
     def test_call_later_1(self):
@@ -261,20 +261,6 @@ class _TestBase:
         # observed both with the AIO loop and with the UV loop.
 
     def test_check_thread(self):
-        # WINLOOP comment: this test fails on Windows when used with
-        # the UV loop (i.e., test_base.TestBaseUV.test_check_thread)
-        # and only if winloop is compiled using cython 3.0.10 say.
-        # If cython 0.29.37 is used, the test succeeds.
-        # The error message is
-        #   TypeError: wrap() takes exactly 2 positional arguments (3 given)
-        # and also this exception occurs
-        #   Exception in callback <bound method __Pyx_CFunc_7winloop_4loop_\
-        #   4Loop_object__lParenLoop__comma_bint__rParen_to_py_4self_7enabled\
-        #   .<locals>.wrap
-        # A similar issue for cython 0.29.? was fixed, see
-        #   https://github.com/cython/cython/pull/4988/files
-        # but the code for this part in cython 3.0.10 has been changed at some
-        # point, apparently causing the present problem.
         def check_thread(loop, debug):
             def cb():
                 pass

@@ -1,4 +1,5 @@
-DEF __PREALLOCED_BUFS = 4
+cdef enum:
+    __PREALLOCED_BUFS = 4
 
 
 @cython.no_gc_clear
@@ -351,7 +352,7 @@ cdef class UVStream(UVBaseTransport):
             int fd
 
         if system.PLATFORM_IS_WINDOWS:
-            # Winloop comment: WSASend below does not work wirh pipes.
+            # Winloop comment: WSASend below does not work with pipes.
             # For pipes, using Writefile() from Windows fileapi.h would
             # be an option, but the corresponding files have been created
             # FILE_FLAG_OVERLAPPED set, but we don't want to go that way here.
@@ -372,7 +373,7 @@ cdef class UVStream(UVBaseTransport):
         else:
             PyObject_GetBuffer(data, &py_buf, PyBUF_SIMPLE)
             used_buf = 1
-            buf  = py_buf.buf
+            buf = py_buf.buf
             blen = py_buf.len
 
         if blen == 0:

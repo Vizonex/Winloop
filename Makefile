@@ -9,7 +9,7 @@ _default: compile
 
 
 clean:
-	rm -fr dist/ doc/_build/ *.egg-info winloop/loop.*.pyd
+	rm -fr dist/ doc/_build/ *.egg-info winloop/loop.*.pyd uvloop/loop_d.*.pyd
 	rm -fr winloop/*.c winloop/*.html winloop/*.so
 	rm -fr winloop/handles/*.html winloop/includes/*.html
 	find . -name '__pycache__' | xargs rm -rf

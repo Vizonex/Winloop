@@ -89,8 +89,8 @@ if __name__ == '__main__':
     NMESSAGES = args.num
     start = time.time()
     for _ in range(TIMES):
-        # Winloop comment: switch from ProcessPoolExecutor to ThreadPoolExecutor
-        # to avoid issues with __mp_main__ on Windows.
+        # Winloop comment: switch from ProcessPoolExecutor to
+        # ThreadPoolExecutor to avoid issues with __mp_main__ on Windows.
         with concurrent.futures.ThreadPoolExecutor(max_workers=N) as e:
             for _ in range(N):
                 e.submit(run_test, NMESSAGES)
