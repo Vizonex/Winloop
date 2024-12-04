@@ -357,6 +357,11 @@ cdef class AddrInfoRequest(UVRequest):
             # `getaddrinfo("localhost", ...)`. This is inconsistent with
             # libuv 1.48 which treats empty nodename as EINVAL.
             chost = <char*>'localhost'
+        elif host == b'' and sys.platform == 'win32':
+            # On Windows, `getaddrinfo("", ...)` is *almost* equivalent to
+            # `getaddrinfo("..localmachine", ...)`. This is inconsistent with
+            # libuv 1.48 which treats empty nodename as EINVAL.
+            chost = <char*>'..localmachine'
         else:
             chost = <char*>host
 

@@ -104,6 +104,28 @@ class BaseTestDNS:
         self._test_getaddrinfo(None, 0)
         self._test_getaddrinfo(None, 0, type=socket.SOCK_STREAM)
 
+    def test_getaddrinfo_8(self):
+        # Winloop comment: on Windows, an empty string for host will return
+        # all registered addresses on the local computer. Enabling this feature
+        # is not possible using libuv (an empty host will give an error which
+        # is consistent with behavior on Linux).
+        # Winloop supports the use of an empty string for host by internally
+        # using b'..localmachine' for host. However, even though the Windows
+        # documentation mentions that both by using an empty string for host
+        # and by using "..localmachine" for host "all registered addresses on
+        # the local computer are returned", these lists may actually differ
+        # slightly. This will make the test below fail.
+        # As a useful replacement, we therefore test explicitly using
+        # b'..localmachine' for host.
+        host = b'..localmachine' if sys.platform == 'win32' else ''
+        self._test_getaddrinfo(host, 0)
+        self._test_getaddrinfo(host, 0, type=socket.SOCK_STREAM)
+
+    def test_getaddrinfo_9(self):
+        host = b'..localmachine' if sys.platform == 'win32' else b''
+        self._test_getaddrinfo(host, 0)
+        self._test_getaddrinfo(host, 0, type=socket.SOCK_STREAM)
+
     def test_getaddrinfo_10(self):
         self._test_getaddrinfo(None, None)
         self._test_getaddrinfo(None, None, type=socket.SOCK_STREAM)
@@ -253,14 +275,5 @@ class Test_UV_DNS(BaseTestDNS, tb.UVTestCase):
             self.loop.close()
 
 
-# Winloop comment: the two tests below no longer work with uvlib>=1.48.0.
-# See github.com/libuv/libuv/commit/3530bcc30350d4a6ccf35d2f7b33e23292b9de70
 class Test_AIO_DNS(BaseTestDNS, tb.AIOTestCase):
-
-    def test_getaddrinfo_8(self):
-        self._test_getaddrinfo('', 0)
-        self._test_getaddrinfo('', 0, type=socket.SOCK_STREAM)
-
-    def test_getaddrinfo_9(self):
-        self._test_getaddrinfo(b'', 0)
-        self._test_getaddrinfo(b'', 0, type=socket.SOCK_STREAM)
+    pass
