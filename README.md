@@ -256,8 +256,6 @@ if __name__ == "__main__":
 
 - Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
 
-- write a workflow for compiling libuv on different versions of windows when distributing out pypi wheels.
-
 - write a workflow for nightly builds if necessary for verification of pull requests.
 
 - Sphinx Styled Documentation (Maybe I'm thinking about it...)
