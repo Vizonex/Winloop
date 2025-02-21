@@ -1,4 +1,4 @@
-"""Test utilities. Don't use outside of the uvloop project."""
+"""Test utilities. Don't use outside of the winloop project."""
 
 
 import asyncio
