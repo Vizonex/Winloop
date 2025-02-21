@@ -254,11 +254,9 @@ if __name__ == "__main__":
 
 - Drop All `DEF` Macros, I'm currently seeking help on replacements for macros where all the variables are known about at compile-time
 
-- Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...)
+- Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...) [Update, This is now pending and I hope that it passes](https://github.com/pyinstaller/pyinstaller-hooks-contrib/pull/867)
 
 - write a workflow for nightly builds if necessary for verification of pull requests.
-
-- Sphinx Styled Documentation (Maybe I'm thinking about it...)
 
 - Update benchmarks (They are old) can't believe I maintained this project for over a year now...
 
@@ -267,4 +265,5 @@ if __name__ == "__main__":
 - My Presentation and Virtual Confrence: https://www.youtube.com/watch?v=Cbb6trkKWXY
 
 ## Contributing
-I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me.
+I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me,
+I have other things I wish to explore so every little bit helps.
