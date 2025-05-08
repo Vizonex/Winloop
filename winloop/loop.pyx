@@ -28,19 +28,29 @@ from libc.stdint cimport uint64_t
 from libc.string cimport memset, strerror, memcpy
 from libc cimport errno
 
-from cpython cimport PyObject
-from cpython cimport PyErr_CheckSignals, PyErr_Occurred
-from cpython cimport PyThread_get_thread_ident
-from cpython cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
-from cpython cimport (
+from cpython.buffer cimport (
     PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE,
-    Py_buffer, PyBytes_AsString, PyBytes_CheckExact,
-    PyBytes_AsStringAndSize,
-    Py_SIZE, PyBytes_AS_STRING, PyBUF_WRITABLE
+    Py_buffer, PyBUF_WRITABLE
 )
+from cpython.bytes cimport (
+    PyBytes_AsString, PyBytes_CheckExact,
+    PyBytes_AsStringAndSize,
+    PyBytes_AS_STRING
+)
+
+from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
+
+from cpython.object cimport PyObject, Py_SIZE
+
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 
+# (Winloop) We need some cleaver hacky techniques for 
+# preventing slow spawnning processes for MSVC
 from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
+
+from cpython.pythread cimport PyThread_get_thread_ident
+
+from cpython.ref cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
 
 from . import _noop
 
