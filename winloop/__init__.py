@@ -3,7 +3,7 @@ import typing as _typing
 import sys as _sys
 import warnings as _warnings
 
-if _sys.version_info <= (3, 13)
+if _sys.version_info <= (3, 13):
     from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
 else:
     # Python Deprecates EventLoopPolicy in 3.14
