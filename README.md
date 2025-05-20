@@ -246,24 +246,28 @@ if __name__ == "__main__":
 
  ## TODO-List
 
-- Update Fastapi Example to a more recent version of fastapi
+- [ ] Update Fastapi Example to a more recent version of fastapi
 
-- Contact uvicorn about this [issue](https://github.com/Vizonex/Winloop/issues/11) I have a funny feeling something is going on here...
+- [ ] Help Wanted. We're looking for other maintainers to help us.
 
-- Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions.
+- [ ] Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions. I got one configured for aiocallback already. 
 
-- Drop All `DEF` Macros, I'm currently seeking help on replacements for macros where all the variables are known about at compile-time
+- [ ] Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...) [Update, This is now pending and I hope that it passes](https://github.com/pyinstaller/pyinstaller-hooks-contrib/pull/867) 
 
-- Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...) [Update, This is now pending and I hope that it passes](https://github.com/pyinstaller/pyinstaller-hooks-contrib/pull/867)
+- [ ] write a workflow for nightly builds if necessary for verification of pull requests.
 
-- write a workflow for nightly builds if necessary for verification of pull requests.
-
-- Update benchmarks (They are old) can't believe I maintained this project for over a year now...
+- [ ] Update benchmarks (They are old) can't believe I maintained this project for over a year now...
 
 ## Videos
 - By me: https://www.youtube.com/watch?v=tz9RYJ6aBZ8  (I might make a tutorial on how to use and install winloop it for those who have reading problems)
 - My Presentation and Virtual Confrence: https://www.youtube.com/watch?v=Cbb6trkKWXY
 
 ## Contributing
-I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me,
-I have other things I wish to explore so every little bit helps.
+I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me, I have other things I wish to explore so every little bit helps
+
+### How Can I contribute?
+- I make and branch and make edits and then I do a pull requests before I just step in and add something new.
+This way you have time to review my additions, changes or feature beforehand.
+- Forking The library.
+- Fixing or editing workflows.
+- Finding and editing spelling mistakes.
