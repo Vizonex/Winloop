@@ -3,7 +3,14 @@ import typing as _typing
 import sys as _sys
 import warnings as _warnings
 
-from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
+if _sys.version_info <= (3, 13):
+    from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
+else:
+    # Python Deprecates EventLoopPolicy in 3.14
+    # SEE: https://github.com/python/cpython/issues/131148
+    # We will watch closely to determine what else we will do for supporting 3.14
+    from asyncio.events import _BaseDefaultEventLoopPolicy as __BasePolicy
+
 
 # Winloop comment: next line commented out for now. Somehow winloop\includes
 # is not included in the Winloop wheel, affecting version 0.1.6 on PyPI.
