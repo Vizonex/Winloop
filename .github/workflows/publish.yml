@@ -61,7 +61,7 @@ jobs:
       - name: Build sdist
         run: python setup.py sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: ./dist/*
