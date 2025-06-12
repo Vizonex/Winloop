@@ -3,17 +3,17 @@ name: CI/CD
 
 on:
   push:
-    branches:
-    - master
-    - >-
-      [0-9].[0-9]+
-    tags:
-    - v*
+    # branches:
+    # - master
+    # - >-
+    #   [0-9].[0-9]+
+    # tags:
+    # - v*
   pull_request:
-    branches:
-    - master
-    - >-
-      [0-9].[0-9]+
+    # branches:
+    # - master
+    # - >-
+    #   [0-9].[0-9]+
   schedule:
   - cron: 0 6 * * *  # Daily 6AM UTC build
 
@@ -26,7 +26,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        fetch-depth: 50
         persist-credentials: false
+        submodules: true
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
