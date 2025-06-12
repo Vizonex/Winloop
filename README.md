@@ -250,11 +250,11 @@ if __name__ == "__main__":
 
 - [ ] Help Wanted. We're looking for other maintainers to help us.
 
-- [ ] Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions. I got one configured for aiocallback already. 
+- [x] Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions. (Done, it runs now)
 
 - [ ] Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...) [Update, This is now pending and I hope that it passes](https://github.com/pyinstaller/pyinstaller-hooks-contrib/pull/867) 
 
-- [ ] write a workflow for nightly builds if necessary for verification of pull requests.
+- [x] write a workflow for nightly builds if necessary for verification of pull requests.
 
 - [ ] Update benchmarks (They are old) can't believe I maintained this project for over a year now...
 
