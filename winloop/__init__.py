@@ -1,15 +1,16 @@
-import asyncio as __asyncio
+mport asyncio as __asyncio
 import typing as _typing
 import sys as _sys
 import warnings as _warnings
+import threading as _threading
 
-if _sys.version_info <= (3, 13):
+if _sys.version_info < (3, 13):
     from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
 else:
     # Python Deprecates EventLoopPolicy in 3.14
     # SEE: https://github.com/python/cpython/issues/131148
     # We will watch closely to determine what else we will do for supporting 3.14
-    from asyncio.events import _BaseDefaultEventLoopPolicy as __BasePolicy
+    from asyncio.events import AbstractEventLoopPolicy as __BasePolicy
 
 
 # Winloop comment: next line commented out for now. Somehow winloop\includes
@@ -159,6 +160,53 @@ class EventLoopPolicy(__BasePolicy):
     >>> asyncio.get_event_loop()
     <winloop.Loop running=False closed=False debug=False>
     """
+
+
+    # XXX: To bypass Problems of future Deprecation in 3.16 of different 
+    # Eventloop Policies moving it's code to here for right now makes sense...
+
+    # Have fun trying to stop me, I put that code that gets deleted right here :) - Vizonex
+
+    if  _sys.version_info >= (3, 13):
+        
+        _loop_factory = None
+
+        class _Local(_threading.local):
+            _loop = None
+            _set_called = False
+
+        def __init__(self):
+            self._local = self._Local()
+
+        def get_event_loop(self):
+            """Get the event loop for the current context.
+
+            Returns an instance of EventLoop or raises an exception.
+            """
+            if (self._local._loop is None and
+                    not self._local._set_called and
+                    _threading.current_thread() is _threading.main_thread()):
+                self.set_event_loop(self.new_event_loop())
+
+            if self._local._loop is None:
+                raise RuntimeError('There is no current event loop in thread %r.'
+                                   % _threading.current_thread().name)
+
+            return self._local._loop
+
+        def set_event_loop(self, loop):
+            """Set the event loop."""
+            self._local._set_called = True
+            assert loop is None or isinstance(loop, __BasePolicy)
+            self._local._loop = loop
+
+        def new_event_loop(self):
+            """Create a new event loop.
+
+            You must call set_event_loop() to make this the current event
+            loop.
+            """
+            return self._loop_factory()
 
     def _loop_factory(self) -> Loop:
         return new_event_loop()
