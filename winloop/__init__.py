@@ -165,9 +165,10 @@ class EventLoopPolicy(__BasePolicy):
     # XXX: To bypass Problems of future Deprecation in 3.16 of different 
     # Eventloop Policies moving it's code to here for right now makes sense...
     
-    # Have fun trying to stop me because I put that code deleted right here :)
-
-    if  _sys.version_info > (3, 13):
+    # Have fun trying to stop me because I put that code all right here :)
+    # SEE: https://github.com/MagicStack/uvloop/issues/637
+    
+    if  _sys.version_info > (3, 14):
         
         _loop_factory = None
 
