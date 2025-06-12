@@ -11,7 +11,11 @@ import textwrap
 import time
 import unittest
 
-import psutil
+try:
+    import psutil
+    SKIP_PSUTIL = False
+except ModuleNotFoundError:
+    SKIP_PSUTIL = True
 
 from winloop import _testbase as tb
 NL = b'\r\n' if sys.platform == 'win32' else b'\n'
@@ -409,7 +413,8 @@ print("OK")
                 self.assertEqual(out, b'OK' + NL)
 
         self.loop.run_until_complete(test())
-
+    
+    @unittest.skipIf(SKIP_PSUTIL, "We don't have PSUTIL")
     def test_subprocess_fd_leak_1(self):
         async def main(n):
             for i in range(n):
@@ -429,6 +434,7 @@ print("OK")
 
         self.assertEqual(num_fd_1, num_fd_2)
 
+    @unittest.skipIf(SKIP_PSUTIL, "We don't have PSUTIL")
     def test_subprocess_fd_leak_2(self):
         async def main(n):
             for i in range(n):
@@ -440,7 +446,6 @@ print("OK")
                 finally:
                     await p.wait()
                 await asyncio.sleep(0)
-
         self.loop.run_until_complete(main(10))
         num_fd_1 = self.get_num_fds()
         self.loop.run_until_complete(main(10))
