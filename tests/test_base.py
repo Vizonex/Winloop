@@ -574,7 +574,7 @@ class _TestBase:
         self.assertFalse(isinstance(task, MyTask))
         self.loop.run_until_complete(task)
 
-    # NOTE: one of my plans invovles migrating to pytest in 2026... 
+    # NOTE: one of my plans invovles migrating to pytest in 2026...
     @unittest.skip("Fixing this is on my todo list for 0.2.0")
     def test_set_task_name(self):
         self.loop._process_events = mock.Mock()
