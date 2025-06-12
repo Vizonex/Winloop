@@ -1,16 +1,16 @@
-mport asyncio as __asyncio
+import asyncio as __asyncio
 import typing as _typing
 import sys as _sys
 import warnings as _warnings
 import threading as _threading
 
-if _sys.version_info < (3, 13):
+if _sys.version_info <= (3, 13):
     from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
 else:
     # Python Deprecates EventLoopPolicy in 3.14
     # SEE: https://github.com/python/cpython/issues/131148
     # We will watch closely to determine what else we will do for supporting 3.14
-    from asyncio.events import AbstractEventLoopPolicy as __BasePolicy
+    from asyncio.events import _BaseDefaultEventLoopPolicy as __BasePolicy
 
 
 # Winloop comment: next line commented out for now. Somehow winloop\includes
@@ -164,10 +164,10 @@ class EventLoopPolicy(__BasePolicy):
 
     # XXX: To bypass Problems of future Deprecation in 3.16 of different 
     # Eventloop Policies moving it's code to here for right now makes sense...
+    
+    # Have fun trying to stop me because I put that code deleted right here :)
 
-    # Have fun trying to stop me, I put that code that gets deleted right here :) - Vizonex
-
-    if  _sys.version_info >= (3, 13):
+    if  _sys.version_info > (3, 13):
         
         _loop_factory = None
 
