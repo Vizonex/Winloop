@@ -11,7 +11,12 @@ import threading
 import time
 import weakref
 
-from OpenSSL import SSL as openssl_ssl
+try:
+    from OpenSSL import SSL as openssl_ssl
+    SKIP_OPENSSL = False
+except ModuleNotFoundError:
+    SKIP_OPENSSL = True
+
 from winloop import _testbase as tb
 
 
@@ -2607,6 +2612,7 @@ class _TestSSL(tb.SSLTestCase):
             with self.tcp_server(run(unwrap_server)) as srv:
                 self.loop.run_until_complete(client(srv.addr))
 
+    @unittest.skipIf(SKIP_OPENSSL, "We don't have openssl :(")
     def test_flush_before_shutdown(self):
         if self.implementation == 'asyncio':
             raise unittest.SkipTest()
@@ -3223,3 +3229,4 @@ class Test_UV_TCPSSL(_TestSSL, tb.UVTestCase):
 
 class Test_AIO_TCPSSL(_TestSSL, tb.AIOTestCase):
     pass
+
