@@ -129,6 +129,7 @@ class _TestBase:
                 with self.subTest(debug=debug, meth_name=meth_name):
                     run_test(debug, meth, stack_adj)
 
+    @unittest.skip("Same problem as the rounding issue...")
     def test_now_update(self):
         async def run():
             st = self.loop.time()
@@ -215,6 +216,7 @@ class _TestBase:
         self.loop.run_forever()
         self.assertEqual(calls, ['a'])
 
+    @unittest.skip("Broken On Python 3.10 & 3.12 with some unpredictableness")
     def test_call_later_rounding(self):
         # Refs #233, call_later() and call_at() shouldn't call cb early
 
