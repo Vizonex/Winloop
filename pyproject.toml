@@ -1,7 +1,7 @@
 [project]
 name = "winloop"
 description = "Windows version of uvloop"
-authors = [{name = "Vizonex"}]
+authors = [{name = "Vizonex", email="VizonexBusiness@gmail.com"}]
 requires-python = '>=3.8.0'
 readme = "README.md"
 license = {text = "MIT License"}
@@ -33,6 +33,8 @@ classifiers = [
 [project.urls]
 github = "https://github.com/Vizonex/Winloop"
 
+# TODO: We really need to get dependabot in a future update moving versions ourselves is annoying...
+
 [project.optional-dependencies]
 test = [
     # pycodestyle is a dependency of flake8, but it must be frozen because
@@ -47,7 +49,7 @@ test = [
 ]
 dev = [
     'setuptools>=60',
-    'Cython~=3.0',
+    'Cython==3.1.2',
 ]
 docs = [
     'Sphinx~=4.1.2',
@@ -59,7 +61,7 @@ docs = [
 requires = [
     "setuptools>=60",
     "wheel",
-    "Cython~=3.0",
+    "Cython==3.1.2",
 ]
 build-backend = "setuptools.build_meta"
 
