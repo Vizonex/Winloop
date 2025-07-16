@@ -1,0 +1,43 @@
+# Borrowing from pycares/cyares
+
+on:
+  workflow_call:
+    inputs:
+      fail-fast:
+        description: Whether the wheel build should stop and fail as soon as any job fails.
+        required: false
+        default: false
+        type: boolean
+      prerelease-pythons:
+        description: Whether the wheels should be built for pre-release Pythons that are not ABI stable yet.
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build_wheels:
+    name: Build wheels for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: ${{ inputs.fail-fast }}
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+          - name: Windows arm64
+            os: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Enable CPython prerelease
+        if: ${{ inputs.prerelease-pythons }}
+        run: echo "CIBW_ENABLE=cpython-prerelease" >> $GITHUB_ENV
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.23.3
+        with:
+          output-dir: dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: dist/*.whl

@@ -1,0 +1,34 @@
+# Borrowed from pycares/cyares
+
+name: Release Wheels
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build_wheels:
+    uses: ./.github/workflows/run-cibuildwheel.yml
+    with:
+      fail-fast: true
+
+  build_sdist:
+    uses: ./.github/workflows/run-sdist.yml
+
+  upload_pypi:
+    needs: [build_wheels, build_sdist]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - run: ls -lR dist
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          # TODO: Move to trusted Publishing after winloop 0.1.91
+          password: ${{ secrets.PYPI_PASSWORD }}

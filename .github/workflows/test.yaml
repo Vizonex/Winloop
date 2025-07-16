@@ -1,0 +1,42 @@
+# NOTE I'm borrowing from pycares & cyares so that we don't have to reinvent the wheel.
+name: Test
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test on ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # NOTE: there were more here but I deleted them since winloop is Windows only.
+        os: [windows-latest, windows-11-arm]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        exclude:
+          - os: windows-11-arm  # setup-python action only supports 3.11+
+            python-version: '3.9'
+          - os: windows-11-arm  # setup-python action only supports 3.11+
+            python-version: '3.10'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        check-latest: true
+        python-version: ${{ matrix.python-version }}
+    - name: Install Requirements
+      run: python -m pip install --upgrade setuptools wheel pip cython
+    
+    - name: Compile Winloop
+      run: python setup.py build_ext --inplace
+    
+    - name: run-tests
+      run: python -m tests
+
+    
