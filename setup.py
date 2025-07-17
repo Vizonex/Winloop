@@ -19,8 +19,9 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.command.sdist import sdist
 
-
-CYTHON_DEPENDENCY = 'Cython~=3.0'
+# Using a newer version of cython since versions are no longer a threat. 
+# Cython Decided to keep DEF Statements. 
+CYTHON_DEPENDENCY = 'Cython==3.1.2'
 MACHINE = platform.machine()
 MODULES_CFLAGS = [os.getenv('UVLOOP_OPT_CFLAGS', '-O2')]
 _ROOT = pathlib.Path(__file__).parent

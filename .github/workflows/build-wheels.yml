@@ -1,0 +1,31 @@
+# Borrowed from pycares & cyares, 
+# this will be the nightly build I've 
+# been talking about adding for the past 2 years, 
+# - Vizonex
+
+name: Build Wheels
+
+on: [pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build_wheels:
+    uses: ./.github/workflows/run-cibuildwheel.yml
+    with:
+      prerelease-pythons: true
+
+  build_sdist:
+    uses: ./.github/workflows/run-sdist.yml
+
+  check_build:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - run: ls -lR dist
