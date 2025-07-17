@@ -37,6 +37,12 @@ jobs:
       run: python setup.py build_ext --inplace
     
     - name: run-tests
+      env:
+        COLOR: yes
+        PIP_USER: 1
       run: python -m tests
+      shell: bash
+    
+      
 
     
