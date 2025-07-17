@@ -1,14 +1,16 @@
 try:
-    import aiomultiprocess
     import multiprocessing
+
+    import aiomultiprocess
 except ImportError:
     skip_tests = True
 else:
     skip_tests = False
-import unittest
-import winloop
-import random
 import asyncio
+import random
+import unittest
+
+import winloop
 from winloop import _testbase as tb
 
 
@@ -20,11 +22,10 @@ def my_map():
     return [random.uniform(0.005, 1) for _ in range(7)]
 
 
-class _Test_Multiprocessing():
+class _Test_Multiprocessing:
     """Used for Testing aiomultiprocessing"""
 
     def test_process_spawning(self):
-
         # See:
         # https://github.com/Vizonex/Winloop/issues/11#issuecomment-1922659521
         self.processes = set()

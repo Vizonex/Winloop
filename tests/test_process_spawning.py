@@ -1,16 +1,15 @@
 import asyncio
 import ctypes.util
 import logging
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 from unittest import TestCase
 
-import sys
 import winloop as uvloop
 
 
 class ProcessSpawningTestCollection(TestCase):
-
     def test_spawning_external_process(self):
         """Test spawning external process (using `popen` system call) that
         cause loop freeze."""
@@ -18,15 +17,12 @@ class ProcessSpawningTestCollection(TestCase):
         async def run(loop):
             event = asyncio.Event()
 
-            dummy_workers = [simulate_loop_activity(loop, event)
-                             for _ in range(5)]
+            dummy_workers = [simulate_loop_activity(loop, event) for _ in range(5)]
             spawn_worker = spawn_external_process(loop, event)
-            done, pending = await asyncio.wait([
-                asyncio.ensure_future(fut)
-                for fut in ([spawn_worker] + dummy_workers)
-            ])
-            exceptions = [result.exception()
-                          for result in done if result.exception()]
+            done, pending = await asyncio.wait(
+                [asyncio.ensure_future(fut) for fut in ([spawn_worker] + dummy_workers)]
+            )
+            exceptions = [result.exception() for result in done if result.exception()]
             if exceptions:
                 raise exceptions[0]
 
@@ -57,7 +53,7 @@ class ProcessSpawningTestCollection(TestCase):
         BufferType = ctypes.c_char * (BUFFER_LENGTH - 1)
 
         def run_echo(popen, fread, pclose):
-            fd = popen('echo test'.encode('ASCII'), 'r'.encode('ASCII'))
+            fd = popen("echo test".encode("ASCII"), "r".encode("ASCII"))
             try:
                 while True:
                     buffer = BufferType()
@@ -68,7 +64,7 @@ class ProcessSpawningTestCollection(TestCase):
                     if not read:
                         break
             except Exception:
-                logging.getLogger().exception('read error')
+                logging.getLogger().exception("read error")
                 raise
             finally:
                 pclose(fd)
@@ -79,34 +75,36 @@ class ProcessSpawningTestCollection(TestCase):
             # WINLOOP comment: use 'msvcrt' instead of 'c', and
             # attrbs '_popen' and '_plocse' instead of 'popen' and 'pclose'.
             # NB: this test turns out to take close to 10x longer on Windows?!
-            stdio = ctypes.CDLL(ctypes.util.find_library(
-                'msvcrt' if sys.platform == 'win32' else 'c'))
+            stdio = ctypes.CDLL(
+                ctypes.util.find_library("msvcrt" if sys.platform == "win32" else "c")
+            )
 
             # popen system call
-            popen = stdio._popen if sys.platform == 'win32' else stdio.popen
+            popen = stdio._popen if sys.platform == "win32" else stdio.popen
             popen.argtypes = (ctypes.c_char_p, ctypes.c_char_p)
             popen.restype = ctypes.c_void_p
 
             # pclose system call
-            pclose = stdio._pclose if sys.platform == 'win32' else stdio.pclose
+            pclose = stdio._pclose if sys.platform == "win32" else stdio.pclose
             pclose.argtypes = (ctypes.c_void_p,)
             pclose.restype = ctypes.c_int
 
             # fread system call
             fread = stdio.fread
-            fread.argtypes = (ctypes.c_void_p, ctypes.c_size_t,
-                              ctypes.c_size_t, ctypes.c_void_p)
+            fread.argtypes = (
+                ctypes.c_void_p,
+                ctypes.c_size_t,
+                ctypes.c_size_t,
+                ctypes.c_void_p,
+            )
             fread.restype = ctypes.c_size_t
 
             for iteration in range(1000):
-                t = Thread(target=run_echo,
-                           args=(popen, fread, pclose),
-                           daemon=True)
+                t = Thread(target=run_echo, args=(popen, fread, pclose), daemon=True)
                 t.start()
                 t.join(timeout=10.0)
                 if t.is_alive():
-                    raise Exception('process freeze detected at {}'
-                                    .format(iteration))
+                    raise Exception("process freeze detected at {}".format(iteration))
 
             return True
 

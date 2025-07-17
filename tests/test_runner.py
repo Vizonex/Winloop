@@ -1,10 +1,10 @@
 import asyncio
 import unittest
+
 import winloop as uvloop
 
 
 class TestSourceCode(unittest.TestCase):
-
     def test_uvloop_run_1(self):
         CNT = 0
 
@@ -17,20 +17,19 @@ class TestSourceCode(unittest.TestCase):
             self.assertTrue(isinstance(loop, uvloop.Loop))
             self.assertTrue(loop.get_debug())
 
-            return 'done'
+            return "done"
 
         result = uvloop.run(main(), debug=True)
 
-        self.assertEqual(result, 'done')
+        self.assertEqual(result, "done")
         self.assertEqual(CNT, 1)
 
     def test_uvloop_run_2(self):
-
         async def main():
             pass
 
         coro = main()
-        with self.assertRaisesRegex(TypeError, ' a non-uvloop event loop'):
+        with self.assertRaisesRegex(TypeError, " a non-uvloop event loop"):
             uvloop.run(
                 coro,
                 loop_factory=asyncio.DefaultEventLoopPolicy().new_event_loop,

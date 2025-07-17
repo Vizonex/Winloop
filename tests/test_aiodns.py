@@ -9,8 +9,8 @@ except ImportError:
 else:
     skip_tests = False
 
-import sys
 import asyncio
+import sys
 import unittest
 
 from winloop import _testbase as tb
@@ -24,9 +24,10 @@ class _TestAiodns:
         async def test():
             async def query(name, query_type):
                 return await resolver.query(name, query_type)
-            await query('google.com', 'A')
-            await query('httpbin.org', 'A')
-            await query('example.com', 'A')
+
+            await query("google.com", "A")
+            await query("httpbin.org", "A")
+            await query("example.com", "A")
 
         self.loop.run_until_complete(test())
 
@@ -40,6 +41,7 @@ class Test_UV_Aiodns(_TestAiodns, tb.UVTestCase):
 class Test_AIO_Aiodns(_TestAiodns, tb.AIOTestCase):
     # Winloop comment: switching to selector loop (instead of proactor),
     # see https://github.com/saghul/aiodns/issues/86
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
+
         def new_policy(self):
             return asyncio.WindowsSelectorEventLoopPolicy()
