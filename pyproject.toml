@@ -2,7 +2,7 @@
 name = "winloop"
 description = "Windows version of uvloop"
 authors = [{name = "Vizonex", email="VizonexBusiness@gmail.com"}]
-requires-python = '>=3.8.0'
+requires-python = '>=3.9.0'
 readme = "README.md"
 license = {text = "MIT License"}
 dynamic = ["version"]
