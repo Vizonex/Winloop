@@ -69,7 +69,10 @@ cdef convert_error(int uverr):
 
     sock_err = __convert_socket_error(uverr)
     if sock_err:
-        msg = system.gai_strerror(sock_err).decode('utf-8')
+        # Winloop comment: Sometimes libraries will throw in some 
+	# unwanted unicode BS to unravel, to bypass this surrogateescape is utilized 
+        # SEE: https://github.com/Vizonex/Winloop/issues/32
+        msg = system.gai_strerror(sock_err).decode('utf-8',  errors="surrogateescape")
         # Winloop comment: on Windows, cPython has a simpler error
         # message than uvlib (via winsock probably) in these two cases:
         # EAI_FAMILY [ErrNo 10047] "An address incompatible with the requested protocol was used. "
@@ -81,3 +84,4 @@ cdef convert_error(int uverr):
         return socket_gaierror(sock_err, msg)
 
     return __convert_python_error(uverr)
+
