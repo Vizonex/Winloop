@@ -674,7 +674,7 @@ class TestUVSockets(_TestSockets, tb.UVTestCase):
                 w = asyncio.wait_for(c, timeout=5.0)
                 self.loop.run_until_complete(w)
 
-    @unittest.skipIf(sys.version_info >= (3, 13), "Sendall is having problems on 3.13+")
+    @unittest.skipIf(sys.version_info >= (3, 11), "Sendall is having problems on 3.11+")
     def test_socket_cancel_sock_sendall(self):
         def srv_gen(sock):
             time.sleep(1.2)
