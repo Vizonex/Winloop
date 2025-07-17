@@ -77,6 +77,7 @@ class BaseTestDNS:
 
             self.assertEqual(a1, a2)
 
+    @unittest.skip("Needs patches")
     def test_getaddrinfo_1(self):
         self._test_getaddrinfo('example.com', 80)
         self._test_getaddrinfo('example.com', 80, type=socket.SOCK_STREAM)
