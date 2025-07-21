@@ -31,7 +31,7 @@ jobs:
         check-latest: true
         python-version: ${{ matrix.python-version }}
     - name: Install Requirements
-      run: python -m pip install --upgrade setuptools wheel pip cython pytest
+      run: python -m pip install --upgrade setuptools wheel pip cython pytest aiohttp aiodns
     
     - name: Compile Winloop
       run: pip install -e .
