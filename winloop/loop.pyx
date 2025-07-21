@@ -1,4 +1,4 @@
-# cython: language_level=3, embedsignature=True
+# cython: language_level=3, embedsignature=True, freethreading_compatible = True
 
 import asyncio
 cimport cython
@@ -390,6 +390,10 @@ cdef class Loop:
     cdef inline _ceval_process_signals(self):
         # Invoke CPython eval loop to let process signals.
         PyErr_CheckSignals()
+
+        # Might be gotten rid of soon, since we want to improve evaluation: 
+        # SEE: https://github.com/Vizonex/Winloop/issues/58
+
         # Calling a pure-Python function will invoke
         # _PyEval_EvalFrameDefault which will process
         # pending signal callbacks.

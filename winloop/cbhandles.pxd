@@ -11,13 +11,13 @@ cdef class Handle:
 
         object __weakref__
 
-        readonly _source_traceback
+        readonly _source_traceback # type: ignore
 
     cdef inline _set_loop(self, Loop loop)
     cdef inline _set_context(self, object context)
 
     cdef inline _run(self)
-    cdef _cancel(self)
+    cdef _cancel(self) noexcept
 
     cdef _format_handle(self)
 

@@ -19,6 +19,8 @@ cdef extern from "Python.h":
         PyBUF_WRITE
 
 
+
+
 cdef extern from "includes/compat.h":
     object Context_CopyCurrent()
     int Context_Enter(object) except -1
@@ -29,3 +31,4 @@ cdef extern from "includes/compat.h":
     void PyOS_AfterFork_Child()
 
     void _Py_RestoreSignals()
+

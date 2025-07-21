@@ -1,3 +1,6 @@
+#ifndef __WINLOOP_COMPAT_H__
+#define __WINLOOP_COMPAT_H__
+
 #include <errno.h>
 #include <stddef.h>
 #include <signal.h>
@@ -176,3 +179,5 @@ void PyOS_AfterFork_Child() {
 }
 
 #endif
+
+#endif // __WINLOOP_COMPAT_H__

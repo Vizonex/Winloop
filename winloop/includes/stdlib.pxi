@@ -24,6 +24,7 @@ import time
 import warnings
 import weakref
 
+# TODO Move as many of these as we can into C we need the speed.
 
 cdef aio_get_event_loop = asyncio.get_event_loop
 cdef aio_CancelledError = asyncio.CancelledError
@@ -51,7 +52,8 @@ cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
 cdef col_deque = collections.deque
 cdef col_Iterable = collections.abc.Iterable
 cdef col_Counter = collections.Counter
-cdef col_OrderedDict = collections.OrderedDict
+
+# cdef col_OrderedDict = collections.OrderedDict
 
 cdef cc_ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor
 cdef cc_Future = concurrent.futures.Future
