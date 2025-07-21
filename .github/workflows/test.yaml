@@ -31,7 +31,7 @@ jobs:
         check-latest: true
         python-version: ${{ matrix.python-version }}
     - name: Install Requirements
-      run: python -m pip install --upgrade setuptools wheel pip cython
+      run: python -m pip install --upgrade setuptools wheel pip cython pytest
     
     - name: Compile Winloop
       run: python setup.py build_ext --inplace
@@ -40,7 +40,7 @@ jobs:
       env:
         COLOR: yes
         PIP_USER: 1
-      run: python -m tests
+      run: pytest -vv
       shell: bash
     
       
