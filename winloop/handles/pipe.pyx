@@ -1,3 +1,9 @@
+from libc.stdint cimport uintptr_t
+
+cdef extern from "uv.h":
+    ctypedef struct uv_pipe_t:
+        pass
+
 cdef __pipe_init_uv_handle(UVStream handle, Loop loop):
     cdef int err
 
@@ -24,8 +30,8 @@ cdef __pipe_init_uv_handle(UVStream handle, Loop loop):
 
 cdef __pipe_open(UVStream handle, int fd):
     cdef int err
-    err = uv.uv_pipe_open(<uv.uv_pipe_t *>handle._handle,
-                          <uv.uv_os_fd_t>fd)
+    cdef void* ph = <void *> handle._handle
+    err = uv.uv_pipe_open(<uv_pipe_t*> ph, <uintptr_t> <uv.uv_os_fd_t>fd)
     if err < 0:
         exc = convert_error(err)
         raise exc

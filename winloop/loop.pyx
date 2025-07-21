@@ -24,7 +24,7 @@ from .includes.python cimport (
 )
 from .includes.flowcontrol cimport add_flowcontrol_defaults
 
-from libc.stdint cimport uint64_t
+from libc.stdint cimport uint64_t, uintptr_t
 from libc.string cimport memset, strerror, memcpy
 from libc cimport errno
 
@@ -1164,7 +1164,7 @@ cdef class Loop:
 
     def _get_backend_id(self):
         """This method is used by uvloop tests and is not part of the API."""
-        return uv.uv_backend_fd(self.uvloop)
+        return int(<uintptr_t> uv.uv_backend_fd(<uv.uv_loop_t*> self.uvloop))
 
     cdef _print_debug_info(self):
         cdef:
