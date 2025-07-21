@@ -84,7 +84,7 @@ class uvloop_build_ext(build_ext):
 
     def initialize_options(self):
         super().initialize_options()
-        self.use_system_libuv = False
+        self.use_system_libuv = True
         self.cython_always = False
         self.cython_annotate = None
         self.cython_directives = None
@@ -191,7 +191,7 @@ class uvloop_build_ext(build_ext):
             cwd=LIBUV_BUILD_DIR, env=env, check=True)
 
     def build_extensions(self):
-        if sys.platform == 'win32':
+        if sys.platform != 'win32':
             path = pathlib.Path("vendor", "libuv", "src")
             c_files = [p.as_posix() for p in path.iterdir() if p.suffix == '.c']
             c_files += [p.as_posix() for p in (path/'win').iterdir() if p.suffix == '.c']
@@ -250,19 +250,16 @@ if sys.platform == 'win32':
                 "winloop/loop.pyx"
             ],
             include_dirs=[
-                "vendor/libuv/src",
-                "vendor/libuv/src/win",
-                "vendor/libuv/include"
             ],
             extra_link_args=[  # subset of libuv Windows libraries
-                "Shell32.lib",
-                "Ws2_32.lib",
-                "Advapi32.lib",
-                "iphlpapi.lib",
-                "Userenv.lib",
-                "User32.lib",
-                "Dbghelp.lib",
-                "Ole32.lib"
+                "-lShell32",
+                "-lWs2_32",
+                "-lAdvapi32",
+                "-liphlpapi",
+                "-lUserenv",
+                "-lUser32",
+                "-lDbghelp",
+                "-lOle32",
             ],
             define_macros=[
                 ("WIN32_LEAN_AND_MEAN", 1),
