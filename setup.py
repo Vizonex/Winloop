@@ -7,6 +7,7 @@ if vi < (3, 8):
 # Winloop comment: winloop now supports both Windows and non-Windows.
 # Below uvloop's setup.py is merged with winloop's previous setup.py.
 
+
 import os
 import os.path
 import pathlib
@@ -21,7 +22,7 @@ from setuptools.command.sdist import sdist
 
 # Using a newer version of cython since versions are no longer a threat. 
 # Cython Decided to keep DEF Statements. 
-CYTHON_DEPENDENCY = 'Cython==3.1.2'
+CYTHON_DEPENDENCY = 'Cython>=3.1.2'
 MACHINE = platform.machine()
 MODULES_CFLAGS = [os.getenv('UVLOOP_OPT_CFLAGS', '-O2')]
 _ROOT = pathlib.Path(__file__).parent
@@ -86,7 +87,7 @@ class uvloop_build_ext(build_ext):
         super().initialize_options()
         self.use_system_libuv = False
         self.cython_always = False
-        self.cython_annotate = None
+        self.cython_annotate = False
         self.cython_directives = None
 
     def finalize_options(self):
@@ -242,6 +243,7 @@ with open(str(_ROOT / 'winloop' / '_version.py')) as f:
 if sys.platform == 'win32':
     from Cython.Build import cythonize
     from Cython.Compiler.Main import default_options
+
     default_options['compile_time_env'] = dict(DEFAULT_FREELIST_SIZE=250)
     ext = cythonize([
         Extension(
@@ -267,8 +269,8 @@ if sys.platform == 'win32':
             define_macros=[
                 ("WIN32_LEAN_AND_MEAN", 1),
                 ("_WIN32_WINNT", "0x0602")
-            ]
-        )
+            ],
+        ),
     ])
 else:
     ext = [

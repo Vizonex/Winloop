@@ -1,4 +1,7 @@
 cdef enum:
+
+# There is some Good News, Cython plans not to deprecate 
+# DEF Constant Macros for now lets keep these enums but we will revert later..
     UV_STREAM_RECV_BUF_SIZE = 256000  # 250kb
 
     FLOW_CONTROL_HIGH_WATER = 64  # KiB
@@ -10,9 +13,7 @@ cdef enum:
 
     DEBUG_STACK_DEPTH = 10
 
-
     __PROCESS_DEBUG_SLEEP_AFTER_FORK = 1
-
 
     LOG_THRESHOLD_FOR_CONNLOST_WRITES = 5
     SSL_READ_MAX_SIZE = 256 * 1024

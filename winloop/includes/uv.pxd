@@ -1,10 +1,13 @@
-from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
+from libc.stdint cimport int64_t, uint16_t, uint32_t, uint64_t
+
+
 cdef extern from "includes/compat.h" nogil:
    int getuid()
    int SIGCHLD
    int SO_REUSEPORT
 
 from . cimport system
+
 
 # This is an internal enum UV_HANDLE_READABLE from uv-common.h, used only by
 # handles/pipe.pyx to temporarily workaround a libuv issue libuv/libuv#2058,

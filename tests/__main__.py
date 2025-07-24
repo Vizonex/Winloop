@@ -2,7 +2,7 @@ import os.path
 import sys
 import unittest
 import unittest.runner
-
+import multiprocessing
 
 def suite():
     test_loader = unittest.TestLoader()
@@ -11,6 +11,7 @@ def suite():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     runner = unittest.runner.TextTestRunner()
     result = runner.run(suite())
     sys.exit(not result.wasSuccessful())

@@ -14,9 +14,6 @@ import winloop
 from winloop import _testbase as tb
 
 
-async def test_func(sleep: float):
-    return await asyncio.sleep(sleep)
-
 
 def my_map():
     return [random.uniform(0.005, 1) for _ in range(7)]
@@ -25,6 +22,7 @@ def my_map():
 class _Test_Multiprocessing:
     """Used for Testing aiomultiprocessing"""
 
+    @unittest.skip("aiomultiprocess has an import bug releated to having a tests module")
     def test_process_spawning(self):
         # See:
         # https://github.com/Vizonex/Winloop/issues/11#issuecomment-1922659521
@@ -35,7 +33,7 @@ class _Test_Multiprocessing:
         async def test():
             async with aiomultiprocess.Pool(total_processes) as pool:
                 self.processes.update(p.pid for p in pool.processes)
-                await pool.map(test_func, my_map())
+                await pool.map(asyncio.sleep, my_map())
             await asyncio.sleep(0.005)
             self.assertEqual(len(self.processes), total_processes)
 

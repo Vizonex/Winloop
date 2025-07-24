@@ -1,8 +1,8 @@
 import asyncio as __asyncio
-import typing as _typing
 import sys as _sys
-import warnings as _warnings
 import threading as _threading
+import typing as _typing
+import warnings as _warnings
 
 if _sys.version_info < (3, 14):
     from asyncio.events import BaseDefaultEventLoopPolicy as __BasePolicy
@@ -14,11 +14,10 @@ else:
 
 
 # Winloop comment: next line commented out for now. Somehow winloop\includes
+from ._version import __version__  # NOQA
 # is not included in the Winloop wheel, affecting version 0.1.6 on PyPI.
 #from . import includes as __includes  # NOQA
 from .loop import Loop as __BaseLoop  # NOQA
-from ._version import __version__  # NOQA
-
 
 __all__ = ('new_event_loop', 'install', 'EventLoopPolicy')
 

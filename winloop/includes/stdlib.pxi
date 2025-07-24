@@ -25,6 +25,14 @@ import warnings
 import weakref
 
 
+from cpython.object cimport PyObject, PyTypeObject
+from cpython.time cimport PyTime_AsSecondsDouble, PyTime_t
+from libc.stdint cimport uintptr_t
+
+
+# TODO: Request or Propose to CPython Maintainers to allow public use of many of these functions via Capsule
+# for improved performance.
+
 cdef aio_get_event_loop = asyncio.get_event_loop
 cdef aio_CancelledError = asyncio.CancelledError
 cdef aio_InvalidStateError = asyncio.InvalidStateError
@@ -39,6 +47,7 @@ cdef aio_logger = asyncio.log.logger
 cdef aio_iscoroutine = asyncio.iscoroutine
 cdef aio_iscoroutinefunction = asyncio.iscoroutinefunction
 cdef aio_BaseProtocol = asyncio.BaseProtocol
+
 cdef aio_Protocol = asyncio.Protocol
 cdef aio_isfuture = getattr(asyncio, 'isfuture', None)
 cdef aio_get_running_loop = getattr(asyncio, '_get_running_loop', None)
@@ -51,7 +60,8 @@ cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
 cdef col_deque = collections.deque
 cdef col_Iterable = collections.abc.Iterable
 cdef col_Counter = collections.Counter
-cdef col_OrderedDict = collections.OrderedDict
+
+# cdef col_OrderedDict = collections.OrderedDict
 
 cdef cc_ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor
 cdef cc_Future = concurrent.futures.Future
@@ -59,6 +69,7 @@ cdef cc_Future = concurrent.futures.Future
 cdef errno_EBADF = errno.EBADF
 cdef errno_EINVAL = errno.EINVAL
 
+# TODO: Maybe we should try hacking in the partial code into cython instead?
 cdef ft_partial = functools.partial
 
 cdef gc_disable = gc.disable
@@ -73,6 +84,16 @@ cdef int SO_REUSEPORT = getattr(socket, 'SO_REUSEPORT', 0)
 cdef int SO_BROADCAST = getattr(socket, 'SO_BROADCAST')
 cdef int SOCK_NONBLOCK = getattr(socket, 'SOCK_NONBLOCK', -1)
 cdef int socket_AI_CANONNAME = getattr(socket, 'AI_CANONNAME')
+
+
+# NOTE: Recently Managed to hack these in with CPython's _socket.CAPI Capsule they are left in the code.
+# it's avalible on all versions of python currently so we may move to using it soon.
+# SEE: https://gist.github.com/Vizonex/d24b8d4c22027449b3ec175583a93aea
+
+# it is very likely that an array.array utility hack will force it in correctly
+# doing so will make any of these functions run faster & smoother. 
+# (Mainly typechecks and returntypes only)
+
 
 cdef socket_gaierror = socket.gaierror
 cdef socket_error = socket.error

@@ -1,3 +1,6 @@
+#ifndef __WINLOOP_COMPAT_H__
+#define __WINLOOP_COMPAT_H__
+
 #include <errno.h>
 #include <stddef.h>
 #include <signal.h>
@@ -176,3 +179,9 @@ void PyOS_AfterFork_Child() {
 }
 
 #endif
+
+// TODO: all versions of _PyEval_EvalFrameDefault so we can get rid of _noop.noop
+// which would be a massive performance enhancement and allow pyinstaller to compile 3.9 -> 3.14
+
+
+#endif // __WINLOOP_COMPAT_H__
