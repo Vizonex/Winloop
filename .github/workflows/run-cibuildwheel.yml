@@ -30,6 +30,15 @@ jobs:
             os: windows-latest
           - name: Windows arm64
             os: windows-11-arm
+          # NOTE: I do not wish to compete with uvloop and I am merly 
+          # wanting to see if other platforms can be supported based on 
+          # Isochole's contributions.
+          - name: macOS x86_64
+            os: macos-13
+          - name: macOS arm64
+            os: macos-latest
+          - name: Linux
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
