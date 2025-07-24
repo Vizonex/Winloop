@@ -1,11 +1,9 @@
 # cython: language_level=3
 
 
-from .includes cimport uv
-from .includes cimport system
+from libc.stdint cimport int64_t, uint32_t, uint64_t
 
-from libc.stdint cimport uint64_t, uint32_t, int64_t
-
+from .includes cimport system, uv
 
 include "includes/consts.pxi"
 
@@ -144,11 +142,11 @@ cdef class Loop:
     cdef inline _queue_write(self, UVStream stream)
     cdef _exec_queued_writes(self)
 
-    cdef inline _call_soon(self, object callback, object args, object context)
+    cdef inline Handle _call_soon(self, object callback, object args, object context)
     cdef inline _append_ready_handle(self, Handle handle)
     cdef inline _call_soon_handle(self, Handle handle)
 
-    cdef _call_later(self, uint64_t delay, object callback, object args,
+    cdef TimerHandle _call_later(self, uint64_t delay, object callback, object args,
                      object context)
 
     cdef void _handle_exception(self, object ex)
@@ -156,9 +154,9 @@ cdef class Loop:
     cdef inline _is_main_thread(self)
 
     cdef inline _new_future(self)
-    cdef inline _check_signal(self, sig)
-    cdef inline _check_closed(self)
-    cdef inline _check_thread(self)
+    cdef inline int _check_signal(self, sig) except -1
+    cdef inline int _check_closed(self) except -1
+    cdef inline int _check_thread(self) except -1
 
     cdef _getaddrinfo(self, object host, object port,
                       int family, int type,
@@ -171,8 +169,8 @@ cdef class Loop:
     cdef _fileobj_to_fd(self, fileobj)
     cdef _ensure_fd_no_transport(self, fd)
 
-    cdef _track_process(self, UVProcess proc)
-    cdef _untrack_process(self, UVProcess proc)
+    cdef int _track_process(self, UVProcess proc) except -1
+    cdef int _untrack_process(self, UVProcess proc) except -1
 
     cdef _add_reader(self, fd, Handle handle)
     cdef _has_reader(self, fd)
@@ -198,7 +196,7 @@ cdef class Loop:
 
     cdef _handle_signal(self, sig)
     cdef _read_from_self(self)
-    cdef inline _ceval_process_signals(self)
+    cdef inline int _ceval_process_signals(self) except -1
     cdef _invoke_signals(self, bytes data)
 
     cdef _set_coroutine_debug(self, bint enabled)

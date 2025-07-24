@@ -1,3 +1,5 @@
+
+
 cdef class UVHandle:
     """A base class for all libuv handles.
 
@@ -93,6 +95,8 @@ cdef class UVHandle:
                 msg = 'unclosed resource {!r}; {}'.format(self, tb)
         else:
             msg = 'unclosed resource {!r}'.format(self)
+
+        # There should be a better way to do this in CPython...
         warnings_warn(msg, ResourceWarning)
 
     cdef inline _abort_init(self):
@@ -132,6 +136,13 @@ cdef class UVHandle:
 
         self._loop = loop
 
+    # TODO: Better excpetion handling when UVLOOP_DEBUG is in effect..
+    # we should be handling errors as if we were writing in CPython to minimize
+    # the amount of code being generated. Doing so leads to faster performance.
+    # There's a lot of spots I see that could use pleanty of internal refractoring.
+    # Same goes for users with uvloop. - Vizonex
+
+    # TODO change bint to int so that were allowing the optional exceptions bringing -1 can be handled appropreately.
     cdef inline bint _is_alive(self):
         cdef bint res
         res = self._closed != 1 and self._inited == 1

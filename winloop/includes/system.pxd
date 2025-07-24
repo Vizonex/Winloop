@@ -1,5 +1,6 @@
 from libc.stdint cimport int8_t, uint64_t
 
+
 cdef extern from "includes/compat.h" nogil:
 
     int ntohl(int)

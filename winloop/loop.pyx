@@ -1,59 +1,41 @@
 # cython: language_level=3, embedsignature=True, freethreading_compatible = True
 
 import asyncio
+
 cimport cython
-
-from .includes.debug cimport UVLOOP_DEBUG
-from .includes cimport uv
-from .includes cimport system
-from .includes.python cimport (
-    PY_VERSION_HEX,
-    PyMem_RawMalloc, PyMem_RawFree,
-    PyMem_RawCalloc, PyMem_RawRealloc,
-    PyUnicode_EncodeFSDefault,
-    PyErr_SetInterrupt,
-    _Py_RestoreSignals,
-    Context_CopyCurrent,
-    Context_Enter,
-    Context_Exit,
-    PyMemoryView_FromMemory, PyBUF_WRITE,
-    PyMemoryView_FromObject, PyMemoryView_Check,
-    PyOS_AfterFork_Parent, PyOS_AfterFork_Child,
-    PyOS_BeforeFork,
-    PyUnicode_FromString
-)
-from .includes.flowcontrol cimport add_flowcontrol_defaults
-
-from libc.stdint cimport uint64_t
-from libc.string cimport memset, strerror, memcpy
-from libc cimport errno
-
-from cpython.buffer cimport (
-    PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE,
-    Py_buffer, PyBUF_WRITABLE
-)
-from cpython.bytes cimport (
-    PyBytes_AsString, PyBytes_CheckExact,
-    PyBytes_AsStringAndSize,
-    PyBytes_AS_STRING
-)
-
-from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
-
-from cpython.object cimport PyObject, Py_SIZE
-
-from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
-
+from cpython.buffer cimport (Py_buffer, PyBUF_SIMPLE, PyBUF_WRITABLE,
+                             PyBuffer_Release, PyObject_GetBuffer)
+from cpython.bytes cimport (PyBytes_AS_STRING, PyBytes_AsString,
+                            PyBytes_AsStringAndSize, PyBytes_CheckExact)
+from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred, PyErr_SetObject
+from cpython.object cimport Py_SIZE, PyObject
+from cpython.pycapsule cimport PyCapsule_GetPointer, PyCapsule_New
 # (Winloop) We need some cleaver hacky techniques for 
 # preventing slow spawnning processes for MSVC
-from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release, PyGILState_STATE
-
+from cpython.pystate cimport (PyGILState_Ensure, PyGILState_Release,
+                              PyGILState_STATE)
 from cpython.pythread cimport PyThread_get_thread_ident
+from cpython.ref cimport Py_DECREF, Py_INCREF, Py_XDECREF, Py_XINCREF
+from cpython.set cimport PySet_Add, PySet_Discard
+from libc cimport errno
+from libc.stdint cimport uint64_t
+from libc.string cimport memcpy, memset, strerror
 
-from cpython.ref cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
+from .includes cimport system, uv
+from .includes.debug cimport UVLOOP_DEBUG
+from .includes.flowcontrol cimport add_flowcontrol_defaults
+from .includes.python cimport (PY_VERSION_HEX, Context_CopyCurrent,
+                               Context_Enter, Context_Exit, PyBUF_WRITE,
+                               PyErr_SetInterrupt, PyMem_RawCalloc,
+                               PyMem_RawFree, PyMem_RawMalloc,
+                               PyMem_RawRealloc, PyMemoryView_Check,
+                               PyMemoryView_FromMemory,
+                               PyMemoryView_FromObject, PyObject_CallNoArgs,
+                               PyOS_AfterFork_Child, PyOS_AfterFork_Parent,
+                               PyOS_BeforeFork, PyUnicode_EncodeFSDefault,
+                               PyUnicode_FromString, _Py_RestoreSignals)
 
-from . import _noop
-
+from ._noop import noop
 
 include "includes/stdlib.pxi"
 
@@ -387,9 +369,10 @@ cdef class Loop:
     def __sighandler(self, signum, frame):
         self._signals.add(signum)
 
-    cdef inline _ceval_process_signals(self):
+    cdef inline int _ceval_process_signals(self) except -1:
         # Invoke CPython eval loop to let process signals.
-        PyErr_CheckSignals()
+        if PyErr_CheckSignals() < 0:
+            return -1
 
         # Might be gotten rid of soon, since we want to improve evaluation: 
         # SEE: https://github.com/Vizonex/Winloop/issues/58
@@ -397,7 +380,9 @@ cdef class Loop:
         # Calling a pure-Python function will invoke
         # _PyEval_EvalFrameDefault which will process
         # pending signal callbacks.
-        _noop.noop()  # Might raise ^C
+        if PyObject_CallNoArgs(noop) == NULL:  # Might raise ^C
+            return -1
+        return 0
 
     cdef _read_from_self(self):
         cdef bytes sigdata
@@ -680,7 +665,7 @@ cdef class Loop:
             if len(self._queued_streams) == 0:
                 self.handler_check__exec_writes.stop()
 
-    cdef inline _call_soon(self, object callback, object args, object context):
+    cdef inline Handle _call_soon(self, object callback, object args, object context):
         cdef Handle handle
         handle = new_Handle(self, callback, args, context)
         self._call_soon_handle(handle)
@@ -696,7 +681,7 @@ cdef class Loop:
         if not self.handler_idle.running:
             self.handler_idle.start()
 
-    cdef _call_later(self, uint64_t delay, object callback, object args,
+    cdef TimerHandle _call_later(self, uint64_t delay, object callback, object args,
                      object context):
         return TimerHandle(self, callback, args, delay, context)
 
@@ -709,29 +694,37 @@ cdef class Loop:
             # Exit ASAP
             self._stop(None)
 
-    cdef inline _check_signal(self, sig):
+    cdef inline int _check_signal(self, sig) except -1:
+        cdef int _sig
         if not isinstance(sig, int):
-            raise TypeError('sig must be an int, not {!r}'.format(sig))
+            PyErr_SetObject(TypeError, 'sig must be an int, not {!r}'.format(sig))
+            return -1
+        _sig = <int>sig
+        if not (1 <= _sig < signal_NSIG):
+            PyErr_SetObject(ValueError, 'sig {} out of range(1, {})'.format(sig, signal_NSIG))
+            return -1
+        return 0
 
-        if not (1 <= sig < signal_NSIG):
-            raise ValueError(
-                'sig {} out of range(1, {})'.format(sig, signal_NSIG))
-
-    cdef inline _check_closed(self):
+    cdef inline int _check_closed(self) except -1:
         if self._closed == 1:
-            raise RuntimeError('Event loop is closed')
+            # code executes faster if thrown the CPython way...
+            PyErr_SetObject(RuntimeError, 'Event loop is closed')
+            return -1
+        return 0
 
-    cdef inline _check_thread(self):
+    cdef inline int _check_thread(self) except -1:
         if self._thread_id == 0:
-            return
+            return 0
 
         cdef uint64_t thread_id
         thread_id = <uint64_t>PyThread_get_thread_ident()
 
         if thread_id != self._thread_id:
-            raise RuntimeError(
+            PyErr_SetObject(RuntimeError,
                 "Non-thread-safe operation invoked on an event loop other "
                 "than the current one")
+            return -1
+        return 0
 
     cdef inline _new_future(self):
         return aio_Future(loop=self)
@@ -739,11 +732,11 @@ cdef class Loop:
     cdef _track_transport(self, UVBaseTransport transport):
         self._transports[transport._fileno()] = transport
 
-    cdef _track_process(self, UVProcess proc):
-        self._processes.add(proc)
+    cdef int _track_process(self, UVProcess proc) except -1:
+        return PySet_Add(self._processes, proc)
 
-    cdef _untrack_process(self, UVProcess proc):
-        self._processes.discard(proc)
+    cdef int _untrack_process(self, UVProcess proc) except -1:
+        return <int>PySet_Discard(self._processes, proc)
 
     cdef _fileobj_to_fd(self, fileobj):
         """Return a file descriptor from a file object.

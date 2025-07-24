@@ -103,7 +103,7 @@ cdef class Handle:
             Py_DECREF(self)
             Context_Exit(context)
 
-    cdef _cancel(self) noexcept:
+    cdef _cancel(self):
         self._cancelled = 1
         self.callback = NULL
         self.arg1 = self.arg2 = self.arg3 = self.arg4 = None

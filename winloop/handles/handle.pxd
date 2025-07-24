@@ -1,3 +1,11 @@
+cimport cython 
+
+# NOTE: Uvloop expects you to use no_gc_clear 
+# Reason beind doing so has to do with the debug 
+# RuntimeError which hints at this and makes it 
+# very clear to use it.
+# so please do not remove this wrapper, thank you :)
+@cython.no_gc_clear
 cdef class UVHandle:
     cdef:
         uv.uv_handle_t *_handle
@@ -29,6 +37,7 @@ cdef class UVHandle:
     cdef _close(self)
 
 
+@cython.no_gc_clear
 cdef class UVSocketHandle(UVHandle):
     cdef:
         # Points to a Python file-object that should be closed

@@ -1,5 +1,6 @@
 from cpython.object cimport PyObject as PyObject
 
+
 cdef extern from "Python.h":
     """
 // Screw the compiler I'm hacking it in...

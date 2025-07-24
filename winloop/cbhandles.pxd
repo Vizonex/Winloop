@@ -17,7 +17,7 @@ cdef class Handle:
     cdef inline _set_context(self, object context)
 
     cdef inline _run(self)
-    cdef _cancel(self) noexcept
+    cdef _cancel(self)
 
     cdef _format_handle(self)
 
