@@ -36,14 +36,16 @@ from .includes.python cimport (PY_VERSION_HEX, Context_CopyCurrent,
                                PyUnicode_FromString, _Py_RestoreSignals)
 
 # NOTE: Keep if we need to revert at any point in time...
-# from ._noop import noop
+from ._noop import noop
 
-# This has a theoretical chance of hepling to safely bypass the required _noop module...
-__noop_locals = {}
-exec("def noop(): return", {}, __noop_locals)
-cdef object noop = __noop_locals['noop']
-# never need __noop_locals again...
-del __noop_locals
+# NOTE: This has a theoretical chance of hepling to safely bypass the required _noop module...
+# The only thing that will need simulations is hitting Ctrl+C on a keyboard which is not easy 
+# to simulate. For now I'll comment this out we can go back to it in a later winloop 0.2.XX version
+# __noop_locals = {}
+# exec("def noop(): return", {}, __noop_locals)
+# cdef object noop = __noop_locals['noop']
+# # never need __noop_locals again...
+# del __noop_locals
 
 
 include "includes/stdlib.pxi"

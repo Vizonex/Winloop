@@ -97,6 +97,8 @@ cdef class UVProcess(UVHandle):
 
                 PyOS_BeforeFork()
             else:
+                # NOTE: There's a good change we might consider getting rid of gil related features in the future and 
+                # instead try without to see if we can get the pids to correctly match. I'll save this for 0.2.1 however.
                 py_gil_state = PyGILState_Ensure()
 
                 # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags

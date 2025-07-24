@@ -7,6 +7,28 @@ if vi < (3, 8):
 # Winloop comment: winloop now supports both Windows and non-Windows.
 # Below uvloop's setup.py is merged with winloop's previous setup.py.
 
+# There's a High chance we may consider distributing wheels under linux and 
+# macos operating systems in 0.2.0 to experiment and fulfill Isochole's wish. 
+# However, I make have zero promises that uvloop will allow us to merge with 
+# them and I have a few reasons why I may not be choosing to merge.
+#
+# 1. Not Merging means the current Winloop maintainers will get a say in 
+#    changes being made as well as be able to care of stuff ourselves.
+#    As the maintainer of the project and founding it from the very beginng 
+#    it would be a sad reality if we weren't able to participate.
+#
+# 2. I have not had very much communication with uvloop maintainers 
+#    which could result in a bad outcome. 
+#
+# 3. Winloop is already apart of pypi and that means we need our branch to 
+#    remain as healthy as possible.
+#
+# 4. Winloop should be allowed to deviate from uvloop if and when optimized 
+#    and better coding skills are being practiced. I do not wish to trigger 
+#    competition but I would at least be able to give suggestions on best 
+#    practices
+
+
 import os
 import os.path
 import pathlib
@@ -21,7 +43,7 @@ from setuptools.command.sdist import sdist
 
 # Using a newer version of cython since versions are no longer a threat. 
 # Cython Decided to keep DEF Statements. 
-CYTHON_DEPENDENCY = 'Cython==3.1.2'
+CYTHON_DEPENDENCY = 'Cython>=3.1.2'
 MACHINE = platform.machine()
 MODULES_CFLAGS = [os.getenv('UVLOOP_OPT_CFLAGS', '-O2')]
 _ROOT = pathlib.Path(__file__).parent
@@ -86,7 +108,7 @@ class uvloop_build_ext(build_ext):
         super().initialize_options()
         self.use_system_libuv = False
         self.cython_always = False
-        self.cython_annotate = None
+        self.cython_annotate = False
         self.cython_directives = None
 
     def finalize_options(self):
@@ -242,8 +264,9 @@ with open(str(_ROOT / 'winloop' / '_version.py')) as f:
 if sys.platform == 'win32':
     from Cython.Build import cythonize
     from Cython.Compiler.Main import default_options
+
     default_options['compile_time_env'] = dict(DEFAULT_FREELIST_SIZE=250)
-    ext = cythonize([
+    ext = [
         Extension(
             "winloop.loop",
             sources=[
@@ -267,9 +290,9 @@ if sys.platform == 'win32':
             define_macros=[
                 ("WIN32_LEAN_AND_MEAN", 1),
                 ("_WIN32_WINNT", "0x0602")
-            ]
-        )
-    ])
+            ],
+        ),
+    ]
 else:
     ext = [
             Extension(

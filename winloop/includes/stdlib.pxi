@@ -30,7 +30,8 @@ from cpython.time cimport PyTime_AsSecondsDouble, PyTime_t
 from libc.stdint cimport uintptr_t
 
 
-# TODO Move as many of these as we can into C we need the speed.
+# TODO: Request or Propose to CPython Maintainers to allow public use of many of these functions via Capsule
+# for improved performance.
 
 cdef aio_get_event_loop = asyncio.get_event_loop
 cdef aio_CancelledError = asyncio.CancelledError
@@ -46,6 +47,7 @@ cdef aio_logger = asyncio.log.logger
 cdef aio_iscoroutine = asyncio.iscoroutine
 cdef aio_iscoroutinefunction = asyncio.iscoroutinefunction
 cdef aio_BaseProtocol = asyncio.BaseProtocol
+
 cdef aio_Protocol = asyncio.Protocol
 cdef aio_isfuture = getattr(asyncio, 'isfuture', None)
 cdef aio_get_running_loop = getattr(asyncio, '_get_running_loop', None)
