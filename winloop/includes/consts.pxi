@@ -1,16 +1,15 @@
-# cdef enum:
+cdef enum:
 
 # There is some Good News, Cython plans not to deprecate 
-# (DEF Constant Macros so I will revert & keep cdef enum 
-# in the top corner incase the main Cython Mainters change their minds...) 
-DEF UV_STREAM_RECV_BUF_SIZE = 256000  # 250kb
+# DEF Constant Macros for now lets keep these enums but we will revert later..
+    UV_STREAM_RECV_BUF_SIZE = 256000  # 250kb
 
-DEF FLOW_CONTROL_HIGH_WATER = 64  # KiB
-DEF FLOW_CONTROL_HIGH_WATER_SSL_READ = 256  # KiB
-DEF FLOW_CONTROL_HIGH_WATER_SSL_WRITE = 512  # KiB
+    FLOW_CONTROL_HIGH_WATER = 64  # KiB
+    FLOW_CONTROL_HIGH_WATER_SSL_READ = 256  # KiB
+    FLOW_CONTROL_HIGH_WATER_SSL_WRITE = 512  # KiB
 
-DEF DEFAULT_FREELIST_SIZE = 250
-DEF DNS_PYADDR_TO_SOCKADDR_CACHE_SIZE = 2048
+    DEFAULT_FREELIST_SIZE = 250
+    DNS_PYADDR_TO_SOCKADDR_CACHE_SIZE = 2048
 
 DEF DEBUG_STACK_DEPTH = 10
 
