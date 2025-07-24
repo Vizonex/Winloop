@@ -266,7 +266,7 @@ if sys.platform == 'win32':
     from Cython.Compiler.Main import default_options
 
     default_options['compile_time_env'] = dict(DEFAULT_FREELIST_SIZE=250)
-    ext = [
+    ext = cythonize([
         Extension(
             "winloop.loop",
             sources=[
@@ -292,7 +292,7 @@ if sys.platform == 'win32':
                 ("_WIN32_WINNT", "0x0602")
             ],
         ),
-    ]
+    ])
 else:
     ext = [
             Extension(
