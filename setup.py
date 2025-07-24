@@ -7,27 +7,6 @@ if vi < (3, 8):
 # Winloop comment: winloop now supports both Windows and non-Windows.
 # Below uvloop's setup.py is merged with winloop's previous setup.py.
 
-# There's a High chance we may consider distributing wheels under linux and 
-# macos operating systems in 0.2.0 to experiment and fulfill Isochole's wish. 
-# However, I make have zero promises that uvloop will allow us to merge with 
-# them and I have a few reasons why I may not be choosing to merge.
-#
-# 1. Not Merging means the current Winloop maintainers will get a say in 
-#    changes being made as well as be able to care of stuff ourselves.
-#    As the maintainer of the project and founding it from the very beginng 
-#    it would be a sad reality if we weren't able to participate.
-#
-# 2. I have not had very much communication with uvloop maintainers 
-#    which could result in a bad outcome. 
-#
-# 3. Winloop is already apart of pypi and that means we need our branch to 
-#    remain as healthy as possible.
-#
-# 4. Winloop should be allowed to deviate from uvloop if and when optimized 
-#    and better coding skills are being practiced. I do not wish to trigger 
-#    competition but I would at least be able to give suggestions on best 
-#    practices
-
 
 import os
 import os.path
