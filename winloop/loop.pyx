@@ -35,7 +35,16 @@ from .includes.python cimport (PY_VERSION_HEX, Context_CopyCurrent,
                                PyOS_BeforeFork, PyUnicode_EncodeFSDefault,
                                PyUnicode_FromString, _Py_RestoreSignals)
 
-from ._noop import noop
+# NOTE: Keep if we need to revert at any point in time...
+# from ._noop import noop
+
+# This has a theoretical chance of hepling to safely bypass the required _noop module...
+__noop_locals = {}
+exec("def noop(): return", {}, __noop_locals)
+cdef object noop = __noop_locals['noop']
+# never need __noop_locals again...
+del __noop_locals
+
 
 include "includes/stdlib.pxi"
 
