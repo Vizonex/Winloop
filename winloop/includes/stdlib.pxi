@@ -89,6 +89,8 @@ cdef int socket_AI_CANONNAME = getattr(socket, 'AI_CANONNAME')
 # NOTE: Recently Managed to hack these in with CPython's _socket.CAPI Capsule they are left in the code.
 # it's avalible on all versions of python currently so we may move to using it soon.
 # SEE: https://gist.github.com/Vizonex/d24b8d4c22027449b3ec175583a93aea
+# WARNING: Idea is still theorical and not ready!
+
 
 # it is very likely that an array.array utility hack will force it in correctly
 # doing so will make any of these functions run faster & smoother. 

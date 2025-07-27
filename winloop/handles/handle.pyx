@@ -124,6 +124,8 @@ cdef class UVHandle:
         if self._has_handle == 1:
             self._handle.data = <void*>self
         if self._loop._debug:
+            # extract-stack throws exception so _finish_init(self) 
+            # can't currently be optimzied further...
             self._source_traceback = extract_stack()
         if UVLOOP_DEBUG:
             cls_name = self.__class__.__name__
