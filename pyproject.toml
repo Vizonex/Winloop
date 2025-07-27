@@ -43,7 +43,7 @@ test = [
     'aiohttp>=3.10.5',
     'flake8>=5,<8',
     'psutil',
-    'pycodestyle~=2.9.0',
+    'pycodestyle>=2.9,<2.15',
     'pyOpenSSL>=23.0,<25.2',
     'mypy>=0.800',
 ]
