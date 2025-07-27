@@ -323,7 +323,7 @@ cdef class UVSocketHandle(UVHandle):
             self._fileobj = None
 
     # TODO: PyErr_SetNone Followed by return -1
-    # We should internally refactor socket protions this 
+    # We should internally refractor socket portions, this 
     # way if possible to reduce the C Generated code-size.
     cdef _open(self, int sockfd):
         raise NotImplementedError
