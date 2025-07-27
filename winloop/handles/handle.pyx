@@ -70,7 +70,7 @@ cdef class UVHandle:
             self._closed = 1
             self._free()
 
-    cdef _free(self):
+    cdef void _free(self) noexcept:
         if self._handle == NULL:
             return
 
@@ -99,27 +99,33 @@ cdef class UVHandle:
         # There should be a better way to do this in CPython...
         warnings_warn(msg, ResourceWarning)
 
-    cdef inline _abort_init(self):
+    cdef inline int _abort_init(self) except -1:
         if self._handle is not NULL:
             self._free()
+            return 0
 
         try:
             if UVLOOP_DEBUG:
                 name = self.__class__.__name__
                 if self._inited:
-                    raise RuntimeError(
+                    PyErr_SetObject(RuntimeError,
                         '_abort_init: {}._inited is set'.format(name))
+                    return -1
                 if self._closed:
-                    raise RuntimeError(
+                    PyErr_SetObject(RuntimeError,
                         '_abort_init: {}._closed is set'.format(name))
+                    return -1
         finally:
             self._closed = 1
-
+        return 0
+    
     cdef inline _finish_init(self):
         self._inited = 1
         if self._has_handle == 1:
             self._handle.data = <void*>self
         if self._loop._debug:
+            # extract-stack throws exception so _finish_init(self) 
+            # can't currently be optimzied further...
             self._source_traceback = extract_stack()
         if UVLOOP_DEBUG:
             cls_name = self.__class__.__name__
@@ -127,51 +133,59 @@ cdef class UVHandle:
             self._loop._debug_handles_total.update([cls_name])
             self._loop._debug_handles_current.update([cls_name])
 
-    cdef inline _start_init(self, Loop loop):
+    cdef inline int _start_init(self, Loop loop) except -1:
         if UVLOOP_DEBUG:
             if self._loop is not None:
-                raise RuntimeError(
+                PyErr_SetObject(RuntimeError,
                     '{}._start_init can only be called once'.format(
                         self.__class__.__name__))
-
+                return -1
         self._loop = loop
+        return 0
 
     # TODO: Better excpetion handling when UVLOOP_DEBUG is in effect..
     # we should be handling errors as if we were writing in CPython to minimize
     # the amount of code being generated. Doing so leads to faster performance.
-    # There's a lot of spots I see that could use pleanty of internal refractoring.
+    # There is a lot of areas that could use pleanty of internal refractoring.
     # Same goes for users with uvloop. - Vizonex
 
     # TODO change bint to int so that were allowing the optional exceptions bringing -1 can be handled appropreately.
-    cdef inline bint _is_alive(self):
+    cdef inline bint _is_alive(self) except -1:
         cdef bint res
         res = self._closed != 1 and self._inited == 1
         if UVLOOP_DEBUG:
             if res and self._has_handle == 1:
                 name = self.__class__.__name__
                 if self._handle is NULL:
-                    raise RuntimeError(
+                    PyErr_SetObject(RuntimeError,
                         '{} is alive, but _handle is NULL'.format(name))
+                    return -1
                 if self._loop is None:
-                    raise RuntimeError(
+                    PyErr_SetObject(RuntimeError,
                         '{} is alive, but _loop is None'.format(name))
+                    return -1
                 if self._handle.loop is not self._loop.uvloop:
-                    raise RuntimeError(
+                    PyErr_SetObject(RuntimeError,
                         '{} is alive, but _handle.loop is not '
                         'initialized'.format(name))
+                    return -1
                 if self._handle.data is not <void*>self:
-                    raise RuntimeError(
+                    PyErr_SetObject(RuntimeError,
                         '{} is alive, but _handle.data is not '
                         'initialized'.format(name))
+                    return -1
         return res
 
-    cdef inline _ensure_alive(self):
+
+    cdef inline int _ensure_alive(self) except -1:
         if not self._is_alive():
-            raise RuntimeError(
+            PyErr_SetObject(RuntimeError,
                 'unable to perform operation on {!r}; '
                 'the handler is closed'.format(self))
+            return -1
+        return 0
 
-    cdef _fatal_error(self, exc, throw, reason=None):
+    cdef object _fatal_error(self, exc, throw, reason=None):
         # Fatal error means an error that was returned by the
         # underlying libuv handle function.  We usually can't
         # recover from that, hence we just close the handle.
@@ -308,6 +322,9 @@ cdef class UVSocketHandle(UVHandle):
         finally:
             self._fileobj = None
 
+    # TODO: PyErr_SetNone Followed by return -1
+    # We should internally refractor socket portions, this 
+    # way if possible to reduce the C Generated code-size.
     cdef _open(self, int sockfd):
         raise NotImplementedError
 

@@ -21,19 +21,22 @@ cdef class UVHandle:
 
     # All "inline" methods are final
 
-    cdef inline _start_init(self, Loop loop)
-    cdef inline _abort_init(self)
+    cdef inline int _start_init(self, Loop loop) except -1
+    cdef inline int _abort_init(self) except -1
     cdef inline _finish_init(self)
 
-    cdef inline bint _is_alive(self)
-    cdef inline _ensure_alive(self)
+    cdef inline bint _is_alive(self) except -1
+    cdef inline int _ensure_alive(self) except -1
 
     cdef _error(self, exc, throw)
-    cdef _fatal_error(self, exc, throw, reason=?)
-
+    # in CPython it returns NULL on exception raised 
+    # so let's define that an object of NONE is returning.
+    cdef object _fatal_error(self, exc, throw, reason=?)
     cdef _warn_unclosed(self)
 
-    cdef _free(self)
+    cdef void _free(self) noexcept
+    # TODO: Optimize to return an integer if 
+    # exception handling of CPython can be better learned.
     cdef _close(self)
 
 
