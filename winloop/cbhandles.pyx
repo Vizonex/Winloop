@@ -410,7 +410,7 @@ cdef new_MethodHandle3(Loop loop, str name, method3_t callback, object context,
     return handle
 
 
-cdef extract_stack():
+cdef object extract_stack():
     """Replacement for traceback.extract_stack() that only does the
     necessary work for asyncio debug mode.
     """
