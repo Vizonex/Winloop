@@ -86,15 +86,19 @@ PyAPI_FUNC(int) PyODict_DelItem(PyObject *od, PyObject *key);
     ctypedef class _collections.OrderedDict [object PyODictObject, check_size ignore]:
         pass
 
+    # OrderedDict cannot be defined in any of it's C Methods due to GCC 
+    # SEE: https://github.com/Vizonex/Winloop/issues/64
+
     bint PyODict_Check(object op)
     bint PyODict_CheckExact(object op)
-    Py_ssize_t PyODict_SIZE(OrderedDict op)
-    int PyODict_Contains(OrderedDict op, object key) except -1
+    Py_ssize_t PyODict_SIZE(object op)
+    int PyODict_Contains(object op, object key) except -1
     OrderedDict PyODict_New()
-    int PyODict_SetItem(OrderedDict od, object key, object item) except -1
-    int PyODict_DelItem(OrderedDict od, object key) except -1
-    PyObject* PyODict_GetItem(OrderedDict od, object key)
-    object PyODict_GetItemWithError(OrderedDict od, object key)
+    
+    int PyODict_SetItem(object od, object key, object item) except -1
+    int PyODict_DelItem(object od, object key) except -1
+    PyObject* PyODict_GetItem(object od, object key)
+    object PyODict_GetItemWithError(object od, object key)
 
 
 @cython.final
