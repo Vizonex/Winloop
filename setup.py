@@ -29,6 +29,8 @@ _ROOT = pathlib.Path(__file__).parent
 LIBUV_DIR = str(_ROOT / 'vendor' / 'libuv')
 LIBUV_BUILD_DIR = str(_ROOT / 'build' / 'libuv-{}'.format(MACHINE))
 
+MINGW = bool(os.environ.get("MINGW_PREFIX", ""))
+
 
 def _libuv_build_env():
     env = os.environ.copy()
@@ -85,7 +87,7 @@ class uvloop_build_ext(build_ext):
 
     def initialize_options(self):
         super().initialize_options()
-        self.use_system_libuv = False
+        self.use_system_libuv = MINGW
         self.cython_always = False
         self.cython_annotate = False
         self.cython_directives = None
@@ -192,7 +194,7 @@ class uvloop_build_ext(build_ext):
             cwd=LIBUV_BUILD_DIR, env=env, check=True)
 
     def build_extensions(self):
-        if sys.platform == 'win32':
+        if sys.platform == 'win32' and not MINGW:
             path = pathlib.Path("vendor", "libuv", "src")
             c_files = [p.as_posix() for p in path.iterdir() if p.suffix == '.c']
             c_files += [p.as_posix() for p in (path/'win').iterdir() if p.suffix == '.c']
@@ -251,21 +253,22 @@ if sys.platform == 'win32':
             sources=[
                 "winloop/loop.pyx"
             ],
-            include_dirs=[
+            include_dirs=[] if MINGW else [
                 "vendor/libuv/src",
                 "vendor/libuv/src/win",
                 "vendor/libuv/include"
             ],
-            extra_link_args=[  # subset of libuv Windows libraries
-                "Shell32.lib",
-                "Ws2_32.lib",
-                "Advapi32.lib",
-                "iphlpapi.lib",
-                "Userenv.lib",
-                "User32.lib",
-                "Dbghelp.lib",
-                "Ole32.lib"
-            ],
+            # subset of libuv Windows libraries:
+            extra_link_args=[(f"-l{lib}" if MINGW else f"{lib}.lib") for lib in (
+                "Shell32",
+                "Ws2_32",
+                "Advapi32",
+                "iphlpapi",
+                "Userenv",
+                "User32",
+                "Dbghelp",
+                "Ole32",
+            )],
             define_macros=[
                 ("WIN32_LEAN_AND_MEAN", 1),
                 ("_WIN32_WINNT", "0x0602")
