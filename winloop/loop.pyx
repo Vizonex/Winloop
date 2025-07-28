@@ -18,7 +18,7 @@ from cpython.pythread cimport PyThread_get_thread_ident
 from cpython.ref cimport Py_DECREF, Py_INCREF, Py_XDECREF, Py_XINCREF
 from cpython.set cimport PySet_Add, PySet_Discard
 from libc cimport errno
-from libc.stdint cimport uint64_t
+from libc.stdint cimport uint64_t, uintptr_t
 from libc.string cimport memcpy, memset, strerror
 
 from .includes cimport system, uv
@@ -1172,7 +1172,7 @@ cdef class Loop:
 
     def _get_backend_id(self):
         """This method is used by uvloop tests and is not part of the API."""
-        return uv.uv_backend_fd(self.uvloop)
+        return int(<uintptr_t> uv.uv_backend_fd(self.uvloop))
 
     cdef _print_debug_info(self):
         cdef:
