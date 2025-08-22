@@ -1,7 +1,13 @@
 <img src="https://raw.githubusercontent.com/Vizonex/Winloop/main/winloop.png" width="200px"/>
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
+
 # Winloop
+[![PyPI version](https://badge.fury.io/py/winloop.svg)](https://badge.fury.io/py/winloop)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/winloop)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Appache-2.0](https://img.shields.io/badge/License-Appache-yellow.svg)](https://opensource.org/licenses/Appache-2-0)
+
 An Alternative library for uvloop compatibility with windows because let's face it. Window's python asyncio standard library is garbage especially when Windows Defender decides to eat half of your ram.
 I never really liked the fact that I couldn't make anything run faster especially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for windows [but windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
