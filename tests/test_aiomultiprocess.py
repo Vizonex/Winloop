@@ -14,7 +14,6 @@ import winloop
 from winloop import _testbase as tb
 
 
-
 def my_map():
     return [random.uniform(0.005, 1) for _ in range(7)]
 
@@ -22,7 +21,9 @@ def my_map():
 class _Test_Multiprocessing:
     """Used for Testing aiomultiprocessing"""
 
-    @unittest.skip("aiomultiprocess has an import bug releated to having a tests module")
+    @unittest.skip(
+        "aiomultiprocess has an import bug releated to having a tests module"
+    )
     def test_process_spawning(self):
         # See:
         # https://github.com/Vizonex/Winloop/issues/11#issuecomment-1922659521

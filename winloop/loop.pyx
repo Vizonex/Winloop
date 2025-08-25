@@ -224,6 +224,13 @@ cdef class Loop:
 
         self._servers = set()
 
+        # Newer Class Member _shlex_parser was added to solve parsing shell related
+        # inputs, posix is set to false so that file-paths are not stripped away (Especially Windows Paths)
+        self._shlex_parser = shlex(posix=False) 
+        self._shlex_parser.whitespace_split = True
+        self._shlex_parser.commenters = ''
+        
+
     cdef inline _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
         if system.MAIN_THREAD_ID_SET == 0:
@@ -2844,18 +2851,31 @@ cdef class Loop:
                                shell=True,
                                **kwargs):
 
+        cdef list args
+        # NOTE: shell always has to be true so no need to 
+        # check it a second time.
         if not shell:
             raise ValueError("shell must be True")
 
-        args = [cmd]
-        if shell:
-            if system.PLATFORM_IS_WINDOWS:
-                # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
-                # Winloop comment: args[0].split(' ') instead of args to pass some tests in test_process
-                args = [b'cmd', b'/s /c'] + args[0].split(' ')
-            else:
-                args = [b'/bin/sh', b'-c'] + args
+        args = []
+       
+        if system.PLATFORM_IS_WINDOWS:
+            # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
+            
+            # Winloop comment: args[0].split(' ') instead of args to pass some tests in test_process
+            # (OBSOLETE: New Slex parser implemented to handle shell related bugs) 
+            
+            # Winloop comment: As of 0.2.3 shlex parser is utilized to make up for the 
+            # for some parsing bugs, simply splitting these objects just won't cut it.
+            args.append(b'cmd')
+            args.append(b'/s /c')
+            args.extend(self._shlex_parser.split(cmd))
 
+        else:
+            args.append(b'/bin/sh')
+            args.append(b'-c') 
+            args.extend(self._shlex_parser.split(cmd))
+      
         return await self.__subprocess_run(protocol_factory, args, shell=True,
                                            **kwargs)
 
@@ -3391,6 +3411,7 @@ include "handles/pipe.pyx"
 include "handles/process.pyx"
 include "handles/fsevent.pyx"
 
+include "shlex.pyx"
 include "request.pyx"
 include "dns.pyx"
 include "sslproto.pyx"
