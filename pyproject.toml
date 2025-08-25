@@ -46,6 +46,9 @@ test = [
     'pycodestyle>=2.9,<2.15',
     'pyOpenSSL>=23.0,<25.2',
     'mypy>=0.800',
+    'anyio>=4.10.0',
+    'idna>=3.10',
+    'sniffio>=1.3.1'
 ]
 dev = [
     'setuptools>=60',
