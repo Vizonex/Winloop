@@ -47,7 +47,7 @@ def install() -> None:
     -   https://github.com/Vizonex/Winloop/issues/74
     -   https://github.com/python/cpython/issues/131148
     """
-    if _sys.version_info[:2] >= (3, 12):
+    if _sys.version_info >= (3, 12):
         _warnings.warn(
             "winloop.install() is deprecated and discouraged in favor of winloop.run()"
             "starting with Python 3.12."
@@ -58,7 +58,7 @@ def install() -> None:
             stacklevel=1,
         )
     # In Preparation for 3.16 
-    elif _sys.version_info[:2] >= (3, 16):
+    elif _sys.version_info >= (3, 16):
         raise RuntimeError(
             "winloop.install() is broken on 3.16 or higher " \
             " SEE: https://github.com/MagicStack/uvloop/issues/637 "
@@ -164,94 +164,120 @@ def _cancel_all_tasks(loop: __asyncio.AbstractEventLoop) -> None:
 
 
 # WARNING on 3.14 or higher using EventLoop Policies are discouraged!
-class EventLoopPolicy(__BasePolicy):
-    """Event loop policy.
+if _sys.version_info < (3, 16):
+    class EventLoopPolicy(__BasePolicy):
+        """Event loop policy.
 
-    The preferred way to make your application use winloop:
+        The preferred way to make your application use winloop:
 
-    >>> import asyncio
-    >>> import winloop
-    >>> asyncio.set_event_loop_policy(winloop.EventLoopPolicy())
-    >>> asyncio.get_event_loop()
-    <winloop.Loop running=False closed=False debug=False>
+        >>> import asyncio
+        >>> import winloop
+        >>> asyncio.set_event_loop_policy(winloop.EventLoopPolicy())
+        >>> asyncio.get_event_loop()
+        <winloop.Loop running=False closed=False debug=False>
 
-    WARNING
-    -------
-    Using on 3.14 or Higher is Discouraged and `winloop.install()` will
-    throw a `RuntimeError` if attempted. use `winloop.run(...)` or `winloop.new_event_loop(...)`
-    instead.
-    """
+        WARNING
+        -------
+        Using on 3.14 or Higher is Discouraged and `winloop.install()` will
+        throw a `RuntimeError` if attempted. use `winloop.run(...)` or `winloop.new_event_loop(...)`
+        instead.
+        """
 
-    # XXX: To bypass Problems of future Deprecation in 3.16 of different
-    # Eventloop Policies moving it's code to here for right now makes sense...
+        # XXX: To bypass Problems of future Deprecation in 3.16 of different
+        # Eventloop Policies moving it's code to here for right now makes sense...
 
-    # Have fun trying to stop me because I put that code all right here :)
-    # SEE: https://github.com/MagicStack/uvloop/issues/637
+        # Have fun trying to stop me because I put that code all right here :)
+        # SEE: https://github.com/MagicStack/uvloop/issues/637
 
-    if _sys.version_info > (3, 14):
+        if _sys.version_info > (3, 14):
 
+            def __init__(self):
+                _warnings.warn(
+                    "Using EventLoopPolicy on 3.14+ is discouraged and is removed in 3.16 "
+                    "and winloop.install() will throw a RuntimeError on 3.16+ if attempted "
+                    "use winloop.new_event_loop or winloop.run() or winloop.Loop() instead "
+                    "SEE: https://github.com/MagicStack/uvloop/issues/637",
+                    PendingDeprecationWarning,
+                    stacklevel=3,
+                )
+                super().__init__()
+
+            _loop_factory = None
+
+            class _Local(_threading.local):
+                _loop = None
+                _set_called = False
+
+            def __init__(self):
+                self._local = self._Local()
+
+            def get_event_loop(self):
+                """Get the event loop for the current context.
+
+                Returns an instance of EventLoop or raises an exception.
+                """
+                if (
+                    self._local._loop is None
+                    and not self._local._set_called
+                    and _threading.current_thread() is _threading.main_thread()
+                ):
+                    self.set_event_loop(self.new_event_loop())
+
+                if self._local._loop is None:
+                    raise RuntimeError(
+                        "There is no current event loop in thread %r."
+                        % _threading.current_thread().name
+                    )
+
+                return self._local._loop
+
+            def set_event_loop(self, loop):
+                """Set the event loop."""
+                self._local._set_called = True
+                assert loop is None or isinstance(loop, __BasePolicy)
+                self._local._loop = loop
+
+            def new_event_loop(self):
+                """Create a new event loop.
+
+                You must call set_event_loop() to make this the current event
+                loop.
+                """
+                return self._loop_factory()
+
+        def _loop_factory(self) -> Loop:
+            return new_event_loop()
+
+        if _typing.TYPE_CHECKING:
+            # EventLoopPolicy doesn't implement these, but since they are marked
+            # as abstract in typeshed, we have to put them in so mypy thinks
+            # the base methods are overridden. This is the same approach taken
+            # for the Windows event loop policy classes in typeshed.
+            def get_child_watcher(self) -> _typing.NoReturn: ...
+
+            def set_child_watcher(self, watcher: _typing.Any) -> _typing.NoReturn: ...
+else:
+    class EventLoopPolicy:
+        """Event loop policy.
+
+        The preferred way to make your application use winloop:
+
+        >>> import asyncio
+        >>> import winloop
+        >>> asyncio.set_event_loop_policy(winloop.EventLoopPolicy())
+        >>> asyncio.get_event_loop()
+        <winloop.Loop running=False closed=False debug=False>
+
+        WARNING
+        -------
+        Using on 3.14 or Higher is Discouraged and `winloop.install()` will
+        throw a `RuntimeError` if attempted. use `winloop.run(...)` or `winloop.new_event_loop(...)`
+        instead.
+        """
         def __init__(self):
-            _warnings.warn(
-                "Using EventLoopPolicy on 3.14+ is discouraged "
-                "and winloop.install() will throw a RuntimeError is attempted "
+            raise RuntimeError(
+                "3.16 removes EventLoopPolicies "
                 "use winloop.new_event_loop or winloop.run() or winloop.Loop() instead "
                 "SEE: https://github.com/MagicStack/uvloop/issues/637",
-                PendingDeprecationWarning,
-                stacklevel=3,
             )
-            super().__init__()
-
-        _loop_factory = None
-
-        class _Local(_threading.local):
-            _loop = None
-            _set_called = False
-
-        def __init__(self):
-            self._local = self._Local()
-
-        def get_event_loop(self):
-            """Get the event loop for the current context.
-
-            Returns an instance of EventLoop or raises an exception.
-            """
-            if (
-                self._local._loop is None
-                and not self._local._set_called
-                and _threading.current_thread() is _threading.main_thread()
-            ):
-                self.set_event_loop(self.new_event_loop())
-
-            if self._local._loop is None:
-                raise RuntimeError(
-                    "There is no current event loop in thread %r."
-                    % _threading.current_thread().name
-                )
-
-            return self._local._loop
-
-        def set_event_loop(self, loop):
-            """Set the event loop."""
-            self._local._set_called = True
-            assert loop is None or isinstance(loop, __BasePolicy)
-            self._local._loop = loop
-
-        def new_event_loop(self):
-            """Create a new event loop.
-
-            You must call set_event_loop() to make this the current event
-            loop.
-            """
-            return self._loop_factory()
-
-    def _loop_factory(self) -> Loop:
-        return new_event_loop()
-
-    if _typing.TYPE_CHECKING:
-        # EventLoopPolicy doesn't implement these, but since they are marked
-        # as abstract in typeshed, we have to put them in so mypy thinks
-        # the base methods are overridden. This is the same approach taken
-        # for the Windows event loop policy classes in typeshed.
-        def get_child_watcher(self) -> _typing.NoReturn: ...
-
-        def set_child_watcher(self, watcher: _typing.Any) -> _typing.NoReturn: ...
+    
