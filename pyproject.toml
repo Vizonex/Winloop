@@ -44,7 +44,7 @@ test = [
     'flake8>=5,<8',
     'psutil',
     'pycodestyle>=2.9,<2.15',
-    'pyOpenSSL>=23.0,<25.3',
+    'pyOpenSSL>=23.0,<25.4',
     'mypy>=0.800',
 ]
 dev = [
