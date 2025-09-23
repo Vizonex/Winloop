@@ -44,7 +44,7 @@ test = [
     'flake8>=5,<8',
     'psutil',
     'pycodestyle>=2.9,<2.15',
-    'pyOpenSSL>=23.0,<25.2',
+    'pyOpenSSL>=23.0,<25.4',
     'mypy>=0.800',
     'anyio>=4.10.0',
     'idna>=3.10',
@@ -52,7 +52,7 @@ test = [
 ]
 dev = [
     'setuptools>=60',
-    'Cython==3.1.3',
+    'Cython==3.1.4',
 ]
 docs = [
     'Sphinx>=4.1.2,<7.5.0',
@@ -64,7 +64,7 @@ docs = [
 requires = [
     "setuptools>=60",
     "wheel",
-    "Cython==3.1.3",
+    "Cython==3.1.4",
 ]
 build-backend = "setuptools.build_meta"
 
