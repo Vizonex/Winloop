@@ -430,7 +430,10 @@ else:
 print("OK")
             """
 
-            with tempfile.TemporaryFile() as inherited, tempfile.TemporaryFile() as non_inherited:
+            with (
+                tempfile.TemporaryFile() as inherited,
+                tempfile.TemporaryFile() as non_inherited,
+            ):
                 proc = await asyncio.create_subprocess_exec(
                     sys.executable,
                     b"-W",
@@ -989,6 +992,7 @@ class Test_UV_Process(_TestProcess, tb.UVTestCase):
         """)
         subprocess.run([sys.executable, "-c", script], check=True)
 
+   
 
 class Test_AIO_Process(_TestProcess, tb.AIOTestCase):
     pass

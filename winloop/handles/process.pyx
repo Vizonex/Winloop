@@ -96,10 +96,11 @@ cdef class UVProcess(UVHandle):
                 system.setForkHandler(<system.OnForkHandler>&__get_fork_handler)
 
                 PyOS_BeforeFork()
-            else:
+            # else:
+            #     pass
                 # NOTE: There's a good change we might consider getting rid of gil related features in the future and 
                 # instead try without to see if we can get the pids to correctly match. I'll save this for 0.2.1 however.
-                py_gil_state = PyGILState_Ensure()
+                # py_gil_state = PyGILState_Ensure()
 
                 # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
                 # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
@@ -127,8 +128,8 @@ cdef class UVProcess(UVHandle):
                 __forking_loop = None
                 system.resetForkHandler()
                 PyOS_AfterFork_Parent()
-            else:
-                PyGILState_Release(py_gil_state)
+            # else:
+                # PyGILState_Release(py_gil_state)
                 # NOTE I brought the PyGILState_Release here instead of later
                 # so that we can have better control over the os module... - Vizonex
                 
