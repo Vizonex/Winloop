@@ -9,6 +9,7 @@ include "includes/consts.pxi"
 
 
 cdef extern from *:
+    # TODO: We can get rid of vint soon since volatile is now supported by Cython
     ctypedef int vint "volatile int"
 
 
@@ -127,6 +128,9 @@ cdef class Loop:
 
         readonly uint64_t _debug_exception_handler_cnt
 
+        shlex _shlex_parser
+
+
     cdef _init_debug_fields(self)
 
     cdef _on_wake(self)
@@ -219,6 +223,8 @@ include "handles/tcp.pxd"
 include "handles/pipe.pxd"
 include "handles/process.pxd"
 include "handles/fsevent.pxd"
+
+include "shlex.pxd"
 
 include "request.pxd"
 include "sslproto.pxd"

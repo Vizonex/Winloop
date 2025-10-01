@@ -124,6 +124,75 @@ cdef inline run_in_context2(context, method, arg1, arg2):
         Py_DECREF(method)
 
 
+def list2cmdline(seq):
+    """
+    Translate a sequence of arguments into a command line
+    string, using the same rules as the MS C runtime:
+
+    1) Arguments are delimited by white space, which is either a
+       space or a tab.
+
+    2) A string surrounded by double quotation marks is
+       interpreted as a single argument, regardless of white space
+       contained within.  A quoted string can be embedded in an
+       argument.
+
+    3) A double quotation mark preceded by a backslash is
+       interpreted as a literal double quotation mark.
+
+    4) Backslashes are interpreted literally, unless they
+       immediately precede a double quotation mark.
+
+    5) If backslashes immediately precede a double quotation mark,
+       every pair of backslashes is interpreted as a literal
+       backslash.  If the number of backslashes is odd, the last
+       backslash escapes the next double quotation mark as
+       described in rule 3.
+    """
+
+    # See
+    # http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
+    # or search http://msdn.microsoft.com for
+    # "Parsing C++ Command-Line Arguments"
+    result = []
+    needquote = False
+    for arg in map(os.fsdecode, seq):
+        bs_buf = []
+
+        # Add a space to separate this argument from the others
+        if result:
+            result.append(' ')
+
+        needquote = (" " in arg) or ("\t" in arg) or not arg
+        if needquote:
+            result.append('"')
+
+        for c in arg:
+            if c == '\\':
+                # Don't know if we need to double yet.
+                bs_buf.append(c)
+            elif c == '"':
+                # Double backslashes.
+                result.append('\\' * len(bs_buf)*2)
+                bs_buf = []
+                result.append('\\"')
+            else:
+                # Normal char
+                if bs_buf:
+                    result.extend(bs_buf)
+                    bs_buf = []
+                result.append(c)
+
+        # Add remaining backslashes, if any.
+        if bs_buf:
+            result.extend(bs_buf)
+
+        if needquote:
+            result.extend(bs_buf)
+            result.append('"')
+
+    return ''.join(result).replace('\\"', '"')
+
 # Used for deprecation and removal of `loop.create_datagram_endpoint()`'s
 # *reuse_address* parameter
 _unset = object()
@@ -223,6 +292,13 @@ cdef class Loop:
         self._executor_shutdown_called = False
 
         self._servers = set()
+
+        # Newer Class Member _shlex_parser was added to solve parsing shell related
+        # inputs, posix is set to false so that file-paths are not stripped away (Especially Windows Paths)
+        self._shlex_parser = shlex(posix=False) 
+        self._shlex_parser.whitespace_split = True
+        self._shlex_parser.commenters = ''
+        
 
     cdef inline _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
@@ -2844,19 +2920,41 @@ cdef class Loop:
                                shell=True,
                                **kwargs):
 
+        cdef:
+            list args
+            object compsec
+        
+        # NOTE: shell always has to be true so no need to 
+        # check it a second time.
         if not shell:
             raise ValueError("shell must be True")
 
-        args = [cmd]
-        if shell:
-            if system.PLATFORM_IS_WINDOWS:
-                # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
-                # Winloop comment: args[0].split(' ') instead of args to pass some tests in test_process
-                args = [b'cmd', b'/s /c'] + args[0].split(' ')
-            else:
-                args = [b'/bin/sh', b'-c'] + args
-
-        return await self.__subprocess_run(protocol_factory, args, shell=True,
+        args = []
+       
+        if system.PLATFORM_IS_WINDOWS:
+            # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
+            
+            # Winloop comment: args[0].split(' ') instead of args to pass some tests in test_process
+            
+            # See subprocess.py for the mirror of this code.
+            comspec = os.environ.get("ComSpec")
+            if comspec:
+                system_root = os.environ.get("SystemRoot", '')
+                comspec = os.path.join(system_root, 'System32', 'cmd.exe')
+                if not os.path.isabs(comspec):
+                    raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
+            
+            args.append(comspec)
+            args.append('/c')
+            args.extend(self._shlex_parser.split(cmd))
+            
+        else:
+            args.append(b'/bin/sh')
+            args.append(b'-c') 
+            args.extend(self._shlex_parser.split(cmd))
+      
+        return await self.__subprocess_run(
+            protocol_factory, args, shell=True,
                                            **kwargs)
 
     @cython.iterable_coroutine
@@ -3391,6 +3489,7 @@ include "handles/pipe.pyx"
 include "handles/process.pyx"
 include "handles/fsevent.pyx"
 
+include "shlex.pyx"
 include "request.pyx"
 include "dns.pyx"
 include "sslproto.pyx"

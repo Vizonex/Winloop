@@ -49,6 +49,7 @@ def install() -> None:
     """
     if _sys.version_info >= (3, 12):
         _warnings.warn(
+
             "winloop.install() is deprecated and discouraged in favor of winloop.run()"
             "starting with Python 3.12."
             " SEE: https://github.com/MagicStack/uvloop/issues/637 "
@@ -280,4 +281,3 @@ else:
                 "use winloop.new_event_loop or winloop.run() or winloop.Loop() instead "
                 "SEE: https://github.com/MagicStack/uvloop/issues/637",
             )
-    

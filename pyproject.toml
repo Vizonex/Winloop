@@ -45,7 +45,7 @@ test = [
     'psutil',
     'pycodestyle>=2.9,<2.15',
     'pyOpenSSL>=23.0,<25.4',
-    'mypy>=0.800',
+    'mypy>=0.800'
 ]
 dev = [
     'setuptools>=60',
