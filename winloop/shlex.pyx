@@ -332,9 +332,15 @@ cdef class shlex:
         cdef list tokens = []
         cdef str token = self.get_token()
         while token:
-            tokens.append(token)
+            # strip quotes to prevent accidental cmd parsing failures...
+            # The real reason as to why tests with anyio would fail revolved around 
+            # bad argument parsing If we don't strip the quotes out what ultimately 
+            # occurs is that the running something like python
+
+            # SEE: https://github.com/Vizonex/Winloop/pull/72
+            # it assumes it's a string and as a result no stdin input occurs... 
+            tokens.append(token.strip("\""))
             token = self.get_token()
         return tokens
-
 
 

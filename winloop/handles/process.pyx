@@ -27,6 +27,7 @@ cdef class UVProcess(UVHandle):
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
                pass_fds, debug_flags, preexec_fn, restore_signals):
 
+
         global __forking
         if not system.PLATFORM_IS_WINDOWS:
             global __forking_loop
@@ -58,7 +59,6 @@ cdef class UVProcess(UVHandle):
         try:
             self._init_options(args, env, cwd, start_new_session,
                                _stdin, _stdout, _stderr, force_fork)
-
             restore_inheritable = set()
             if pass_fds:
                 for fd in pass_fds:
@@ -80,9 +80,10 @@ cdef class UVProcess(UVHandle):
         self._errpipe_read, self._errpipe_write = os_pipe()
         fds_to_close = self._fds_to_close
         self._fds_to_close = None
-        fds_to_close.append(self._errpipe_read)
         # add the write pipe last so we can close it early
+        fds_to_close.append(self._errpipe_read)
         fds_to_close.append(self._errpipe_write)
+        
         try:
             os_set_inheritable(self._errpipe_write, True)
 
@@ -96,11 +97,11 @@ cdef class UVProcess(UVHandle):
                 system.setForkHandler(<system.OnForkHandler>&__get_fork_handler)
 
                 PyOS_BeforeFork()
-            # else:
+            else:
             #     pass
                 # NOTE: There's a good change we might consider getting rid of gil related features in the future and 
                 # instead try without to see if we can get the pids to correctly match. I'll save this for 0.2.1 however.
-                # py_gil_state = PyGILState_Ensure()
+                py_gil_state = PyGILState_Ensure()
 
                 # Also important to note... https://docs.libuv.org/en/v1.x/guide/processes.html#option-flags
                 # "Changing the UID/GID is only supported on Unix, uv_spawn will fail on Windows with UV_ENOTSUP." - Libuv Docs
@@ -128,8 +129,8 @@ cdef class UVProcess(UVHandle):
                 __forking_loop = None
                 system.resetForkHandler()
                 PyOS_AfterFork_Parent()
-            # else:
-                # PyGILState_Release(py_gil_state)
+            else:
+                PyGILState_Release(py_gil_state)
                 # NOTE I brought the PyGILState_Release here instead of later
                 # so that we can have better control over the os module... - Vizonex
                 
@@ -291,6 +292,7 @@ cdef class UVProcess(UVHandle):
         self.options.args = self.uv_opt_args
 
         if start_new_session:
+            # Try disable this...
             self.options.flags |= uv.UV_PROCESS_DETACHED
 
             if system.PLATFORM_IS_WINDOWS:
@@ -300,8 +302,9 @@ cdef class UVProcess(UVHandle):
                 # https://docs.libuv.org/en/v1.x/process.html#c.uv_process_flags
                 # enabling VERBATIM_ARGUMENTS is helpful here because we're not enabling children...
                 self.options.flags |= uv.UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS
+                pass
 
-        if force_fork:
+        # if force_fork:
             # This is a hack to work around the change in libuv 1.44:
             #    > macos: use posix_spawn instead of fork
             # where Python subprocess options like preexec_fn are
@@ -313,8 +316,8 @@ cdef class UVProcess(UVHandle):
             # Based on current (libuv 1.46) behavior, setting
             # UV_PROCESS_SETUID or UV_PROCESS_SETGID would reliably make
             # libuv fallback to use fork, so let's just use it for now.
-            self.options.flags |= uv.UV_PROCESS_SETUID
-            self.options.uid = uv.getuid()
+            # self.options.flags |= uv.UV_PROCESS_SETUID
+            # self.options.uid = uv.getuid()
 
         if cwd is not None:
             cwd = os_fspath(cwd)
