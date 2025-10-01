@@ -2929,7 +2929,7 @@ cdef class Loop:
         if not shell:
             raise ValueError("shell must be True")
 
-        args = [cmd]
+        args = []
        
         if system.PLATFORM_IS_WINDOWS:
             # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
@@ -2944,13 +2944,10 @@ cdef class Loop:
                 if not os.path.isabs(comspec):
                     raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
             
-            args = [comspec, '/c'] + list(self._shlex_parser.split(cmd))
-            if not kwargs.get("executable"):
-                kwargs["executable"] = comspec
-
-            return await self.__subprocess_run(protocol_factory,
-            args=args, shell=True, **kwargs)
-
+            args.append(comspec)
+            args.append('/c')
+            args.extend(self._shlex_parser.split(cmd))
+            
         else:
             args.append(b'/bin/sh')
             args.append(b'-c') 
