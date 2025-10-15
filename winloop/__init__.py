@@ -9,8 +9,8 @@ if _sys.version_info < (3, 14):
 else:
     # Python Deprecates EventLoopPolicy in 3.14
     # SEE: https://github.com/python/cpython/issues/131148
-    # We will watch closely to determine what else we will do for supporting 3.14
-    from asyncio.events import AbstractEventLoopPolicy as __BasePolicy
+    # We will watch closely to determine what else we will do for supporting 3.14 
+    from asyncio.events import _AbstractEventLoopPolicy as __BasePolicy
 
 
 # Winloop comment: next line commented out for now. Somehow winloop\includes
