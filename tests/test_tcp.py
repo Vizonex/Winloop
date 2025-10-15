@@ -405,6 +405,7 @@ class _TestTCP:
 
         self.loop.run_until_complete(start_server())
 
+
     def test_create_connection_open_con_addr(self):
         async def client(addr):
             reader, writer = await asyncio.open_connection(*addr)
@@ -412,7 +413,7 @@ class _TestTCP:
             writer.write(b"AAAA")
             self.assertEqual(await reader.readexactly(2), b"OK")
 
-            re = r"(a bytes-like object)|(must be byte-ish)"
+            re = r"(a bytes-like object)|(must be byte-ish)|(bytes\, bytearray\, or memoryview object\, not 'str')"
             with self.assertRaisesRegex(TypeError, re):
                 writer.write("AAAA")
 
