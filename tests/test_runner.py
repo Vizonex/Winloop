@@ -29,7 +29,7 @@ class TestSourceCode(unittest.TestCase):
             pass
 
         coro = main()
-        with self.assertRaisesRegex(TypeError, " a non-uvloop event loop"):
+        with self.assertRaisesRegex(TypeError, " a non-winloop event loop"):
             uvloop.run(
                 coro,
                 loop_factory=asyncio.DefaultEventLoopPolicy().new_event_loop,
