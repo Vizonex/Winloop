@@ -46,10 +46,10 @@ class _TestAioHTTP:
 
         self.loop.run_until_complete(test())
         self.loop.run_until_complete(runner.cleanup())
-
+    
     def test_aiohttp_graceful_shutdown(self):
         # NOTE: This Might Already be solved I haven't checked yet - Vizonex
-        if self.implementation == "asyncio" and sys.version_info >= (3, 12, 0):
+        if sys.version_info == (3, 12):
             # In Python 3.12.0, asyncio.Server.wait_closed() waits for all
             # existing connections to complete, before aiohttp sends
             # on_shutdown signals.
