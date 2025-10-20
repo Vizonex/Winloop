@@ -693,7 +693,7 @@ cdef class UVStream(UVBaseTransport):
         if system.PLATFORM_IS_WINDOWS:
             # Winloop Comment: Winloop gets itself into trouble if this is
             # is not checked immediately, it's too costly to call the python function 
-            # bring in the flag instead to indicate colusre.
+            # bring in the flag instead to indicate closure.
             # SEE: https://github.com/Vizonex/Winloop/issues/84 
             if self._closing:
                 raise RuntimeError("Cannot call write() when UVStream is closing")
