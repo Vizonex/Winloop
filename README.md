@@ -6,16 +6,16 @@
 [![PyPI version](https://badge.fury.io/py/winloop.svg)](https://badge.fury.io/py/winloop)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/winloop)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![License: Appache-2.0](https://img.shields.io/badge/License-Appache-yellow.svg)](https://opensource.org/licenses/Appache-2-0)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache-yellow.svg)](https://opensource.org/licenses/Apache-2-0)
 
-An Alternative library for uvloop compatibility with windows because let's face it. Window's python asyncio standard library is garbage especially when Windows Defender decides to eat half of your ram.
-I never really liked the fact that I couldn't make anything run faster especially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for windows [but windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
+An alternative library for uvloop compatibility with Windows because let's face it. Windows' Python asyncio standard library is garbage, especially when Windows Defender decides to eat half of your RAM.
+I never really liked the fact that I couldn't make anything run faster especially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for Windows [but Windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
-Because nobody was willing to step in after so many years of waiting, I went ahead and downloaded the source code for uvloop and started modifying the source code to be windows compatible by carefully removing and changing parts that were not made for windows. Many hours of research went into making this library exist.
+Since nobody was willing to step in after so many years of waiting, I went ahead and downloaded the source code for uvloop and started modifying the source code to be Windows compatible by carefully removing and changing parts that were not made for Windows. Many hours of research went into making this library.
 
-The differences with __uvloop__ is that forking has been fully disabled and some smaller api calls had to be changed, error handling has been carefully modified and subprocesses instead release the gil instead of forking out...
+The differences with __uvloop__ is that forking has been fully disabled and some smaller API calls had to be changed, error handling has been carefully modified and subprocesses release the GIL instead of forking out...
 
-There is a performance increase of about 5 times vs using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger ssl problems in `python 3.9`. Winloop is a very good replacement for solving those ssl problems as well. This library also has comparable performance to it's brother uvloop.
+There is a performance increase of about 5 times with Winloop compared to using the `WindowsSelectorEventLoopPolicy` and `WindowsProactorEventLoopPolicy` which have been known to trigger SSL problems in `Python 3.9`. Winloop is a very good replacement for solving those SSL problems as well. This library also has comparable performance to its brother uvloop.
 
 
 
@@ -25,20 +25,20 @@ There is a performance increase of about 5 times vs using the `WindowsSelectorEv
 pip install winloop
 ```
 
-You can also clone the repository and build the extension yourself by running the command below if you wish to use or build this library locally, Note that you will need Cython and The Visual C++ extensions
+You can also clone the repository and build the extension yourself by running the command below if you wish to use or build this library locally. Note that you will need Cython and The Visual C++ extensions
 to compile this library on your own.
 
 ```
 python setup.py build_ext --inplace
 ```
 
-## Issues Reporting
+## Reporting issues
 
-If you find any bugs with this library be sure to open up an issue to our github repo. Me and other contributors will be happy try to help you figure out and diagnose your problems.
+If you find any bugs with this library be sure to open up an issue in the [issuetracker](https://github.com/Vizonex/Winloop/issues). Me and other contributors will be happy try to help you figure out and diagnose your problems.
 
 ## Making pull requests
-We encourage anyone to make pull-requests to winloop from spelling mistakes to vulnerability patches. Every little bit helps keep this library maintained and alive.
-Make sure that you are able to compile the library with the steps shown above. We plan to implement a nightly workflow to verify one's pull request in the future.
+We encourage anyone to make pull-requests to Winloop, containing anything from spelling mistakes to vulnerability patches. Every little bit helps keep this library maintained and alive.
+Make sure that you are able to compile the library with the steps shown above. We plan to implement a nightly workflow to verify one's pull-request in the future.
 
 
 
@@ -178,13 +178,13 @@ The benchmarks for the code above are as follows
 | WindowsSelectorEventLoopPolicy    | 2.723s                |
 
 
-That's a massive increase and jump from just TCP alone I'll be posting more benchmarks soon as
+That's a massive increase and jump from just TCP alone! I'll be posting more benchmarks soon, as
 I modify more of the current test suites made by uvloop...
 
 
 ## How to Use Winloop with Fastapi
 
-This was a cool little script I put together Just to make fastapi that much faster to handle
+This was a cool little script I put together just to make Fastapi that much faster to handle:
 
 ```python
 
