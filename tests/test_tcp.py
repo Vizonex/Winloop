@@ -405,7 +405,6 @@ class _TestTCP:
 
         self.loop.run_until_complete(start_server())
 
-
     def test_create_connection_open_con_addr(self):
         async def client(addr):
             reader, writer = await asyncio.open_connection(*addr)

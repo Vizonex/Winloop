@@ -46,7 +46,7 @@ class _TestAioHTTP:
 
         self.loop.run_until_complete(test())
         self.loop.run_until_complete(runner.cleanup())
-    
+
     def test_aiohttp_graceful_shutdown(self):
         # NOTE: This Might Already be solved I haven't checked yet - Vizonex
         if sys.version_info == (3, 12):

@@ -1,7 +1,6 @@
 """Test utilities. Don't use outside of the winloop project."""
 
 import asyncio
-import asyncio.events
 import collections
 import contextlib
 import gc
