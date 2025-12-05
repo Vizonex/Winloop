@@ -1,4 +1,5 @@
 import asyncio as __asyncio
+import collections.abc as _collections_abc
 import typing as _typing
 import sys as _sys
 import warnings as _warnings
@@ -8,7 +9,7 @@ from .loop import Loop as __BaseLoop  # NOQA
 from ._version import __version__  # NOQA
 
 
-__all__: _typing.Tuple[str, ...] = ('new_event_loop', 'run')
+__all__: tuple[str, ...] = ("new_event_loop", "run")
 _AbstractEventLoop = __asyncio.AbstractEventLoop
 
 
@@ -25,16 +26,16 @@ def new_event_loop() -> Loop:
 
 
 if _typing.TYPE_CHECKING:
+
     def run(
-        main: _typing.Coroutine[_typing.Any, _typing.Any, _T],
+        main: _collections_abc.Coroutine[_typing.Any, _typing.Any, _T],
         *,
-        loop_factory: _typing.Optional[
-            _typing.Callable[[], Loop]
-        ] = new_event_loop,
-        debug: _typing.Optional[bool]=None,
+        loop_factory: _collections_abc.Callable[[], Loop] | None = new_event_loop,
+        debug: bool | None = None,
     ) -> _T:
         """The preferred way of running a coroutine with winloop."""
 else:
+
     def run(main, *, loop_factory=new_event_loop, debug=None, **run_kwargs):
         """The preferred way of running a coroutine with winloop."""
 
@@ -44,7 +45,7 @@ else:
             # is using `winloop.run()` intentionally.
             loop = __asyncio._get_running_loop()
             if not isinstance(loop, Loop):
-                raise TypeError('winloop.run() uses a non-winloop event loop')
+                raise TypeError("winloop.run() uses a non-winloop event loop")
             return await main
 
         vi = _sys.version_info[:2]
@@ -54,12 +55,11 @@ else:
 
             if __asyncio._get_running_loop() is not None:
                 raise RuntimeError(
-                    "asyncio.run() cannot be called from a running event loop")
+                    "asyncio.run() cannot be called from a running event loop"
+                )
 
             if not __asyncio.iscoroutine(main):
-                raise ValueError(
-                    "a coroutine was expected, got {!r}".format(main)
-                )
+                raise ValueError("a coroutine was expected, got {!r}".format(main))
 
             loop = loop_factory()
             try:
@@ -71,10 +71,8 @@ else:
                 try:
                     _cancel_all_tasks(loop)
                     loop.run_until_complete(loop.shutdown_asyncgens())
-                    if hasattr(loop, 'shutdown_default_executor'):
-                        loop.run_until_complete(
-                            loop.shutdown_default_executor()
-                        )
+                    if hasattr(loop, "shutdown_default_executor"):
+                        loop.run_until_complete(loop.shutdown_default_executor())
                 finally:
                     __asyncio.set_event_loop(None)
                     loop.close()
@@ -82,22 +80,18 @@ else:
         elif vi == (3, 11):
             if __asyncio._get_running_loop() is not None:
                 raise RuntimeError(
-                    "asyncio.run() cannot be called from a running event loop")
+                    "asyncio.run() cannot be called from a running event loop"
+                )
 
             with __asyncio.Runner(
-                loop_factory=loop_factory,
-                debug=debug,
-                **run_kwargs
+                loop_factory=loop_factory, debug=debug, **run_kwargs
             ) as runner:
                 return runner.run(wrapper())
 
         else:
             assert vi >= (3, 12)
             return __asyncio.run(
-                wrapper(),
-                loop_factory=loop_factory,
-                debug=debug,
-                **run_kwargs
+                wrapper(), loop_factory=loop_factory, debug=debug, **run_kwargs
             )
 
 
@@ -111,22 +105,22 @@ def _cancel_all_tasks(loop: _AbstractEventLoop) -> None:
     for task in to_cancel:
         task.cancel()
 
-    loop.run_until_complete(
-        __asyncio.gather(*to_cancel, return_exceptions=True)
-    )
+    loop.run_until_complete(__asyncio.gather(*to_cancel, return_exceptions=True))
 
     for task in to_cancel:
         if task.cancelled():
             continue
         if task.exception() is not None:
-            loop.call_exception_handler({
-                'message': 'unhandled exception during asyncio.run() shutdown',
-                'exception': task.exception(),
-                'task': task,
-            })
+            loop.call_exception_handler(
+                {
+                    "message": "unhandled exception during asyncio.run() shutdown",
+                    "exception": task.exception(),
+                    "task": task,
+                }
+            )
 
 
-_deprecated_names = ('install', 'EventLoopPolicy')
+_deprecated_names = ("install", "EventLoopPolicy")
 
 
 if _sys.version_info[:2] < (3, 16):
@@ -152,8 +146,8 @@ def __getattr__(name: str) -> _typing.Any:
         """
         if _sys.version_info[:2] >= (3, 12):
             _warnings.warn(
-                'winloop.install() is deprecated in favor of winloop.run() '
-                'starting with Python 3.12.',
+                "winloop.install() is deprecated in favor of winloop.run() "
+                "starting with Python 3.12.",
                 DeprecationWarning,
                 stacklevel=1,
             )
@@ -161,7 +155,7 @@ def __getattr__(name: str) -> _typing.Any:
 
     class EventLoopPolicy(
         # This is to avoid a mypy error about AbstractEventLoopPolicy
-        getattr(__asyncio, 'AbstractEventLoopPolicy')  # type: ignore[misc]
+        getattr(__asyncio, "AbstractEventLoopPolicy")  # type: ignore[misc]
     ):
         """Event loop policy for winloop.
 
@@ -183,16 +177,12 @@ def __getattr__(name: str) -> _typing.Any:
             # marked as abstract in typeshed, we have to put them in so mypy
             # thinks the base methods are overridden. This is the same approach
             # taken for the Windows event loop policy classes in typeshed.
-            def get_child_watcher(self) -> _typing.NoReturn:
-                ...
+            def get_child_watcher(self) -> _typing.NoReturn: ...
 
-            def set_child_watcher(
-                self, watcher: _typing.Any
-            ) -> _typing.NoReturn:
-                ...
+            def set_child_watcher(self, watcher: _typing.Any) -> _typing.NoReturn: ...
 
         class _Local(threading.local):
-            _loop: _typing.Optional[_AbstractEventLoop] = None
+            _loop: _AbstractEventLoop | None = None
 
         def __init__(self) -> None:
             self._local = self._Local()
@@ -204,15 +194,13 @@ def __getattr__(name: str) -> _typing.Any:
             """
             if self._local._loop is None:
                 raise RuntimeError(
-                    'There is no current event loop in thread %r.'
+                    "There is no current event loop in thread %r."
                     % threading.current_thread().name
                 )
 
             return self._local._loop
 
-        def set_event_loop(
-            self, loop: _typing.Optional[_AbstractEventLoop]
-        ) -> None:
+        def set_event_loop(self, loop: _AbstractEventLoop | None) -> None:
             """Set the event loop."""
             if loop is not None and not isinstance(loop, _AbstractEventLoop):
                 raise TypeError(
@@ -228,6 +216,6 @@ def __getattr__(name: str) -> _typing.Any:
             """
             return self._loop_factory()
 
-    globals()['install'] = install
-    globals()['EventLoopPolicy'] = EventLoopPolicy
+    globals()["install"] = install
+    globals()["EventLoopPolicy"] = EventLoopPolicy
     return globals()[name]

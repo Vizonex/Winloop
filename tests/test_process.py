@@ -992,7 +992,6 @@ class Test_UV_Process(_TestProcess, tb.UVTestCase):
         """)
         subprocess.run([sys.executable, "-c", script], check=True)
 
-   
 
 class Test_AIO_Process(_TestProcess, tb.AIOTestCase):
     pass

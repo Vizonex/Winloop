@@ -81,3 +81,7 @@ build-frontend = "build"
 addopts = "--capture=no --assert=plain --strict-markers --tb=native --import-mode=importlib"
 testpaths = "tests"
 filterwarnings = "default"
+
+[tool.ruff.lint]
+# Upgrade annotations
+select = ["UP045", "UP007", "UP035"]
