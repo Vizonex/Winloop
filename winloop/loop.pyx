@@ -1713,6 +1713,16 @@ cdef class Loop:
             ssl_shutdown_timeout=ssl_shutdown_timeout,
             call_connection_made=False)
 
+        stream_buff = None
+        if hasattr(protocol, '_stream_reader'):
+            stream_reader = protocol._stream_reader
+            if stream_reader is not None:
+                stream_buff = getattr(stream_reader, '_buffer', None)
+
+        if stream_buff is not None:
+            ssl_protocol._incoming.write(stream_buff)
+            stream_buff.clear()
+
         # Pause early so that "ssl_protocol.data_received()" doesn't
         # have a chance to get called before "ssl_protocol.connection_made()".
         transport.pause_reading()
