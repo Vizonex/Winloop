@@ -1262,6 +1262,47 @@ class _TestSSL(tb.SSLTestCase):
     PAYLOAD_SIZE = 1024 * 100
     TIMEOUT = 60
 
+    def test_start_tls_buffer_transfer(self):
+        if self.implementation == 'asyncio':
+            raise unittest.SkipTest()
+
+        HELLO_MSG = b'1' * self.PAYLOAD_SIZE
+        BUFFERED_MSG = b'buffered data before TLS'
+
+        server_context = self._create_server_ssl_context(
+            self.ONLYCERT, self.ONLYKEY)
+        client_context = self._create_client_ssl_context()
+
+        async def handle_client(reader, writer):
+            # Send data before TLS upgrade
+            writer.write(BUFFERED_MSG)
+            await writer.drain()
+            await asyncio.sleep(0.2)
+
+            # Read pre-TLS data
+            data = await reader.readexactly(len(HELLO_MSG))
+            self.assertEqual(len(data), len(HELLO_MSG))
+
+            # Upgrade to TLS (server side)
+            try:
+                # We need the wait_for because the broken version hangs here
+                await asyncio.wait_for(
+                    writer.start_tls(server_context),
+                    timeout=2)
+                self.assertIsNotNone(writer.get_extra_info('sslcontext'))
+            except asyncio.TimeoutError:
+                self.assertIsNotNone(writer.get_extra_info('sslcontext'))
+
+            # Send/receive over TLS
+            writer.write(b'OK')
+            await writer.drain()
+
+            data = await reader.readexactly(len(HELLO_MSG))
+            self.assertEqual(len(data), len(HELLO_MSG))
+
+            writer.close()
+            await self.wait_closed(writer)
+
     def test_create_server_ssl_1(self):
         CNT = 0  # number of clients that were successful
         TOTAL_CNT = 25  # total number of clients that test will create
