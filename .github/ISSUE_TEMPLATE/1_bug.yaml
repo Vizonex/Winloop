@@ -10,7 +10,7 @@ body:
         > Ensure you have agreed to these terms before throwing an issue
   - type: markdown
     attributes:
-      value: 
+      value: |
         Carefully read and checkmark all the terms and conditions before 
         continuing with reporting the issue
   - type: checkboxes
