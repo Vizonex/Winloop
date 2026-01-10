@@ -8,13 +8,15 @@ body:
       value: |
         > [!IMPORTANT]
         > Ensure you have agreed to these terms before throwing an issue
+  - type: markdown
+    attributes:
+      value: 
+        Carefully read and checkmark all the terms and conditions before 
+        continuing with reporting the issue
   - type: checkboxes
     id: checklist
     attributes:
-      label: Checklist
-      description: | 
-        Carefully read and checkmark all the terms and conditions before 
-        continuing with reporting the issue
+      label: Checklist 
       options:
         - label: I am not a kindergartener and that creating AI generated code or grammar of any sort
             will result in my issue being terminated, promptly closed and labeled as **AI**
