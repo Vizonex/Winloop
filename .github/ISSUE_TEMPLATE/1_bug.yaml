@@ -1,22 +1,24 @@
 name: Report Bug with winloop
 description: Report an issue with winloop
-labels: 
-  - bug
 body:
   - type: markdown
     attributes:
       value: |
         > [!IMPORTANT]
-        > Ensure you have agreed to these terms before throwing an issue
+        > Not providing the required (*) information or removing the template will result in your issue being closed and ignored.
   - type: markdown
     attributes:
       value: |
-        Carefully read and checkmark all the terms and conditions before 
-        continuing with reporting the issue
+        > [!IMPORTANT]
+        > Ensure you have agreed to these terms before throwing an issue
+
   - type: checkboxes
     id: checklist
     attributes:
-      label: Checklist 
+      label: Checklist
+      description: |
+        Carefully read and checkmark all the terms and conditions before 
+        continuing with reporting the issue
       options:
         - label: I am not a kindergartener and that creating AI generated code or grammar of any sort
             will result in my issue being terminated, promptly closed and labeled as **AI**
@@ -34,17 +36,3 @@ body:
         - lablel: If my code is incomplete it will be marked as **reproducer vauge** and that I will need
             to go back and redo my reproducable bug.
           required: true
-  - type: textarea
-    description: Optional but having a description or explaining the bug helps us out a lot.
-    validations: 
-      required: false
-  - type: textarea
-    attributes:
-      label: Please make sure the bug can be reproducable, Screenshots will be ignored and try to keep things simple
-        so that other contributors and maintainers can understand the problem.
-      description: See [Good Example](https://github.com/Vizonex/Winloop/issues/84) and [Bad Example](https://github.com/Vizonex/Winloop/issues/101) for help with how to correctly go about making your issue.
-        You do not have to be completely detailed or have good english or a heavy description just know that having a small snippet is enough to help fix the bug your experiencing.
-      placeholder: try something like this [For Example](https://github.com/Vizonex/Winloop/issues/84) if there is another snippet that can be reproduced linking it should be enough to help us. If your coming from a CPython issue
-        Linking to it from this text input will be enough for me.
-    validations:
-      required: true
