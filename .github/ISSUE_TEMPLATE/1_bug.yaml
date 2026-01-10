@@ -1,0 +1,49 @@
+name: Report Bug with winloop
+description: Report an issue with winloop
+labels: 
+  - bug
+body:
+    - type: markdown
+      attributes:
+        value: |
+          > [!IMPORTANT]
+          > Ensure you have agreed to these terms before throwing an issue
+    - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: | 
+        Carefully read and checkmark all the terms and conditions before 
+        continuing with reporting the issue
+      options:
+        - label: I am not a kindergartener and that creating AI generated code or grammar of any sort
+            will result in my issue being terminated, promptly closed and labeled as **AI**
+          required: true
+        - label: If there was already an issue about this that hasn't been closed at all
+            your issue will be treated and duplicate and closed
+          required: true
+        - label: If I do not have a code snippet or can't reproduce the bug to the issue I'm 
+        experiencing to best of my own abilities then the issue will be ignored.
+          required: true
+        - label: If something is caused by a dependency that is unrelated to winloop 
+            my issue will be labeled under **external library's fault** and that I will be redirected
+            to throwing the issue with the external library's issue page
+          required: true
+        - lablel: If my code is incomplete it will be marked as "reproducer: vauge" and that I will need
+            to go back and redo my reproducable bug.
+          required: true
+  - type: textarea
+    - id: description
+      description: Optional but having a description or explaining the bug helps us out a lot.
+    validations: 
+      required: false
+  - type: textarea
+    id: reproducable
+    attributes:
+      label: Please make sure the bug can be reproducable, Screenshots will be ignored and try to keep things simple
+      so that other contributors and maintainers can understand the problem.
+      description: See [Good Example](https://github.com/Vizonex/Winloop/issues/84) and [Bad Example](https://github.com/Vizonex/Winloop/issues/101) for help with how to correctly go about making your issue.
+        You do not have to be completely detailed or have good english or a heavy description just know that having a small snippet is enough to help fix the bug your experiencing.
+      placeholder: TODO: Template for how to do this but `import winloop` with `async def main():` along with `if __name__ == "__main__": winloop.run(main())` should be enough to get started with your reproducable.
+    validations:
+      required: true
