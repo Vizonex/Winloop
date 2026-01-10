@@ -35,12 +35,10 @@ body:
             to go back and redo my reproducable bug.
           required: true
   - type: textarea
-    id: description
     description: Optional but having a description or explaining the bug helps us out a lot.
     validations: 
       required: false
   - type: textarea
-    id: reproducable
     attributes:
       label: Please make sure the bug can be reproducable, Screenshots will be ignored and try to keep things simple
         so that other contributors and maintainers can understand the problem.
