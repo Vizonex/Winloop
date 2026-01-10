@@ -23,7 +23,7 @@ body:
             your issue will be treated and duplicate and closed
           required: true
         - label: If I do not have a code snippet or can't reproduce the bug to the issue I'm 
-        experiencing to best of my own abilities then the issue will be ignored.
+            experiencing to best of my own abilities then the issue will be ignored.
           required: true
         - label: If something is caused by a dependency that is unrelated to winloop 
             my issue will be labeled under **external library's fault** and that I will be redirected
