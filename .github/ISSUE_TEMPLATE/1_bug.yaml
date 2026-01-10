@@ -41,7 +41,7 @@ body:
     id: reproducable
     attributes:
       label: Please make sure the bug can be reproducable, Screenshots will be ignored and try to keep things simple
-      so that other contributors and maintainers can understand the problem.
+        so that other contributors and maintainers can understand the problem.
       description: See [Good Example](https://github.com/Vizonex/Winloop/issues/84) and [Bad Example](https://github.com/Vizonex/Winloop/issues/101) for help with how to correctly go about making your issue.
         You do not have to be completely detailed or have good english or a heavy description just know that having a small snippet is enough to help fix the bug your experiencing.
       placeholder: try something like this [For Example](https://github.com/Vizonex/Winloop/issues/84) if there is another snippet that can be reproduced linking it should be enough to help us. If your coming from a CPython issue
