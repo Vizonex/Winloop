@@ -9,29 +9,29 @@ body:
         > [!IMPORTANT]
         > Ensure you have agreed to these terms before throwing an issue
   - type: checkboxes
-  id: checklist
-  attributes:
-    label: Checklist
-    description: | 
-      Carefully read and checkmark all the terms and conditions before 
-      continuing with reporting the issue
-    options:
-      - label: I am not a kindergartener and that creating AI generated code or grammar of any sort
-          will result in my issue being terminated, promptly closed and labeled as **AI**
-        required: true
-      - label: If there was already an issue about this that hasn't been closed at all
-          your issue will be treated and duplicate and closed
-        required: true
-      - label: If I do not have a code snippet or can't reproduce the bug to the issue I'm 
-      experiencing to best of my own abilities then the issue will be ignored.
-        required: true
-      - label: If something is caused by a dependency that is unrelated to winloop 
-          my issue will be labeled under **external library's fault** and that I will be redirected
-          to throwing the issue with the external library's issue page
-        required: true
-      - lablel: If my code is incomplete it will be marked as "reproducer: vauge" and that I will need
-          to go back and redo my reproducable bug.
-        required: true
+    id: checklist
+    attributes:
+      label: Checklist
+      description: | 
+        Carefully read and checkmark all the terms and conditions before 
+        continuing with reporting the issue
+      options:
+        - label: I am not a kindergartener and that creating AI generated code or grammar of any sort
+            will result in my issue being terminated, promptly closed and labeled as **AI**
+          required: true
+        - label: If there was already an issue about this that hasn't been closed at all
+            your issue will be treated and duplicate and closed
+          required: true
+        - label: If I do not have a code snippet or can't reproduce the bug to the issue I'm 
+        experiencing to best of my own abilities then the issue will be ignored.
+          required: true
+        - label: If something is caused by a dependency that is unrelated to winloop 
+            my issue will be labeled under **external library's fault** and that I will be redirected
+            to throwing the issue with the external library's issue page
+          required: true
+        - lablel: If my code is incomplete it will be marked as "reproducer: vauge" and that I will need
+            to go back and redo my reproducable bug.
+          required: true
   - type: textarea
     id: description
     description: Optional but having a description or explaining the bug helps us out a lot.
