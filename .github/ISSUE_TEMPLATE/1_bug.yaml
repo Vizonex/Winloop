@@ -29,7 +29,7 @@ body:
             my issue will be labeled under **external library's fault** and that I will be redirected
             to throwing the issue with the external library's issue page
           required: true
-        - lablel: If my code is incomplete it will be marked as "reproducer: vauge" and that I will need
+        - lablel: If my code is incomplete it will be marked as **reproducer vauge** and that I will need
             to go back and redo my reproducable bug.
           required: true
   - type: textarea
