@@ -446,8 +446,6 @@ cdef class Loop:
         # Invoke CPython eval loop to let process signals.
         # Reason for getting rid of noop has more to do with 
         # pyinstaller and making executable files with winloop
-        # we can delay exceptions by wrapping in a noexcept so exceptions
-        # can be handled on a later cycle.
 
         # All in all a smarter approch was wanted due to pyinstaller but also 
         # due to needing some more juicy speedups
@@ -455,10 +453,10 @@ cdef class Loop:
         # SEE: https://github.com/Vizonex/Winloop/issues/58
 
         PyErr_CheckSignals()
-        # Calling a pure-Python function will invoke
-        # _PyEval_EvalFrameDefault which will process
-        # pending signal callbacks.
-        # this gets rid of needing another module
+
+        # Calling a pure-Python function (this can also be literally any from) 
+        # will invoke _PyEval_EvalFrameDefault which will process
+        # pending signal callbacks this attempts to get rid of needing another external module
         eval("None")
 
 
