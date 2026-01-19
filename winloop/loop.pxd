@@ -49,7 +49,6 @@ cdef class Loop:
         object _default_executor
         object _ready
         set _queued_streams, _executing_streams
-        Py_ssize_t _ready_len
 
         set _servers
 
