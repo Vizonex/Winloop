@@ -37,9 +37,23 @@ class _TestExecutors:
     def test_executors_process_pool_02(self):
         self.run_pool_test(concurrent.futures.ThreadPoolExecutor)
 
+    
 
 class TestUVExecutors(_TestExecutors, tb.UVTestCase):
-    pass
+    # Only libuv can feasabily do this.
+    # this was implemented to help combat resource problems 
+
+    def test_libuv_threadpool(self):
+        self.loop.set_default_executor(None)
+        async def run():
+            coros = []
+            for i in range(0, 10):
+                coros.append(self.loop.run_in_executor(None, fib, i))
+            res = await asyncio.gather(*coros)
+            self.assertEqual(res, fib10)
+            await asyncio.sleep(0.01)
+        fib10 = [fib(i) for i in range(10)]
+        self.loop.run_until_complete(run())
 
 
 class TestAIOExecutors(_TestExecutors, tb.AIOTestCase):
