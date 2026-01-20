@@ -55,6 +55,19 @@ class TestUVExecutors(_TestExecutors, tb.UVTestCase):
         fib10 = [fib(i) for i in range(10)]
         self.loop.run_until_complete(run())
 
+    def test_libuv_threadpool_exception(self):
+        self.loop.set_default_executor(None)
+        async def run():
+            class TestException(Exception):
+                pass
+            
+            def execption():
+                raise TestException("Hello")
+            
+            with self.assertRaises(TestException):
+                self.loop.run_in_executor(None, execption)
+
+        self.loop.run_until_complete(run())
 
 class TestAIOExecutors(_TestExecutors, tb.AIOTestCase):
     pass
