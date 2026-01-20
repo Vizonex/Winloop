@@ -31,6 +31,13 @@ cdef extern from "includes/compat.h":
     int Context_Enter(object) except -1
     int Context_Exit(object) except -1
 
+    # Custom functions for making context.run faster.
+    # meaning more speed for all handle calls being made
+    object Context_RunNoArgs(object context, object method)
+    object Context_RunOneArg(object context, object method, object arg)
+    object Context_RunTwoArgs(object context, object method, object arg1, object arg2)
+
+
     void PyOS_BeforeFork()
     void PyOS_AfterFork_Parent()
     void PyOS_AfterFork_Child()
