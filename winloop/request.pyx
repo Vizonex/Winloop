@@ -63,3 +63,81 @@ cdef class UVRequest:
             else:
                 ex = convert_error(err)
                 self.loop._handle_exception(ex)
+
+
+cdef class UVWork(UVRequest):
+    cdef cancel(self):
+        UVRequest.cancel(self)
+        # if successful do the same on the future object's end.
+        if not self.fut.cancelled():
+            self.fut.cancel()
+   
+    cdef void run(self) noexcept with gil:
+        cdef object result
+        try:
+            # if the eventloop fires the task but we cancelled previously
+            # it's best to try exiting now instead of later...
+            if self.fut.cancelled():
+                return
+            try:
+                result = self.fn(*self.args)
+            except BaseException as exc:
+                self.exc = exc
+            else:
+                self.result = result
+        except BaseException as ex:
+            # if anything else fails. We don't have to be a sitting duck
+            # and let it slide. we can handle it as soon as possible...
+            self.exc = exc
+        
+    def __cinit__(self, Loop loop, object fut, object fn, object args):
+        self.request = <uv.uv_req_t*>PyMem_RawMalloc(sizeof(uv.uv_work_t))
+        if self.request == NULL:
+            raise MemoryError
+
+        self.loop = loop
+        self.done = 0
+        self.fn = fn
+        self.args = args
+        self.result = None
+        self.exc = None
+        self.fut = fut
+
+        self.request.data = <void*>self
+
+        # UV_EINVAL will never happen because our callback exists...
+        uv.uv_queue_work(self.loop.uvloop, <uv.uv_work_t*>self.request, __on_work_cb, __on_after_work_cb)
+        Py_INCREF(self)
+ 
+    def __dealloc__(self):
+        if self.request != NULL:
+            PyMem_RawFree(self.request)
+        
+
+
+cdef void __on_work_cb(uv.uv_work_t* req) noexcept with gil:
+    (<UVWork>req.data).run()
+
+cdef void __on_after_work_cb(uv.uv_work_t* req, int err) noexcept with gil:
+    cdef object ex
+    cdef UVWork work = (<UVWork>req.data)
+    try:
+        if err == uv.UV_ECANCELED:
+            if not work.fut.cancelled():
+                work.fut.cancel()
+
+        elif err != 0:
+            ex = convert_error(err)
+            work.fut.set_exception(ex)
+
+        if work.exc is not None:
+            work.fut.set_exception(work.exc)
+        else:
+            work.fut.set_result(work.result)
+    except BaseException as e:
+        work.loop._handle_exception(e)
+    finally:
+        work.on_done()
+
+
+

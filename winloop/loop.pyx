@@ -128,74 +128,7 @@ cdef inline run_in_context2(context, method, arg1, arg2):
         Py_DECREF(method)
 
 
-def list2cmdline(seq):
-    """
-    Translate a sequence of arguments into a command line
-    string, using the same rules as the MS C runtime:
 
-    1) Arguments are delimited by white space, which is either a
-       space or a tab.
-
-    2) A string surrounded by double quotation marks is
-       interpreted as a single argument, regardless of white space
-       contained within.  A quoted string can be embedded in an
-       argument.
-
-    3) A double quotation mark preceded by a backslash is
-       interpreted as a literal double quotation mark.
-
-    4) Backslashes are interpreted literally, unless they
-       immediately precede a double quotation mark.
-
-    5) If backslashes immediately precede a double quotation mark,
-       every pair of backslashes is interpreted as a literal
-       backslash.  If the number of backslashes is odd, the last
-       backslash escapes the next double quotation mark as
-       described in rule 3.
-    """
-
-    # See
-    # http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
-    # or search http://msdn.microsoft.com for
-    # "Parsing C++ Command-Line Arguments"
-    result = []
-    needquote = False
-    for arg in map(os.fsdecode, seq):
-        bs_buf = []
-
-        # Add a space to separate this argument from the others
-        if result:
-            result.append(' ')
-
-        needquote = (" " in arg) or ("\t" in arg) or not arg
-        if needquote:
-            result.append('"')
-
-        for c in arg:
-            if c == '\\':
-                # Don't know if we need to double yet.
-                bs_buf.append(c)
-            elif c == '"':
-                # Double backslashes.
-                result.append('\\' * len(bs_buf)*2)
-                bs_buf = []
-                result.append('\\"')
-            else:
-                # Normal char
-                if bs_buf:
-                    result.extend(bs_buf)
-                    bs_buf = []
-                result.append(c)
-
-        # Add remaining backslashes, if any.
-        if bs_buf:
-            result.extend(bs_buf)
-
-        if needquote:
-            result.extend(bs_buf)
-            result.append('"')
-
-    return ''.join(result).replace('\\"', '"')
 
 # Used for deprecation and removal of `loop.create_datagram_endpoint()`'s
 # *reuse_address* parameter
@@ -2849,12 +2782,17 @@ cdef class Loop:
 
         if executor is None:
             executor = self._default_executor
-            # Only check when the default executor is being used
+            # Only check when a default executor is set
+            # we 
             self._check_default_executor()
             if executor is None:
-                executor = cc_ThreadPoolExecutor()
-                self._default_executor = executor
-
+                # if we do not have a default executor
+                # we should use libuv's threadpool
+                # to eliminate some bulkier payloads 
+                # such as when running anything from a 
+                # pure python executor for instance.
+                return _ExecutorFuture(self, func, args)
+        
         return aio_wrap_future(executor.submit(func, *args), loop=self)
 
     def set_default_executor(self, executor):
@@ -3480,6 +3418,27 @@ class _SyncSocketWriterFuture(aio_Future):
             self.__remove_writer()
             aio_Future.cancel(self)
 
+# used when no executor was passed and we want to 
+# utilize upon libuv's threadpool instead
+class _ExecutorFuture(aio_Future):
+    def __init__(self, loop, func, args) -> None:
+        aio_Future.__init__(self, loop=loop)
+        self.__work = UVWork(loop, self, func, args)
+
+    def __remove_worker(self):
+        if self.__work is not None:
+            self.__work.cancel()
+            self.__work = None
+
+    if PY39:
+        def cancel(self, msg=None):
+            self.__remove_worker()
+            aio_Future.cancel(self, msg=msg)
+
+    else:
+        def cancel(self):
+            self.__remove_worker()
+            aio_Future.cancel(self)
 
 include "cbhandles.pyx"
 include "pseudosock.pyx"

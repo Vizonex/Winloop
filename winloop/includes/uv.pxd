@@ -518,3 +518,12 @@ cdef extern from "uv.h" nogil:
     unsigned int uv_version()
 
     int uv_pipe(uv_file fds[2], int read_flags, int write_flags)
+
+
+    ctypedef struct uv_work_t:
+        void* data
+
+    ctypedef void (*uv_work_cb)(uv_work_t* req)
+    ctypedef void (*uv_after_work_cb)(uv_work_t* req, int status)
+    int uv_queue_work(uv_loop_t* loop, uv_work_t* req, uv_work_cb work_cb, uv_after_work_cb after_work_cb);
+
