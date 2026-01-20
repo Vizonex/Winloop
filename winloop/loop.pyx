@@ -3427,7 +3427,7 @@ class _ExecutorFuture(aio_Future):
 
     def __remove_worker(self):
         if self.__work is not None:
-            self.__work.cancel()
+            self.__work._cancel()
             self.__work = None
 
     if PY39:

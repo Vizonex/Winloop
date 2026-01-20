@@ -71,7 +71,11 @@ cdef class UVWork(UVRequest):
         # if successful do the same on the future object's end.
         if not self.fut.cancelled():
             self.fut.cancel()
-   
+
+    # shortcut
+    def _cancel(self):
+        return self.cancel()
+
     cdef void run(self) noexcept with gil:
         cdef object result
         try:
