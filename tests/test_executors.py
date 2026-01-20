@@ -60,12 +60,12 @@ class TestUVExecutors(_TestExecutors, tb.UVTestCase):
         async def run():
             class TestException(Exception):
                 pass
-            
+
             def execption():
                 raise TestException("Hello")
             
             with self.assertRaises(TestException):
-                self.loop.run_in_executor(None, execption)
+                await self.loop.run_in_executor(None, execption)
 
         self.loop.run_until_complete(run())
 
