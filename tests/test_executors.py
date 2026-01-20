@@ -2,7 +2,7 @@ import asyncio
 import concurrent.futures
 import multiprocessing
 import unittest
-
+import time
 from winloop import _testbase as tb
 
 
@@ -68,6 +68,22 @@ class TestUVExecutors(_TestExecutors, tb.UVTestCase):
                 await self.loop.run_in_executor(None, execption)
 
         self.loop.run_until_complete(run())
+    
+    def test_libuv_threadpool_cancellation(self):
+        self.loop.set_default_executor(None)
+
+        async def run():
+            
+            def eternity():
+                time(3600)
+            
+            fut = self.loop.run_in_executor(None, eternity)
+            fut.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await fut
+        self.loop.run_until_complete(run())
+
+
 
 class TestAIOExecutors(_TestExecutors, tb.AIOTestCase):
     pass
