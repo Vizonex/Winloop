@@ -199,7 +199,9 @@ cdef class Loop:
 
     cdef _handle_signal(self, sig)
     cdef _read_from_self(self)
-    cdef inline int _ceval_process_signals(self) except -1
+    # We label _ceval_process_signals as noexcept since we want to try 
+    # and handle exceptions after all signals have been invoked.
+    cdef inline _ceval_process_signals(self)
     cdef _invoke_signals(self, bytes data)
 
     cdef _set_coroutine_debug(self, bint enabled)
