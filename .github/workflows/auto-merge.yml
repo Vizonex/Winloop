@@ -1,0 +1,63 @@
+name: Dependabot auto-merge
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for checks to pass
+        run: |
+          MAX_RETRIES=6
+          RETRY_INTERVAL=300
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_RETRIES ]; do
+            echo "Fetching PR status checks..."
+            WORKFLOWS=$(gh pr view "$PR_URL" --json statusCheckRollup -q '.statusCheckRollup')
+            all_passed=true
+            while IFS= read -r check; do
+              name=$(jq -r '.name' <<< "$check")
+              status=$(jq -r 'if .type == "CheckRun" then .conclusion else .state end' <<< "$check")
+              if [[ "$name" != "Dependabot auto-merge" && "$status" != "SUCCESS" ]]; then
+                all_passed=false
+                echo "Failed check: $name - Status: $status"
+                break
+              fi
+            done < <(echo "$WORKFLOWS" | jq -c '.[]')
+            if $all_passed; then
+              echo "All checks passed. Merging PR."
+              exit 0
+            else
+              echo "Some checks failed. Retrying in $RETRY_INTERVAL seconds..."
+              sleep $RETRY_INTERVAL
+              ATTEMPT=$((ATTEMPT + 1))
+            fi
+          done
+          echo "Failed to merge after $MAX_RETRIES attempts."
+          exit 1
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
