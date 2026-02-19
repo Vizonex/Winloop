@@ -311,5 +311,9 @@ void PyOS_AfterFork_Child() {
 // TODO: all versions of _PyEval_EvalFrameDefault so we can get rid of _noop.noop
 // which would be a massive performance enhancement and allow pyinstaller to compile 3.9 -> 3.14
 
+// PyObject* PerfomNoop(){
+//     PyEval_EvalCode()
+// }
+
 
 #endif // __WINLOOP_COMPAT_H__

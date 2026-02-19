@@ -39,21 +39,7 @@ from .includes.python cimport (PY_VERSION_HEX, Context_CopyCurrent,
                                Context_RunTwoArgs
                                )
 
-# NOTE: Keep if we need to revert at any point in time...
-from ._noop import noop
-
-# NOTE: This has a theoretical chance of hepling to safely bypass the required _noop module...
-# The only thing that will need simulations is hitting Ctrl+C on a keyboard which is not easy 
-# to simulate. For now I'll comment this out we can go back to it in a later winloop 0.2.XX version
-# __noop_locals = {}
-# exec("def noop(): return", {}, __noop_locals)
-# cdef object noop = __noop_locals['noop']
-# # never need __noop_locals again...
-# del __noop_locals
-
-
 include "includes/stdlib.pxi"
-
 include "errors.pyx"
 
 cdef:
@@ -459,20 +445,24 @@ cdef class Loop:
     def __sighandler(self, signum, frame):
         self._signals.add(signum)
 
-    cdef inline int _ceval_process_signals(self) except -1:
+    cdef inline _ceval_process_signals(self):
         # Invoke CPython eval loop to let process signals.
-        if PyErr_CheckSignals() < 0:
-            return -1
+        # Reason for getting rid of noop has more to do with 
+        # pyinstaller and making executable files with winloop
 
-        # Might be gotten rid of soon, since we want to improve evaluation: 
+        # All in all a smarter approch was wanted due to pyinstaller but also 
+        # due to needing some more juicy speedups
+
         # SEE: https://github.com/Vizonex/Winloop/issues/58
 
-        # Calling a pure-Python function will invoke
-        # _PyEval_EvalFrameDefault which will process
-        # pending signal callbacks.
-        if PyObject_CallNoArgs(noop) == NULL:  # Might raise ^C
-            return -1
-        return 0
+        PyErr_CheckSignals()
+
+        # Calling a pure-Python function (this can also be literally any from) 
+        # will invoke _PyEval_EvalFrameDefault which will process
+        # pending signal callbacks this attempts to get rid of needing another external module
+        eval("None")
+
+
 
     cdef _read_from_self(self):
         cdef bytes sigdata
@@ -492,7 +482,6 @@ cdef class Loop:
 
     cdef _invoke_signals(self, bytes data):
         cdef set sigs
-
         self._ceval_process_signals()
 
         sigs = self._signals.copy()
