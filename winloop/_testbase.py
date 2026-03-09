@@ -101,7 +101,8 @@ class BaseTestCase(unittest.TestCase, metaclass=BaseTestCaseMeta):
         self.__unhandled_exceptions = []
 
     def tearDown(self):
-        self.loop.close()
+        if self.loop.is_closed:
+            self.loop.close()
 
         if self.__unhandled_exceptions:
             print("Unexpected calls to loop.call_exception_handler():")
@@ -329,7 +330,6 @@ class AIOTestCase(BaseTestCase):
     def tearDown(self):
         if sys.platform != "win32" and sys.version_info < (3, 12):
             asyncio.set_child_watcher(None)
-        super().tearDown()
 
     def new_loop(self):
         return asyncio.new_event_loop()
