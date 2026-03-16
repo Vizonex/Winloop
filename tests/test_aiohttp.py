@@ -9,6 +9,7 @@ else:
 import asyncio
 import sys
 import unittest
+import warnings # Needed for suppressing aiohttp NotAppKeyWarning (temporary patch)
 import weakref
 
 from winloop import _testbase as tb
@@ -78,16 +79,20 @@ class _TestAioHTTP:
         app = aiohttp.web.Application()
         app.router.add_get("/", websocket_handler)
         app.on_shutdown.append(on_shutdown)
-        app["websockets"] = weakref.WeakSet()
+        
+        with warnings.catch_warnings():
+            # Just filter it for now. A workaround will be utilized in the future...
+            warnings.filterwarnings("ignore", category=aiohttp.web.NotAppKeyWarning)
+            app["websockets"] = weakref.WeakSet()
 
-        runner = aiohttp.web.AppRunner(app)
+        runner = aiohttp.web.AppRunner(app, shutdown_timeout=0.1)
         self.loop.run_until_complete(runner.setup())
         site = aiohttp.web.TCPSite(
             runner,
             "0.0.0.0",
             0,
             # https://github.com/aio-libs/aiohttp/pull/7188
-            shutdown_timeout=0.1,
+            # shutdown_timeout=0.1,
         )
         self.loop.run_until_complete(site.start())
         port = site._server.sockets[0].getsockname()[1]
