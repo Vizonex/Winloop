@@ -1,4 +1,4 @@
-"""Test utilities. Don't use outside of the uvloop project."""
+"""Test utilities. Don't use outside of the winloop project."""
 
 
 import asyncio
@@ -18,7 +18,7 @@ import tempfile
 import threading
 import time
 import unittest
-import uvloop
+import winloop
 
 
 class MockPattern(str):
@@ -303,13 +303,13 @@ class SSLTestCase:
 
 class UVTestCase(BaseTestCase):
 
-    implementation = 'uvloop'
+    implementation = 'winloop'
 
     def new_loop(self):
-        return uvloop.new_event_loop()
+        return winloop.new_event_loop()
 
     def new_policy(self):
-        return uvloop.EventLoopPolicy()
+        return winloop.EventLoopPolicy()
 
 
 class AIOTestCase(BaseTestCase):
