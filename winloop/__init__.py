@@ -33,18 +33,18 @@ if _typing.TYPE_CHECKING:
         ] = new_event_loop,
         debug: _typing.Optional[bool]=None,
     ) -> _T:
-        """The preferred way of running a coroutine with uvloop."""
+        """The preferred way of running a coroutine with winloop."""
 else:
     def run(main, *, loop_factory=new_event_loop, debug=None, **run_kwargs):
-        """The preferred way of running a coroutine with uvloop."""
+        """The preferred way of running a coroutine with winloop."""
 
         async def wrapper():
             # If `loop_factory` is provided we want it to return
-            # either uvloop.Loop or a subtype of it, assuming the user
-            # is using `uvloop.run()` intentionally.
+            # either winloop.Loop or a subtype of it, assuming the user
+            # is using `winloop.run()` intentionally.
             loop = __asyncio._get_running_loop()
             if not isinstance(loop, Loop):
-                raise TypeError('uvloop.run() uses a non-uvloop event loop')
+                raise TypeError('winloop.run() uses a non-winloop event loop')
             return await main
 
         vi = _sys.version_info[:2]
@@ -135,24 +135,24 @@ if _sys.version_info[:2] < (3, 16):
 
 def __getattr__(name: str) -> _typing.Any:
     if name not in _deprecated_names:
-        raise AttributeError(f"module 'uvloop' has no attribute '{name}'")
+        raise AttributeError(f"module 'winloop' has no attribute '{name}'")
     elif _sys.version_info[:2] >= (3, 16):
         raise AttributeError(
-            f"module 'uvloop' has no attribute '{name}' "
-            f"(it was removed in Python 3.16, use uvloop.run() instead)"
+            f"module 'winloop' has no attribute '{name}' "
+            f"(it was removed in Python 3.16, use winloop.run() instead)"
         )
 
     import threading
 
     def install() -> None:
-        """A helper function to install uvloop policy.
+        """A helper function to install winloop policy.
 
         This function is deprecated and will be removed in Python 3.16.
-        Use `uvloop.run()` instead.
+        Use `winloop.run()` instead.
         """
         if _sys.version_info[:2] >= (3, 12):
             _warnings.warn(
-                'uvloop.install() is deprecated in favor of uvloop.run() '
+                'winloop.install() is deprecated in favor of winloop.run() '
                 'starting with Python 3.12.',
                 DeprecationWarning,
                 stacklevel=1,
@@ -163,16 +163,16 @@ def __getattr__(name: str) -> _typing.Any:
         # This is to avoid a mypy error about AbstractEventLoopPolicy
         getattr(__asyncio, 'AbstractEventLoopPolicy')  # type: ignore[misc]
     ):
-        """Event loop policy for uvloop.
+        """Event loop policy for winloop.
 
         This class is deprecated and will be removed in Python 3.16.
-        Use `uvloop.run()` instead.
+        Use `winloop.run()` instead.
 
         >>> import asyncio
-        >>> import uvloop
-        >>> asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        >>> import winloop
+        >>> asyncio.set_event_loop_policy(winloop.EventLoopPolicy())
         >>> asyncio.get_event_loop()
-        <uvloop.Loop running=False closed=False debug=False>
+        <winloop.Loop running=False closed=False debug=False>
         """
 
         def _loop_factory(self) -> Loop:
