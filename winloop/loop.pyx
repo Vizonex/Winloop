@@ -1,55 +1,50 @@
-# cython: language_level=3, embedsignature=True, freethreading_compatible = True
+# cython: language_level=3, embedsignature=True, freethreading_compatible=True
 
 import asyncio
-
 cimport cython
-from cpython.buffer cimport (Py_buffer, PyBUF_SIMPLE, PyBUF_WRITABLE,
-                             PyBuffer_Release, PyObject_GetBuffer)
-from cpython.bytes cimport (PyBytes_AS_STRING, PyBytes_AsString,
-                            PyBytes_AsStringAndSize, PyBytes_CheckExact)
-from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred, PyErr_SetObject
-from cpython.object cimport Py_SIZE, PyObject
-from cpython.pycapsule cimport PyCapsule_GetPointer, PyCapsule_New
-# (Winloop) We need some cleaver hacky techniques for 
+
+from .includes.debug cimport UVLOOP_DEBUG
+from .includes cimport uv
+from .includes cimport system
+from .includes.python cimport (
+    PY_VERSION_HEX,
+    PyMem_RawMalloc, PyMem_RawFree,
+    PyMem_RawCalloc, PyMem_RawRealloc,
+    PyUnicode_EncodeFSDefault,
+    PyErr_SetInterrupt,
+    _Py_RestoreSignals,
+    Context_CopyCurrent,
+    Context_Enter,
+    Context_Exit,
+    PyMemoryView_FromMemory, PyBUF_WRITE,
+    PyMemoryView_FromObject, PyMemoryView_Check,
+    PyOS_AfterFork_Parent, PyOS_AfterFork_Child,
+    PyOS_BeforeFork,
+    PyUnicode_FromString
+)
+from .includes.flowcontrol cimport add_flowcontrol_defaults
+
+from libc.stdint cimport uint64_t
+from libc.string cimport memset, strerror, memcpy
+from libc cimport errno
+
+# Winloop Comment: We need some cleaver hacky techniques for 
 # preventing slow spawnning processes for MSVC
 from cpython.pystate cimport (PyGILState_Ensure, PyGILState_Release,
                               PyGILState_STATE)
-from cpython.pythread cimport PyThread_get_thread_ident
-from cpython.ref cimport Py_DECREF, Py_INCREF, Py_XDECREF, Py_XINCREF
-from cpython.set cimport PySet_Add, PySet_Discard
-from libc cimport errno
-from libc.stdint cimport uint64_t, uintptr_t
-from libc.string cimport memcpy, memset, strerror
+from cpython cimport PyObject
+from cpython cimport PyErr_CheckSignals, PyErr_Occurred
+from cpython cimport PyThread_get_thread_ident
+from cpython cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
+from cpython cimport (
+    PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE,
+    Py_buffer, PyBytes_AsString, PyBytes_CheckExact,
+    PyBytes_AsStringAndSize,
+    Py_SIZE, PyBytes_AS_STRING, PyBUF_WRITABLE
+)
+from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 
-from .includes cimport system, uv
-from .includes.debug cimport UVLOOP_DEBUG
-from .includes.flowcontrol cimport add_flowcontrol_defaults
-from .includes.python cimport (PY_VERSION_HEX, Context_CopyCurrent,
-                               Context_Enter, Context_Exit, PyBUF_WRITE,
-                               PyErr_SetInterrupt, PyMem_RawCalloc,
-                               PyMem_RawFree, PyMem_RawMalloc,
-                               PyMem_RawRealloc, PyMemoryView_Check,
-                               PyMemoryView_FromMemory,
-                               PyMemoryView_FromObject, PyObject_CallNoArgs,
-                               PyOS_AfterFork_Child, PyOS_AfterFork_Parent,
-                               PyOS_BeforeFork, PyUnicode_EncodeFSDefault,
-                               PyUnicode_FromString, _Py_RestoreSignals,
-                               Context_RunNoArgs,
-                               Context_RunOneArg,
-                               Context_RunTwoArgs
-                               )
-
-# NOTE: Keep if we need to revert at any point in time...
-from ._noop import noop
-
-# NOTE: This has a theoretical chance of hepling to safely bypass the required _noop module...
-# The only thing that will need simulations is hitting Ctrl+C on a keyboard which is not easy 
-# to simulate. For now I'll comment this out we can go back to it in a later winloop 0.2.XX version
-# __noop_locals = {}
-# exec("def noop(): return", {}, __noop_locals)
-# cdef object noop = __noop_locals['noop']
-# # never need __noop_locals again...
-# del __noop_locals
+from . import _noop
 
 
 include "includes/stdlib.pxi"
@@ -101,101 +96,28 @@ cdef inline socket_dec_io_ref(sock):
 
 
 cdef inline run_in_context(context, method):
-    # This method is internally used to workaround a reference issue that in
-    # certain circumstances, inlined context.run() will not hold a reference to
-    # the given method instance, which - if deallocated - will cause segfault.
-    # See also: edgedb/edgedb#2222
-    Py_INCREF(method)
+    Context_Enter(context)
     try:
-        return Context_RunNoArgs(context, method)
+        return method()
     finally:
-        Py_DECREF(method)
+        Context_Exit(context)
 
 
 cdef inline run_in_context1(context, method, arg):
-    Py_INCREF(method)
+    Context_Enter(context)
     try:
-        return Context_RunOneArg(context, method, arg)
+        return method(arg)
     finally:
-        Py_DECREF(method)
+        Context_Exit(context)
 
 
 cdef inline run_in_context2(context, method, arg1, arg2):
-    Py_INCREF(method)
+    Context_Enter(context)
     try:
-        return Context_RunTwoArgs(context, method, arg1, arg2)
+        return method(arg1, arg2)
     finally:
-        Py_DECREF(method)
+        Context_Exit(context)
 
-
-def list2cmdline(seq):
-    """
-    Translate a sequence of arguments into a command line
-    string, using the same rules as the MS C runtime:
-
-    1) Arguments are delimited by white space, which is either a
-       space or a tab.
-
-    2) A string surrounded by double quotation marks is
-       interpreted as a single argument, regardless of white space
-       contained within.  A quoted string can be embedded in an
-       argument.
-
-    3) A double quotation mark preceded by a backslash is
-       interpreted as a literal double quotation mark.
-
-    4) Backslashes are interpreted literally, unless they
-       immediately precede a double quotation mark.
-
-    5) If backslashes immediately precede a double quotation mark,
-       every pair of backslashes is interpreted as a literal
-       backslash.  If the number of backslashes is odd, the last
-       backslash escapes the next double quotation mark as
-       described in rule 3.
-    """
-
-    # See
-    # http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
-    # or search http://msdn.microsoft.com for
-    # "Parsing C++ Command-Line Arguments"
-    result = []
-    needquote = False
-    for arg in map(os.fsdecode, seq):
-        bs_buf = []
-
-        # Add a space to separate this argument from the others
-        if result:
-            result.append(' ')
-
-        needquote = (" " in arg) or ("\t" in arg) or not arg
-        if needquote:
-            result.append('"')
-
-        for c in arg:
-            if c == '\\':
-                # Don't know if we need to double yet.
-                bs_buf.append(c)
-            elif c == '"':
-                # Double backslashes.
-                result.append('\\' * len(bs_buf)*2)
-                bs_buf = []
-                result.append('\\"')
-            else:
-                # Normal char
-                if bs_buf:
-                    result.extend(bs_buf)
-                    bs_buf = []
-                result.append(c)
-
-        # Add remaining backslashes, if any.
-        if bs_buf:
-            result.extend(bs_buf)
-
-        if needquote:
-            result.extend(bs_buf)
-            result.append('"')
-
-    return ''.join(result).replace('\\"', '"')
 
 # Used for deprecation and removal of `loop.create_datagram_endpoint()`'s
 # *reuse_address* parameter
@@ -295,13 +217,6 @@ cdef class Loop:
         self._executor_shutdown_called = False
 
         self._servers = set()
-
-        # Newer Class Member _shlex_parser was added to solve parsing shell related
-        # inputs, posix is set to false so that file-paths are not stripped away (Especially Windows Paths)
-        self._shlex_parser = shlex(posix=False) 
-        self._shlex_parser.whitespace_split = True
-        self._shlex_parser.commenters = ''
-        
 
     cdef inline _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
@@ -459,20 +374,13 @@ cdef class Loop:
     def __sighandler(self, signum, frame):
         self._signals.add(signum)
 
-    cdef inline int _ceval_process_signals(self) except -1:
+    cdef inline _ceval_process_signals(self):
         # Invoke CPython eval loop to let process signals.
-        if PyErr_CheckSignals() < 0:
-            return -1
-
-        # Might be gotten rid of soon, since we want to improve evaluation: 
-        # SEE: https://github.com/Vizonex/Winloop/issues/58
-
+        PyErr_CheckSignals()
         # Calling a pure-Python function will invoke
         # _PyEval_EvalFrameDefault which will process
         # pending signal callbacks.
-        if PyObject_CallNoArgs(noop) == NULL:  # Might raise ^C
-            return -1
-        return 0
+        _noop.noop()  # Might raise ^C
 
     cdef _read_from_self(self):
         cdef bytes sigdata
@@ -753,7 +661,7 @@ cdef class Loop:
             if len(self._queued_streams) == 0:
                 self.handler_check__exec_writes.stop()
 
-    cdef inline Handle _call_soon(self, object callback, object args, object context):
+    cdef inline _call_soon(self, object callback, object args, object context):
         cdef Handle handle
         handle = new_Handle(self, callback, args, context)
         self._call_soon_handle(handle)
@@ -768,7 +676,7 @@ cdef class Loop:
         if not self.handler_idle.running:
             self.handler_idle.start()
 
-    cdef TimerHandle _call_later(self, uint64_t delay, object callback, object args,
+    cdef _call_later(self, uint64_t delay, object callback, object args,
                      object context):
         return TimerHandle(self, callback, args, delay, context)
 
@@ -781,37 +689,29 @@ cdef class Loop:
             # Exit ASAP
             self._stop(None)
 
-    cdef inline int _check_signal(self, sig) except -1:
-        cdef int _sig
+    cdef inline _check_signal(self, sig):
         if not isinstance(sig, int):
-            PyErr_SetObject(TypeError, 'sig must be an int, not {!r}'.format(sig))
-            return -1
-        _sig = <int>sig
-        if not (1 <= _sig < signal_NSIG):
-            PyErr_SetObject(ValueError, 'sig {} out of range(1, {})'.format(sig, signal_NSIG))
-            return -1
-        return 0
+            raise TypeError('sig must be an int, not {!r}'.format(sig))
 
-    cdef inline int _check_closed(self) except -1:
+        if not (1 <= sig < signal_NSIG):
+            raise ValueError(
+                'sig {} out of range(1, {})'.format(sig, signal_NSIG))
+
+    cdef inline _check_closed(self):
         if self._closed == 1:
-            # code executes faster if thrown the CPython way...
-            PyErr_SetObject(RuntimeError, 'Event loop is closed')
-            return -1
-        return 0
+            raise RuntimeError('Event loop is closed')
 
-    cdef inline int _check_thread(self) except -1:
+    cdef inline _check_thread(self):
         if self._thread_id == 0:
-            return 0
+            return
 
         cdef uint64_t thread_id
         thread_id = <uint64_t>PyThread_get_thread_ident()
 
         if thread_id != self._thread_id:
-            PyErr_SetObject(RuntimeError,
+            raise RuntimeError(
                 "Non-thread-safe operation invoked on an event loop other "
                 "than the current one")
-            return -1
-        return 0
 
     cdef inline _new_future(self):
         return aio_Future(loop=self)
@@ -819,11 +719,11 @@ cdef class Loop:
     cdef _track_transport(self, UVBaseTransport transport):
         self._transports[transport._fileno()] = transport
 
-    cdef int _track_process(self, UVProcess proc) except -1:
-        return PySet_Add(self._processes, proc)
+    cdef _track_process(self, UVProcess proc):
+        self._processes.add(proc)
 
-    cdef int _untrack_process(self, UVProcess proc) except -1:
-        return <int>PySet_Discard(self._processes, proc)
+    cdef _untrack_process(self, UVProcess proc):
+        self._processes.discard(proc)
 
     cdef _fileobj_to_fd(self, fileobj):
         """Return a file descriptor from a file object.
@@ -1248,7 +1148,7 @@ cdef class Loop:
 
     def _get_backend_id(self):
         """This method is used by uvloop tests and is not part of the API."""
-        return int(<uintptr_t> uv.uv_backend_fd(self.uvloop))
+        return uv.uv_backend_fd(self.uvloop)
 
     cdef _print_debug_info(self):
         cdef:
@@ -1495,7 +1395,7 @@ cdef class Loop:
     def set_debug(self, enabled):
         self._debug = bool(enabled)
         if self.is_running():
-            self.call_soon_threadsafe(self._set_coroutine_debug, self._debug)
+             self.call_soon_threadsafe(self._set_coroutine_debug, self._debug)
 
     def is_running(self):
         """Return whether the event loop is currently running."""
@@ -1712,16 +1612,6 @@ cdef class Loop:
             ssl_handshake_timeout=ssl_handshake_timeout,
             ssl_shutdown_timeout=ssl_shutdown_timeout,
             call_connection_made=False)
-
-        stream_buff = None
-        if hasattr(protocol, '_stream_reader'):
-            stream_reader = protocol._stream_reader
-            if stream_reader is not None:
-                stream_buff = getattr(stream_reader, '_buffer', None)
-
-        if stream_buff is not None:
-            ssl_protocol._incoming.write(stream_buff)
-            stream_buff.clear()
 
         # Pause early so that "ssl_protocol.data_received()" doesn't
         # have a chance to get called before "ssl_protocol.connection_made()".
@@ -2842,7 +2732,7 @@ cdef class Loop:
             return transport, protocol
 
     def run_in_executor(self, executor, func, *args):
-        if aio_iscoroutine(func) or aio_iscoroutinefunction(func):
+        if aio_iscoroutine(func) or inspect_iscoroutinefunction(func):
             raise TypeError("coroutines cannot be used with run_in_executor()")
 
         self._check_closed()
@@ -2930,41 +2820,30 @@ cdef class Loop:
                                shell=True,
                                **kwargs):
 
-        cdef:
-            list args
-            object compsec
-        
-        # NOTE: shell always has to be true so no need to 
-        # check it a second time.
+        cdef list args
         if not shell:
             raise ValueError("shell must be True")
 
-        args = []
-       
-        if system.PLATFORM_IS_WINDOWS:
-            # CHANGED WINDOWS Shell see : https://github.com/libuv/libuv/pull/2627 for more details...
-            
-            # Winloop comment: args[0].split(' ') instead of args to pass some tests in test_process
-            
+        if not system.PLATFORM_IS_WINDOWS:
+            args = [cmd]
+            if shell:
+                args = [b'/bin/sh', b'-c'] + args
+        else:
+            # SEE: https://github.com/libuv/libuv/pull/2627
+
             # See subprocess.py for the mirror of this code.
-            comspec = os.environ.get("ComSpec")
-            if comspec:
-                system_root = os.environ.get("SystemRoot", '')
-                comspec = os.path.join(system_root, 'System32', 'cmd.exe')
-                if not os.path.isabs(comspec):
+            comspec = os_environ.get("ComSpec")
+            if not comspec:
+                system_root = os_environ.get("SystemRoot", '')
+                comspec = os_path_join(system_root, 'System32', 'cmd.exe')
+                if not os_path_isabs(comspec):
                     raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
             
-            args.append(comspec)
+            args = [comspec]
             args.append('/c')
-            args.extend(self._shlex_parser.split(cmd))
-            
-        else:
-            args.append(b'/bin/sh')
-            args.append(b'-c') 
-            args.extend(self._shlex_parser.split(cmd))
-      
-        return await self.__subprocess_run(
-            protocol_factory, args, shell=True,
+            args.append(cmd)
+
+        return await self.__subprocess_run(protocol_factory, args, shell=True,
                                            **kwargs)
 
     @cython.iterable_coroutine
@@ -3034,7 +2913,7 @@ cdef class Loop:
         return transp, proto
 
     def add_signal_handler(self, sig, callback, *args):
-        """Add a handler for a signal.
+        """Add a handler for a signal.  UNIX only.
 
         Raise ValueError if the signal number is invalid or uncatchable.
         Raise RuntimeError if there is a problem setting up the handler.
@@ -3048,7 +2927,7 @@ cdef class Loop:
                 'the main thread')
 
         if (aio_iscoroutine(callback)
-                or aio_iscoroutinefunction(callback)):
+                or inspect_iscoroutinefunction(callback)):
             raise TypeError(
                 "coroutines cannot be used with add_signal_handler()")
 
@@ -3082,15 +2961,16 @@ cdef class Loop:
         self._signal_handlers[sig] = h
 
         try:
+            # Register a dummy signal handler to ask Python to write the signal
+            # number in the wakeup file descriptor.
             if not system.PLATFORM_IS_WINDOWS:
-                # Register a dummy signal handler to ask Python to write the signal
-                # number in the wakeup file descriptor.
                 signal_signal(sig, self.__sighandler)
 
                 # Set SA_RESTART to limit EINTR occurrences.
                 signal_siginterrupt(sig, False)
             else:
-                # XXX "WINDOWS DOESN'T Have a signal_siginterrupt so I'll do this until someone smarter than me wants a tackle at it" - Vizonex
+                # Windows doesn't have sig_interrupt function.
+                # Something else must be attempted instead.
                 signal_signal(signal_SIGINT, self.__sighandler)
 
         except OSError as exc:
@@ -3499,7 +3379,6 @@ include "handles/pipe.pyx"
 include "handles/process.pyx"
 include "handles/fsevent.pyx"
 
-include "shlex.pyx"
 include "request.pyx"
 include "dns.pyx"
 include "sslproto.pyx"

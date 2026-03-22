@@ -1,6 +1,3 @@
-from cpython.object cimport PyObject
-
-
 cdef extern from "Python.h":
     int PY_VERSION_HEX
 
@@ -20,10 +17,6 @@ cdef extern from "Python.h":
 
     cdef enum:
         PyBUF_WRITE
-    # This is For noop._noop to optimize the time calling it
-    PyObject* PyObject_CallNoArgs(object func)
-
-
 
 
 cdef extern from "includes/compat.h":
@@ -31,20 +24,8 @@ cdef extern from "includes/compat.h":
     int Context_Enter(object) except -1
     int Context_Exit(object) except -1
 
-    # Custom functions for making context.run faster.
-    # meaning more speed for all handle calls being made
-    object Context_RunNoArgs(object context, object method)
-    object Context_RunOneArg(object context, object method, object arg)
-    object Context_RunTwoArgs(object context, object method, object arg1, object arg2)
-
-
     void PyOS_BeforeFork()
     void PyOS_AfterFork_Parent()
     void PyOS_AfterFork_Child()
 
     void _Py_RestoreSignals()
-
-    # TODO: Might consider our own version or duplicates
-    # of _PyEval_EvalFrameDefault() so we can stop using noop._noop 
-    # which has been the only problem with compiling with pyinstaller currently...
-    # This way, no need for hooks!

@@ -154,7 +154,7 @@ cdef __convert_pyaddr_to_sockaddr(int family, object addr,
         (<system.sockaddr_in6*>&ret.addr).sin6_flowinfo = flowinfo
         (<system.sockaddr_in6*>&ret.addr).sin6_scope_id = scope_id
 
-    elif not system.PLATFORM_IS_WINDOWS and family == uv.AF_UNIX:
+    elif family == uv.AF_UNIX and (not system.PLATFORM_IS_WINDOWS):
         if isinstance(addr, str):
             addr = addr.encode(sys_getfilesystemencoding())
         elif not isinstance(addr, bytes):
@@ -352,16 +352,17 @@ cdef class AddrInfoRequest(UVRequest):
 
         if host is None:
             chost = NULL
-        elif host == b'' and sys.platform == 'darwin':
+        elif host == b'' and sys_platform == 'darwin':
             # It seems `getaddrinfo("", ...)` on macOS is equivalent to
             # `getaddrinfo("localhost", ...)`. This is inconsistent with
             # libuv 1.48 which treats empty nodename as EINVAL.
             chost = <char*>'localhost'
-        elif host == b'' and sys.platform == 'win32':
+        elif host == b'' and sys_platform == "win32":
             # On Windows, `getaddrinfo("", ...)` is *almost* equivalent to
             # `getaddrinfo("..localmachine", ...)`. This is inconsistent with
             # libuv 1.48 which treats empty nodename as EINVAL.
             chost = <char*>'..localmachine'
+
         else:
             chost = <char*>host
 
@@ -397,7 +398,7 @@ cdef class AddrInfoRequest(UVRequest):
                     # EAI_NONAME [ErrNo 10001] "No such host is known. ".
                     # We replace the message with "getaddrinfo failed".
                     # See also errors.pyx.
-                    if sys.platform == 'win32':
+                    if sys_platform == 'win32':
                         msg = 'getaddrinfo failed'
                     else:
                         msg = system.gai_strerror(socket_EAI_NONAME).decode('utf-8')
