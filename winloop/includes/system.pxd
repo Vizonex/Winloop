@@ -1,6 +1,5 @@
 from libc.stdint cimport int8_t, uint64_t
 
-
 cdef extern from "includes/compat.h" nogil:
 
     int ntohl(int)
@@ -81,3 +80,33 @@ cdef extern from "includes/fork_handler.h":
         void (*prepare)(),
         void (*parent)(),
         void (*child)())
+
+
+cdef extern from * nogil:
+    """
+#ifdef _WIN32
+static inline uint64_t 
+__win_atomic_fetch_add(uint64_t *ptr, uint64_t val){
+    return *ptr = *(volatile uint64_t *)ptr + val;
+}
+
+static inline uint64_t 
+__win_atomic_fetch_sub(uint64_t *ptr, uint64_t val){
+    return *ptr = *(volatile uint64_t *)ptr - val;
+}
+
+#define __atomic_fetch_add(ptr, val, memorder) \
+    __win_atomic_fetch_add(ptr, val)
+
+#define __atomic_fetch_sub(ptr, val, memorder) \
+    __win_atomic_fetch_sub(ptr, val)
+
+/* We need ATOMIC RELAXED still */
+#define __ATOMIC_RELAXED 0
+#endif /* _WIN32 */
+    """
+    uint64_t __atomic_fetch_add(uint64_t *ptr, uint64_t val, int memorder)
+    uint64_t __atomic_fetch_sub(uint64_t *ptr, uint64_t val, int memorder)
+
+    cdef enum:
+        __ATOMIC_RELAXED

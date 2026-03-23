@@ -1,13 +1,10 @@
-from libc.stdint cimport int64_t, uint16_t, uint32_t, uint64_t
-
+from libc.stdint cimport uint16_t, uint32_t, uint64_t, int64_t
 
 cdef extern from "includes/compat.h" nogil:
    int getuid()
-   int SIGCHLD
    int SO_REUSEPORT
 
 from . cimport system
-
 
 # This is an internal enum UV_HANDLE_READABLE from uv-common.h, used only by
 # handles/pipe.pyx to temporarily workaround a libuv issue libuv/libuv#2058,
@@ -59,11 +56,13 @@ cdef extern from "uv.h" nogil:
     cdef int UV_EAI_SERVICE
     cdef int UV_EAI_SOCKTYPE
 
+    # Need for windows's sake
+    cdef int SO_BROADCAST
+
     cdef int SOL_SOCKET
     cdef int SO_ERROR
     cdef int SO_REUSEADDR
     # use has_SO_REUSEPORT and SO_REUSEPORT in stdlib.pxi instead
-    cdef int SO_BROADCAST
     cdef int AF_INET
     cdef int AF_INET6
     cdef int AF_UNIX
@@ -79,6 +78,7 @@ cdef extern from "uv.h" nogil:
 
     cdef int SIGINT
     cdef int SIGHUP
+    cdef int SIGCHLD
     cdef int SIGKILL
     cdef int SIGTERM
 
@@ -231,7 +231,10 @@ cdef extern from "uv.h" nogil:
 
     const char* uv_strerror(int err)
     const char* uv_err_name(int err)
+    
+    # Needed on windows
     int uv_translate_sys_error(int sys_errno)
+
 
     ctypedef void (*uv_walk_cb)(uv_handle_t* handle, void* arg) with gil
 
@@ -485,6 +488,7 @@ cdef extern from "uv.h" nogil:
         UV_WRITABLE_PIPE = 0x20,
         UV_NONBLOCK_PIPE  = 0x40
 
+
     ctypedef union uv_stdio_container_data_u:
         uv_stream_t* stream
         int fd
@@ -492,8 +496,7 @@ cdef extern from "uv.h" nogil:
     ctypedef struct uv_stdio_container_t:
         uv_stdio_flags flags
         uv_stdio_container_data_u data
-
-
+    
     ctypedef unsigned char uv_uid_t
     ctypedef unsigned char uv_gid_t
 
@@ -506,7 +509,6 @@ cdef extern from "uv.h" nogil:
         unsigned int flags
         int stdio_count
         uv_stdio_container_t* stdio
-        # On the windows version (To my knowledge this was called uid_t on unix systems, but on windows it is called uv_uid_t)
         uv_uid_t uid
         uv_gid_t gid
 
@@ -516,5 +518,4 @@ cdef extern from "uv.h" nogil:
     int uv_process_kill(uv_process_t* handle, int signum)
 
     unsigned int uv_version()
-
     int uv_pipe(uv_file fds[2], int read_flags, int write_flags)

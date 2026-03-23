@@ -25,14 +25,6 @@ import warnings
 import weakref
 
 
-from cpython.object cimport PyObject, PyTypeObject
-from cpython.time cimport PyTime_AsSecondsDouble, PyTime_t
-from libc.stdint cimport uintptr_t
-
-
-# TODO: Request or Propose to CPython Maintainers to allow public use of many of these functions via Capsule
-# for improved performance.
-
 cdef aio_get_event_loop = asyncio.get_event_loop
 cdef aio_CancelledError = asyncio.CancelledError
 cdef aio_InvalidStateError = asyncio.InvalidStateError
@@ -45,37 +37,37 @@ cdef aio_wait = asyncio.wait
 cdef aio_wrap_future = asyncio.wrap_future
 cdef aio_logger = asyncio.log.logger
 cdef aio_iscoroutine = asyncio.iscoroutine
-cdef aio_iscoroutinefunction = asyncio.iscoroutinefunction
 cdef aio_BaseProtocol = asyncio.BaseProtocol
-
 cdef aio_Protocol = asyncio.Protocol
 cdef aio_isfuture = getattr(asyncio, 'isfuture', None)
 cdef aio_get_running_loop = getattr(asyncio, '_get_running_loop', None)
 cdef aio_set_running_loop = getattr(asyncio, '_set_running_loop', None)
 cdef aio_debug_wrapper = getattr(asyncio.coroutines, 'debug_wrapper', None)
-cdef aio_AbstractChildWatcher = getattr(asyncio, 'AbstractChildWatcher', None)
+cdef aio_AbstractChildWatcher = getattr(asyncio, "AbstractChildWatcher", ())
 cdef aio_Transport = asyncio.Transport
 cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
 
 cdef col_deque = collections.deque
 cdef col_Iterable = collections.abc.Iterable
 cdef col_Counter = collections.Counter
-
-# cdef col_OrderedDict = collections.OrderedDict
+cdef col_OrderedDict = collections.OrderedDict
 
 cdef cc_ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor
 cdef cc_Future = concurrent.futures.Future
 
+# windows needs access to errno for exception handling.
+cdef win_errno = errno
+
 cdef errno_EBADF = errno.EBADF
 cdef errno_EINVAL = errno.EINVAL
 
-# TODO: Maybe we should try hacking in the partial code into cython instead?
 cdef ft_partial = functools.partial
 
 cdef gc_disable = gc.disable
 
 cdef iter_chain = itertools.chain
 cdef inspect_isgenerator = inspect.isgenerator
+cdef inspect_iscoroutinefunction = inspect.iscoroutinefunction
 
 cdef int has_IPV6_V6ONLY = hasattr(socket, 'IPV6_V6ONLY')
 cdef int IPV6_V6ONLY = getattr(socket, 'IPV6_V6ONLY', -1)
@@ -84,18 +76,6 @@ cdef int SO_REUSEPORT = getattr(socket, 'SO_REUSEPORT', 0)
 cdef int SO_BROADCAST = getattr(socket, 'SO_BROADCAST')
 cdef int SOCK_NONBLOCK = getattr(socket, 'SOCK_NONBLOCK', -1)
 cdef int socket_AI_CANONNAME = getattr(socket, 'AI_CANONNAME')
-
-
-# NOTE: Recently Managed to hack these in with CPython's _socket.CAPI Capsule they are left in the code.
-# it's avalible on all versions of python currently so we may move to using it soon.
-# SEE: https://gist.github.com/Vizonex/d24b8d4c22027449b3ec175583a93aea
-# WARNING: Idea is still theorical and not ready!
-
-
-# it is very likely that an array.array utility hack will force it in correctly
-# doing so will make any of these functions run faster & smoother. 
-# (Mainly typechecks and returntypes only)
-
 
 cdef socket_gaierror = socket.gaierror
 cdef socket_error = socket.error
@@ -123,6 +103,8 @@ cdef int socket_EAI_SOCKTYPE   = getattr(socket, 'EAI_SOCKTYPE', -1)
 
 
 cdef str os_name = os.name
+cdef os_path_isabs = os.path.isabs
+cdef os_path_join = os.path.join
 cdef os_environ = os.environ
 cdef os_dup = os.dup
 cdef os_set_inheritable = os.set_inheritable
@@ -169,12 +151,11 @@ cdef int subprocess_STDOUT = subprocess.STDOUT
 cdef int subprocess_DEVNULL = subprocess.DEVNULL
 cdef subprocess_SubprocessError = subprocess.SubprocessError
 
+cdef int signal_SIGABRT = signal.SIGABRT
+cdef int signal_SIGINT = signal.SIGINT
 cdef int signal_NSIG = signal.NSIG
 cdef signal_signal = signal.signal
-cdef signal_siginterrupt = getattr(signal, 'siginterrupt', None)
-# "I'll use SIGABRT Unless some other developer finds problems with this" - Vizonex
-cdef signal_SIGABRT = signal.SIGABRT
-cdef signal_SIGINT = signal.SIGINT
+cdef signal_siginterrupt = getattr(signal, "siginterrupt", None)
 cdef signal_set_wakeup_fd = signal.set_wakeup_fd
 cdef signal_default_int_handler = signal.default_int_handler
 cdef signal_SIG_DFL = signal.SIG_DFL
@@ -195,8 +176,8 @@ cdef py_inf = float('inf')
 
 
 # Cython doesn't clean-up imported objects properly in Py3 mode,
-# so we delete refs to all modules manually (except sys and errno)
-del asyncio, concurrent, collections
+# so we delete refs to all modules manually (except sys)
+del asyncio, concurrent, collections, errno
 del functools, inspect, itertools, socket, os, threading
 del signal, subprocess, ssl
 del time, traceback, warnings, weakref

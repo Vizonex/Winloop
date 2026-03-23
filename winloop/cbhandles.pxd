@@ -11,7 +11,7 @@ cdef class Handle:
 
         object __weakref__
 
-        readonly _source_traceback # type: ignore
+        readonly _source_traceback
 
     cdef inline _set_loop(self, Loop loop)
     cdef inline _set_context(self, object context)

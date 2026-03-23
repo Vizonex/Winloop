@@ -1,11 +1,3 @@
-cimport cython 
-
-# NOTE: Uvloop expects you to use no_gc_clear 
-# Reason beind doing so has to do with the debug 
-# RuntimeError which hints at this and makes it 
-# very clear to use it.
-# so please do not remove this wrapper, thank you :)
-@cython.no_gc_clear
 cdef class UVHandle:
     cdef:
         uv.uv_handle_t *_handle
@@ -21,26 +13,22 @@ cdef class UVHandle:
 
     # All "inline" methods are final
 
-    cdef inline int _start_init(self, Loop loop) except -1
-    cdef inline int _abort_init(self) except -1
+    cdef inline _start_init(self, Loop loop)
+    cdef inline _abort_init(self)
     cdef inline _finish_init(self)
 
-    cdef inline bint _is_alive(self) except -1
-    cdef inline int _ensure_alive(self) except -1
+    cdef inline bint _is_alive(self)
+    cdef inline _ensure_alive(self)
 
     cdef _error(self, exc, throw)
-    # in CPython it returns NULL on exception raised 
-    # so let's define that an object of NONE is returning.
-    cdef object _fatal_error(self, exc, throw, reason=?)
+    cdef _fatal_error(self, exc, throw, reason=?)
+
     cdef _warn_unclosed(self)
 
-    cdef void _free(self) noexcept
-    # TODO: Optimize to return an integer if 
-    # exception handling of CPython can be better learned.
+    cdef _free(self)
     cdef _close(self)
 
 
-@cython.no_gc_clear
 cdef class UVSocketHandle(UVHandle):
     cdef:
         # Points to a Python file-object that should be closed
