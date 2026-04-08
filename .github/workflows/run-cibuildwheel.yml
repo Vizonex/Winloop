@@ -43,7 +43,7 @@ jobs:
         with:
           output-dir: dist
           
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}
           path: dist/*.whl
