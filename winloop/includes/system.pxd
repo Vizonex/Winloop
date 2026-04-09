@@ -1,4 +1,4 @@
-from libc.stdint cimport int8_t, uint64_t
+from libc.stdint cimport int8_t, uint64_t, uintptr_t
 
 cdef extern from "includes/compat.h" nogil:
 
@@ -65,7 +65,8 @@ cdef extern from "includes/compat.h" nogil:
     int epoll_ctl(int epfd, int op, int fd, epoll_event *event)
     object MakeUnixSockPyAddr(sockaddr_un *addr)
 
-
+    int __IS_WINDOWS_EXE_FROZEN() except -1
+   
 cdef extern from "includes/fork_handler.h":
 
     uint64_t MAIN_THREAD_ID

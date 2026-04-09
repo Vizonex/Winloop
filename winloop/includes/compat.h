@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <signal.h>
+#include <stdint.h> // intptr_t
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -176,6 +177,42 @@ void PyOS_AfterFork_Child() {
 #ifndef __Pyx_MonitoringEventTypes_CyGen_count
 #define __Pyx_MonitoringEventTypes_CyGen_count 1
 #endif /* __Pyx_MonitoringEventTypes_CyGen_count */
+#endif
+
+
+/* There is a bug with CX-Freeze on windows when compiled
+ * to an exe this tries to fix it by seeing if alternate 
+ * workarounds like DEVNULL need to be provided. 
+ * SEE: https://github.com/Vizonex/Winloop/issues/126 */
+
+#ifdef _WIN32
+/* CPython version might be slower so will use our own, audits can be a costly thing, */
+
+static int _get_std_handle(DWORD std_handle){
+    /* This might be a leak, IDK... CloseHandle just seems to crash it.*/
+    HANDLE handle = GetStdHandle(std_handle);
+    if (handle == INVALID_HANDLE_VALUE){
+        goto error;
+    }
+    /* We don't need this handle open we just want to know 
+    if windows wants to play nice or not. executable vs not executable. */
+    int windows_misbehaved = (handle == NULL) ? 1: 0;
+    /* if handle == 0 use DEVNULL as backup instead otherwise use the other method. */
+    return windows_misbehaved;
+error:
+    /* if handle == -1 throw an error */
+    PyErr_SetFromWindowsErr(GetLastError());
+    return -1;
+}
+
+/* Because these are macros it's very easy to make a workaround for unix. */
+#define __IS_WINDOWS_EXE_FROZEN() _get_std_handle(STD_INPUT_HANDLE)
+#else
+/* On Unix these are not needed, but we define it anyways so the 
+compiler doesn't wind up throwing a fit about it */
+
+#define __IS_WINDOWS_EXE_FROZEN() 0 /* NOPE */
+
 #endif
 
 
