@@ -386,6 +386,9 @@ DEF _CALL_PIPE_CONNECTION_LOST = 1
 DEF _CALL_PROCESS_EXITED = 2
 DEF _CALL_CONNECTION_LOST = 3
 
+cdef int WINDOWS_EXE_FROZEN = system.__IS_WINDOWS_EXE_FROZEN()
+
+
 
 @cython.no_gc_clear
 cdef class UVProcessTransport(UVProcess):
@@ -439,11 +442,14 @@ cdef class UVProcessTransport(UVProcess):
         else:
             self._pending_calls.append((_CALL_PIPE_DATA_RECEIVED, fd, data))
 
-    # TODO: https://github.com/Vizonex/Winloop/issues/126 bug fix for uvloop
-    # Might need a special implementation for subprocess.Popen._get_handles()
-    # but can't seem to wrap my head around how to go about doing it.
+    
 
     cdef _file_redirect_stdio(self, int fd):
+        if WINDOWS_EXE_FROZEN:
+            # SEE: https://github.com/Vizonex/Winloop/issues/126
+            # use devnull instead...
+            return self._file_devnull()
+
         fd = os_dup(fd)
         os_set_inheritable(fd, True)
         self._close_after_spawn(fd)
