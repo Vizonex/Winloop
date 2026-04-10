@@ -1,4 +1,4 @@
-# Borrowing from pycares/cyares
+# borrowing from pycares again due to the complexity of building wheels being rather annoying.
 
 on:
   workflow_call:
@@ -13,37 +13,61 @@ on:
         required: false
         default: false
         type: boolean
-env:
-  # PyPy is currently unsupported.
-  CIBW_SKIP: pp*
-
 
 jobs:
+  generate-wheels-matrix:
+    # Create a matrix of all architectures & versions to build.
+    # This enables the next step to run cibuildwheel in parallel.
+    # From https://iscinumpy.dev/post/cibuildwheel-2-10-0/#only-210
+    name: Generate wheels matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set-matrix.outputs.include }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install cibuildwheel
+      # Nb. keep cibuildwheel version pin consistent with job below
+        run: pipx install cibuildwheel==3.2.1
+      - id: set-matrix
+        # Trimmed out setupmatrix for just windows but I might look at compiling other oses just for fun 
+        # to let others test what it would be like if uvloop supported windows. It's very tempting...
+        run: |
+          MATRIX=$(
+            {
+              cibuildwheel --print-build-identifiers --platform windows --archs AMD64 \
+              | jq -nRc '{"only": inputs, "os": "windows-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform windows --archs ARM64 \
+              | jq -nRc '{"only": inputs, "os": "windows-11-arm"}'
+            } | jq -sc
+          )
+          echo "include=$MATRIX" >> $GITHUB_OUTPUT
+
   build_wheels:
-    name: Build wheels for ${{ matrix.name }}
+    name: Build wheels for ${{ matrix.only }}
     runs-on: ${{ matrix.os }}
+    needs: generate-wheels-matrix
     strategy:
       fail-fast: ${{ inputs.fail-fast }}
       matrix:
-        include:
-        # NOTE: This does compile on Linux but linux fails pytest
-          - name: Windows
-            os: windows-latest
-          - name: Windows arm64
-            os: windows-11-arm
+        include: ${{ fromJson(needs.generate-wheels-matrix.outputs.include) }}
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: true
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: all
       - name: Enable CPython prerelease
         if: ${{ inputs.prerelease-pythons }}
         run: echo "CIBW_ENABLE=cpython-prerelease" >> $GITHUB_ENV
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.4.1
         with:
+          only: ${{ matrix.only }}
           output-dir: dist
-          
       - uses: actions/upload-artifact@v7
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-${{ matrix.only }}
           path: dist/*.whl
