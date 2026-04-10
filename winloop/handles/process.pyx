@@ -386,9 +386,6 @@ DEF _CALL_PIPE_CONNECTION_LOST = 1
 DEF _CALL_PROCESS_EXITED = 2
 DEF _CALL_CONNECTION_LOST = 3
 
-cdef int WINDOWS_EXE_FROZEN = system.__IS_WINDOWS_EXE_FROZEN()
-
-
 
 @cython.no_gc_clear
 cdef class UVProcessTransport(UVProcess):
@@ -445,11 +442,6 @@ cdef class UVProcessTransport(UVProcess):
     
 
     cdef _file_redirect_stdio(self, int fd):
-        if WINDOWS_EXE_FROZEN:
-            # SEE: https://github.com/Vizonex/Winloop/issues/126
-            # use devnull instead...
-            return self._file_devnull()
-
         fd = os_dup(fd)
         os_set_inheritable(fd, True)
         self._close_after_spawn(fd)
@@ -502,6 +494,16 @@ cdef class UVProcessTransport(UVProcess):
                     'subprocess.STDOUT is supported only by stderr parameter')
             else:
                 io[0] = self._file_redirect_stdio(_stdin)
+        
+        elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDIN_BAD:
+            
+            # When a stdio is in a gui-like state without a console.
+            # using a standard redirect is not a good idea. This at least
+            # is a better workaround that is a bit cleaner than doing what the 
+            # python standard libary subprocess does with the _get_handles function 
+            # on windows. SEE: https://github.com/Vizonex/Winloop/issues/126
+
+            io[0] = self._file_devnull()
         else:
             io[0] = self._file_redirect_stdio(0)
 
@@ -530,6 +532,8 @@ cdef class UVProcessTransport(UVProcess):
                     'subprocess.STDOUT is supported only by stderr parameter')
             else:
                 io[1] = self._file_redirect_stdio(_stdout)
+        elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDOUT_BAD:
+            io[1] = self._file_devnull()
         else:
             io[1] = self._file_redirect_stdio(1)
 
@@ -555,6 +559,9 @@ cdef class UVProcessTransport(UVProcess):
                 io[2] = self._file_devnull()
             else:
                 io[2] = self._file_redirect_stdio(_stderr)
+        
+        elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDOUT_BAD:
+            io[2] = self._file_devnull()
         else:
             io[2] = self._file_redirect_stdio(2)
 
