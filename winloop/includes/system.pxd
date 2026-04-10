@@ -65,7 +65,10 @@ cdef extern from "includes/compat.h" nogil:
     int epoll_ctl(int epfd, int op, int fd, epoll_event *event)
     object MakeUnixSockPyAddr(sockaddr_un *addr)
 
-    int __IS_WINDOWS_EXE_FROZEN() except -1
+    # Checks if values are -2. This check only applies to windows.
+    int __UVLOOP_STDIN_BAD
+    int __UVLOOP_STDOUT_BAD
+    int __UVLOOP_STDERR_BAD
    
 cdef extern from "includes/fork_handler.h":
 
