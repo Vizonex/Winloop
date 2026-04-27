@@ -16,6 +16,22 @@ jobs:
   build_sdist:
     uses: ./.github/workflows/run-sdist.yml
 
+  upload_github:
+    needs: [build_wheels, build_sdist]
+    if: github.event_name == 'release' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Upload Wheels To GitHub Release Page
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: dist/*
+
   upload_pypi:
     needs: [build_wheels, build_sdist]
     if: github.event_name == 'release' && github.event.action == 'published'
