@@ -22,7 +22,7 @@ jobs:
           - os: windows-11-arm  # workflow keeps screwing around with us.
             python-version: '3.14t'
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: true
     - name: Setup Python
