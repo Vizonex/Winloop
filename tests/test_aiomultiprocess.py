@@ -22,7 +22,7 @@ class _Test_Multiprocessing:
     """Used for Testing aiomultiprocessing"""
 
     @unittest.skip(
-        "aiomultiprocess has an import bug releated to having a tests module"
+        "aiomultiprocess has an import bug related to having a tests module"
     )
     def test_process_spawning(self):
         # See:
