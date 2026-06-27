@@ -500,7 +500,7 @@ cdef class UVProcessTransport(UVProcess):
             # When a stdio is in a gui-like state without a console.
             # using a standard redirect is not a good idea. This at least
             # is a better workaround that is a bit cleaner than doing what the 
-            # python standard libary subprocess does with the _get_handles function 
+            # python standard library subprocess does with the _get_handles function 
             # on windows. SEE: https://github.com/Vizonex/Winloop/issues/126
 
             io[0] = self._file_devnull()

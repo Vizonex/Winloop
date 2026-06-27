@@ -272,7 +272,7 @@ A Migration Python script might be needed or looked into.
 - My Presentation and Virtual Confrence: https://www.youtube.com/watch?v=Cbb6trkKWXY
 
 ## Contributing
-I put my heart and soul into this library ever since it began and any help is apperciated and means a lot to me, I have other things I wish to explore so every little bit helps
+I put my heart and soul into this library ever since it began and any help is appreciated and means a lot to me, I have other things I wish to explore so every little bit helps
 
 ### How Can I contribute?
 - I make and branch and make edits and then I do a pull requests before I just step in and add something new.
