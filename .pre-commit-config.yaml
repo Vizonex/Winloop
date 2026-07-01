@@ -26,3 +26,8 @@ repos:
               "axcept,alloc,ba,cycl,fulllist,indx,isin,"
               "inout,ist,les,ls,mut,nd,nin,releated,sice,splited,"
               "te,ue,unser,vas,wether"
+
+  - repo: https://github.com/MarcoGorelli/cython-lint
+    rev: v0.16.0
+    hooks:
+      - id: cython-lint
