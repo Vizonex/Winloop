@@ -50,7 +50,7 @@ test = [
 dev = [
     'packaging',
     'setuptools>=60',
-    'Cython==3.2.6',
+    'Cython==3.2.8',
 ]
 docs = [
     'Sphinx>=4.1.2,<9.2.0',
@@ -63,7 +63,7 @@ requires = [
     "packaging",
     "setuptools>=60",
     "wheel",
-    "Cython==3.2.6",
+    "Cython==3.2.8",
 ]
 build-backend = "setuptools.build_meta"
 
