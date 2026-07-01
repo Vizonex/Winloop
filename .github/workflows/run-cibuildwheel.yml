@@ -29,12 +29,19 @@ jobs:
       # Nb. keep cibuildwheel version pin consistent with job below
         run: pipx install cibuildwheel==3.2.1
       - id: set-matrix
-        # Trimmed out setupmatrix for just windows but I might look at compiling other oses just for fun 
-        # to let others test what it would be like if uvloop supported windows. It's very tempting...
+        # NOTE: We test other oses now besides just windows since winloop and uvloop plan to merge together.
+        # This has more to do with reducing the over all maitenence cost and having people start testing what 
+        # it would be like to have linux, macos and windows all harmonized.
         run: |
           MATRIX=$(
             {
-              cibuildwheel --print-build-identifiers --platform windows --archs AMD64 \
+              cibuildwheel --print-build-identifiers --platform linux \
+              | jq -nRc '{"only": inputs, "os": "ubuntu-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform macos --archs arm64 \
+              | jq -nRc '{"only": inputs, "os": "macos-15"}' \
+              && cibuildwheel --print-build-identifiers --platform macos --archs x86_64 \
+              | jq -nRc '{"only": inputs, "os": "macos-15-intel"}' \
+              && cibuildwheel --print-build-identifiers --platform windows --archs AMD64 \
               | jq -nRc '{"only": inputs, "os": "windows-latest"}' \
               && cibuildwheel --print-build-identifiers --platform windows --archs ARM64 \
               | jq -nRc '{"only": inputs, "os": "windows-11-arm"}'
