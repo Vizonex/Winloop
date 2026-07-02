@@ -460,7 +460,7 @@ print("OK")
             for i in range(n):
                 try:
                     await asyncio.create_subprocess_exec(
-                        "nonexistant",
+                        "nonexistent",
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                     )

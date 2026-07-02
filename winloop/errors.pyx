@@ -10,7 +10,7 @@ cdef __convert_python_error(int uverr):
     #      Implementation detail: on Unix error codes are the
     #      negated errno (or -errno), while on Windows they
     #      are defined by libuv to arbitrary negative numbers.
-    
+
     cdef int oserr
     cdef object err
 
@@ -20,10 +20,10 @@ cdef __convert_python_error(int uverr):
         # Winloop has a smarter technique for showing these errors.
         err = getattr(win_errno, uv.uv_err_name(uverr).decode(), uverr)
         return OSError(err, uv.uv_strerror(uverr).decode())
-    
+
     oserr = -uverr
 
-    
+
     exc = OSError
 
     if uverr in (uv.UV_EACCES, uv.UV_EPERM):
@@ -121,9 +121,9 @@ cdef convert_error(int uverr):
 
     sock_err = __convert_socket_error(uverr)
     if sock_err:
-        # Winloop comment: Sometimes libraries will throw in some 
+        # Winloop comment: Sometimes libraries will throw in some
 	    # unwanted unicode BS to unravel, to prevent the possibility of this being a threat,
-        # surrogateescape is utilized 
+        # surrogateescape is utilized
         # SEE: https://github.com/Vizonex/Winloop/issues/32
         msg = system.gai_strerror(sock_err).decode('utf-8', "surrogateescape")
         # Winloop comment: on Windows, cPython has a simpler error
@@ -134,7 +134,6 @@ cdef convert_error(int uverr):
         if sys_platform == "win32":
             if sock_err in (socket_EAI_FAMILY, socket_EAI_NONAME):
                 msg = 'getaddrinfo failed'
-        return socket_gaierror(sock_err, msg) 
+        return socket_gaierror(sock_err, msg)
 
     return __convert_python_error(uverr)
-

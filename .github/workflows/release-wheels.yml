@@ -7,7 +7,7 @@ on:
     types:
       - published
 
-permissions: 
+permissions:
   contents: write
 
 jobs:

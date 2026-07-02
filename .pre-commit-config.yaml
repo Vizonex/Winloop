@@ -19,15 +19,11 @@ repos:
               .*\.pyx\.c
           )$
         args:
-          - --ignore-words-list=
-              "asince,bu,hist,nd,noe,ot,te,ue,wan,wile,ans,"
-              "crate,cas,trough,conection,exection,"
-              "fo,ist,nam,nd,no,onot,pres,ser,set,start,uint,"
-              "axcept,alloc,ba,cycl,fulllist,indx,isin,"
-              "inout,ist,les,ls,mut,nd,nin,releated,sice,splited,"
-              "te,ue,unser,vas,wether"
+          - --ignore-words-list=asince,bu,hist,nd,noe,ot,te,ue,wan,wile,ans,crate,cas,trough,conection,exection,fo,ist,nam,no,onot,pres,ser,set,start,uint,axcept,alloc,ba,cycl,fulllist,indx,isin,inout,les,ls,mut,nin,releated,sice,splited,unser,vas,wether,assertin,asend
 
   - repo: https://github.com/MarcoGorelli/cython-lint
     rev: v0.16.0
     hooks:
       - id: cython-lint
+        args:
+          - --no-pycodestyle

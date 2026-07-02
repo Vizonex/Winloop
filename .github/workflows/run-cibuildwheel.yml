@@ -29,7 +29,7 @@ jobs:
       # Nb. keep cibuildwheel version pin consistent with job below
         run: pipx install cibuildwheel==3.2.1
       - id: set-matrix
-        # Trimmed out setupmatrix for just windows but I might look at compiling other oses just for fun 
+        # Trimmed out setupmatrix for just windows but I might look at compiling other oses just for fun
         # to let others test what it would be like if uvloop supported windows. It's very tempting...
         run: |
           MATRIX=$(

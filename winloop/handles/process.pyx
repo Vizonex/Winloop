@@ -91,7 +91,7 @@ cdef class UVProcess(UVHandle):
             self._restore_signals = restore_signals
 
             loop.active_process_handler = self
-            
+
 
             if not system.PLATFORM_IS_WINDOWS:
                 __forking = 1
@@ -101,12 +101,12 @@ cdef class UVProcess(UVHandle):
                 PyOS_BeforeFork()
             else:
                 py_gil_state = PyGILState_Ensure()
-            
+
             err = uv.uv_spawn(loop.uvloop,
                           <uv.uv_process_t*>self._handle,
                           &self.options)
-            
-            
+
+
             if not system.PLATFORM_IS_WINDOWS:
                 __forking = 0
                 __forking_loop = None
@@ -115,7 +115,7 @@ cdef class UVProcess(UVHandle):
                 PyOS_AfterFork_Parent()
             else:
                 PyGILState_Release(py_gil_state)
-            
+
             loop.active_process_handler = None
 
 
@@ -439,7 +439,7 @@ cdef class UVProcessTransport(UVProcess):
         else:
             self._pending_calls.append((_CALL_PIPE_DATA_RECEIVED, fd, data))
 
-    
+
 
     cdef _file_redirect_stdio(self, int fd):
         fd = os_dup(fd)
@@ -494,13 +494,13 @@ cdef class UVProcessTransport(UVProcess):
                     'subprocess.STDOUT is supported only by stderr parameter')
             else:
                 io[0] = self._file_redirect_stdio(_stdin)
-        
+
         elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDIN_BAD:
-            
+
             # When a stdio is in a gui-like state without a console.
             # using a standard redirect is not a good idea. This at least
-            # is a better workaround that is a bit cleaner than doing what the 
-            # python standard library subprocess does with the _get_handles function 
+            # is a better workaround that is a bit cleaner than doing what the
+            # python standard library subprocess does with the _get_handles function
             # on windows. SEE: https://github.com/Vizonex/Winloop/issues/126
 
             io[0] = self._file_devnull()
@@ -559,7 +559,7 @@ cdef class UVProcessTransport(UVProcess):
                 io[2] = self._file_devnull()
             else:
                 io[2] = self._file_redirect_stdio(_stderr)
-        
+
         elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDOUT_BAD:
             io[2] = self._file_devnull()
         else:
@@ -817,7 +817,7 @@ cdef __socketpair():
         int err
 
     # Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
-    # instead of system.socketpair(). Also, see changes to 
+    # instead of system.socketpair(). Also, see changes to
     # libuv/src/win/pipe.c to deal with UV_EPERM = -4048 errors
     # for stdin pipe.
     if system.PLATFORM_IS_WINDOWS:

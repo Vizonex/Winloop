@@ -1,6 +1,6 @@
-# Borrowed from pycares & cyares, 
-# this will be the nightly build I've 
-# been talking about adding for the past 2 years, 
+# Borrowed from pycares & cyares,
+# this will be the nightly build I've
+# been talking about adding for the past 2 years,
 # - Vizonex
 
 name: Build Wheels

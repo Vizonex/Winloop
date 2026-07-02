@@ -252,8 +252,8 @@ if __name__ == "__main__":
 
 
  ## TODO-List
-- [ ] In Winloop 0.2.0 or before 2026 I would like to start planning to migrate to pytest so that things could be formatted a little better. 
-A Migration Python script might be needed or looked into. 
+- [ ] In Winloop 0.2.0 or before 2026 I would like to start planning to migrate to pytest so that things could be formatted a little better.
+A Migration Python script might be needed or looked into.
 
 - [ ] Update Fastapi Example to a more recent version of fastapi
 
@@ -261,7 +261,7 @@ A Migration Python script might be needed or looked into.
 
 - [x] Nightly Builds And Test Suite Workflows for anyone wanting to use newer unreleased versions. (Done, it runs now)
 
-- [ ] Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...) [Update, This is now pending and I hope that it passes](https://github.com/pyinstaller/pyinstaller-hooks-contrib/pull/867) 
+- [ ] Adding in the necessary hooks for pyinstaller to compile this fast library to executable code even though hooks have been known to inflate the size of the `.exe` files. This is because calling hidden-imports for all the `__init__.py` modules might annoy some developers. (Luckily I'm aware of this issue because I've been doing this myself...) [Update, This is now pending and I hope that it passes](https://github.com/pyinstaller/pyinstaller-hooks-contrib/pull/867)
 
 - [x] write a workflow for nightly builds if necessary for verification of pull requests.
 
