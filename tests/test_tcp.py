@@ -2292,7 +2292,7 @@ class _TestSSL(tb.SSLTestCase):
                     pass
             self.assertEqual(data, B_DATA)
             if conn.renegotiate_pending():
-                conn.send(b"ERRO")
+                conn.send(b"ER")
             else:
                 conn.send(b"SPAM")
 

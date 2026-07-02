@@ -1,0 +1,29 @@
+# See https://pre-commit.com for usage and config reference.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        exclude: |
+          (?x)^(
+              vendor/.*|
+              .*\.pyc|
+              .*\.pyd|
+              .*\.so|
+              .*\.pyx\.c
+          )$
+        args:
+          - --ignore-words-list=asince,bu,hist,nd,noe,ot,te,ue,wan,wile,ans,crate,cas,trough,conection,exection,fo,ist,nam,no,onot,pres,ser,set,start,uint,axcept,alloc,ba,cycl,fulllist,indx,isin,inout,les,ls,mut,nin,releated,sice,splited,unser,vas,wether,assertin,asend
+
+  - repo: https://github.com/MarcoGorelli/cython-lint
+    rev: v0.16.0
+    hooks:
+      - id: cython-lint
+        args:
+          - --no-pycodestyle

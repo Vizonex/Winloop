@@ -11,7 +11,6 @@ from .includes.python cimport (
     PyMem_RawMalloc, PyMem_RawFree,
     PyMem_RawCalloc, PyMem_RawRealloc,
     PyUnicode_EncodeFSDefault,
-    PyErr_SetInterrupt,
     _Py_RestoreSignals,
     Context_CopyCurrent,
     Context_Enter,
@@ -28,14 +27,12 @@ from libc.stdint cimport uint64_t
 from libc.string cimport memset, strerror, memcpy
 from libc cimport errno
 
-# Winloop Comment: We need some cleaver hacky techniques for 
+# Winloop Comment: We need some cleaver hacky techniques for
 # preventing slow spawnning processes for MSVC
-from cpython.pystate cimport (PyGILState_Ensure, PyGILState_Release,
-                              PyGILState_STATE)
-from cpython cimport PyObject
-from cpython cimport PyErr_CheckSignals, PyErr_Occurred
+from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release
+from cpython cimport PyErr_CheckSignals
 from cpython cimport PyThread_get_thread_ident
-from cpython cimport Py_INCREF, Py_DECREF, Py_XDECREF, Py_XINCREF
+from cpython cimport Py_INCREF, Py_DECREF
 from cpython cimport (
     PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE,
     Py_buffer, PyBytes_AsString, PyBytes_CheckExact,
@@ -510,8 +507,6 @@ cdef class Loop:
             raise convert_error(err)
 
     cdef _run(self, uv.uv_run_mode mode):
-        cdef int err
-
         if self._closed == 1:
             raise RuntimeError('unable to start the loop; it was closed')
 
@@ -949,12 +944,12 @@ cdef class Loop:
             if fut.cancelled():
                 # Shouldn't happen with _SyncSocketReaderFuture.
                 raise RuntimeError(
-                    f'_sock_recv is called on a cancelled Future')
+                    '_sock_recv is called on a cancelled Future')
 
             if not self._has_reader(sock):
                 raise RuntimeError(
                     f'socket {sock!r} does not have a reader '
-                    f'in the _sock_recv callback')
+                    'in the _sock_recv callback')
 
         try:
             data = sock.recv(n)
@@ -976,12 +971,12 @@ cdef class Loop:
             if fut.cancelled():
                 # Shouldn't happen with _SyncSocketReaderFuture.
                 raise RuntimeError(
-                    f'_sock_recv_into is called on a cancelled Future')
+                    '_sock_recv_into is called on a cancelled Future')
 
             if not self._has_reader(sock):
                 raise RuntimeError(
                     f'socket {sock!r} does not have a reader '
-                    f'in the _sock_recv_into callback')
+                    'in the _sock_recv_into callback')
 
         try:
             data = sock.recv_into(buf)
@@ -1007,12 +1002,12 @@ cdef class Loop:
             if fut.cancelled():
                 # Shouldn't happen with _SyncSocketWriterFuture.
                 raise RuntimeError(
-                    f'_sock_sendall is called on a cancelled Future')
+                    '_sock_sendall is called on a cancelled Future')
 
             if not self._has_writer(sock):
                 raise RuntimeError(
                     f'socket {sock!r} does not have a writer '
-                    f'in the _sock_sendall callback')
+                    'in the _sock_sendall callback')
 
         try:
             n = sock.send(data)
@@ -1091,12 +1086,12 @@ cdef class Loop:
             if fut.cancelled():
                 # Shouldn't happen with _SyncSocketWriterFuture.
                 raise RuntimeError(
-                    f'_sock_connect_cb is called on a cancelled Future')
+                    '_sock_connect_cb is called on a cancelled Future')
 
             if not self._has_writer(sock):
                 raise RuntimeError(
                     f'socket {sock!r} does not have a writer '
-                    f'in the _sock_connect_cb callback')
+                    'in the _sock_connect_cb callback')
 
         try:
             err = sock.getsockopt(uv.SOL_SOCKET, uv.SO_ERROR)
@@ -2838,7 +2833,7 @@ cdef class Loop:
                 comspec = os_path_join(system_root, 'System32', 'cmd.exe')
                 if not os_path_isabs(comspec):
                     raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
-            
+
             args = [comspec]
             args.append('/c')
             args.append(cmd)

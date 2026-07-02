@@ -159,7 +159,7 @@ _Py_RestoreSignals(void)
 #ifdef _WIN32
 void PyOS_BeforeFork() {
     return;
-}	
+}
 void PyOS_AfterFork_Parent() {
     return;
 }
@@ -170,7 +170,7 @@ void PyOS_AfterFork_Child() {
 
 
 #ifdef _WIN32
-/* For some strange reason this structure does not want to show up 
+/* For some strange reason this structure does not want to show up
  * when compiling in debug mode on 3.13+ on windows so lets redefine it as a macro */
 
 /* IDK How big to make this so will just leave it at 1 in case somehow accidentally exposed */
@@ -181,13 +181,13 @@ void PyOS_AfterFork_Child() {
 
 
 /* There is a bug with CX-Freeze on windows when compiled
- * to an exe this tries to fix it by seeing if alternate 
- * workarounds like DEVNULL need to be provided. 
- * SEE: https://github.com/Vizonex/Winloop/issues/126 
- * There are several alternate workarounds to the problem but 
- * what were going to attempt to do here is see if stdin, stdout, or stderr 
- * are all mapped properly to 0, 1, 2. If these are -2 then the implementation 
- * seen in subprocess.py will need to be applied where a handle is open with one closed 
+ * to an exe this tries to fix it by seeing if alternate
+ * workarounds like DEVNULL need to be provided.
+ * SEE: https://github.com/Vizonex/Winloop/issues/126
+ * There are several alternate workarounds to the problem but
+ * what were going to attempt to do here is see if stdin, stdout, or stderr
+ * are all mapped properly to 0, 1, 2. If these are -2 then the implementation
+ * seen in subprocess.py will need to be applied where a handle is open with one closed
  * off... */
 
 #ifdef _WIN32
@@ -200,11 +200,9 @@ void PyOS_AfterFork_Child() {
 
 
 #else
-/* On Unix these are not needed, but we define it anyways so the 
+/* On Unix these are not needed, but we define it anyways so the
 compiler doesn't wind up throwing a fit about it */
 #define __UVLOOP_STDIN_BAD 0
 #define __UVLOOP_STDOUT_BAD 0
 #define __UVLOOP_STDERR_BAD 0
 #endif
-
-
