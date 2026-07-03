@@ -14,6 +14,9 @@ on:
         default: false
         type: boolean
 
+env:
+  CIBW_VERSION: "4.1.0"
+
 jobs:
   generate-wheels-matrix:
     # Create a matrix of all architectures & versions to build.
@@ -23,11 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       include: ${{ steps.set-matrix.outputs.include }}
+    env:
+      CIBW_SKIP: cp38-*
     steps:
       - uses: actions/checkout@v7
       - name: Install cibuildwheel
       # Nb. keep cibuildwheel version pin consistent with job below
-        run: pipx install cibuildwheel==3.2.1
+        run: pipx install cibuildwheel==${{ env.CIBW_VERSION }}
       - id: set-matrix
         # Trimmed out setupmatrix for just windows but I might look at compiling other oses just for fun
         # to let others test what it would be like if uvloop supported windows. It's very tempting...
@@ -46,6 +51,8 @@ jobs:
     name: Build wheels for ${{ matrix.only }}
     runs-on: ${{ matrix.os }}
     needs: generate-wheels-matrix
+    env:
+      CIBW_SKIP: cp38-*
     strategy:
       fail-fast: ${{ inputs.fail-fast }}
       matrix:

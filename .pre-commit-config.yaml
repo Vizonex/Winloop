@@ -19,7 +19,7 @@ repos:
               .*\.pyx\.c
           )$
         args:
-          - --ignore-words-list=asince,bu,hist,nd,noe,ot,te,ue,wan,wile,ans,crate,cas,trough,conection,exection,fo,ist,nam,no,onot,pres,ser,set,start,uint,axcept,alloc,ba,cycl,fulllist,indx,isin,inout,les,ls,mut,nin,releated,sice,splited,unser,vas,wether,assertin,asend
+          - --ignore-words-list=assertin, asend
 
   - repo: https://github.com/MarcoGorelli/cython-lint
     rev: v0.16.0
