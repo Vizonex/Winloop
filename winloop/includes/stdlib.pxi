@@ -18,6 +18,7 @@ import subprocess
 import ssl
 import stat
 import sys
+import shlex
 import threading
 import traceback
 import time
@@ -101,6 +102,7 @@ cdef int socket_EAI_PROTOCOL   = getattr(socket, 'EAI_PROTOCOL', -1)
 cdef int socket_EAI_SERVICE    = getattr(socket, 'EAI_SERVICE', -1)
 cdef int socket_EAI_SOCKTYPE   = getattr(socket, 'EAI_SOCKTYPE', -1)
 
+cdef shlex_split = shlex.split
 
 cdef str os_name = os.name
 cdef os_path_isabs = os.path.isabs
@@ -119,6 +121,7 @@ cdef os_remove = os.remove
 cdef os_stat = os.stat
 cdef os_unlink = os.unlink
 cdef os_fspath = os.fspath
+cdef os_fsdecode = os.fsdecode
 
 cdef stat_S_ISSOCK = stat.S_ISSOCK
 
@@ -181,3 +184,4 @@ del asyncio, concurrent, collections, errno
 del functools, inspect, itertools, socket, os, threading
 del signal, subprocess, ssl
 del time, traceback, warnings, weakref
+del shlex

@@ -940,6 +940,50 @@ print(n)"""
 
 
 class Test_UV_Process(_TestProcess, tb.UVTestCase):
+    @unittest.skipIf(sys.platform != "win32", "problem is windows related only")
+    def test_windows_issue_153(self):
+        """Winloop issue 153 is related to bringing back the shlex parser
+        which because there is a different system involved from regular
+        python subprocess's system to prevent the libuv library
+        from doing something worse and needing to change up more code.
+        
+        SEE: https://github.com/Vizonex/Winloop/issues/153
+        """
+
+        async def test():
+            CMD = 'python -c "import sys; print(\'hi\')"'
+            proc = await asyncio.create_subprocess_shell(
+                CMD,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+      
+            out, err = await proc.communicate()
+            assert out == b"hi\r\n"
+            assert err == b''
+            assert proc.returncode == 0
+        self.loop.run_until_complete(test())
+    
+    @unittest.skipIf(sys.platform != "win32", "problem is windows related only")
+    def test_windows_issue_153_bytes(self):
+        """Winloop issue 153 is related to bringing back the shlex parser
+        which because there is a different system involved from regular
+        python subprocess's system to prevent the libuv library
+        from doing something worse and needing to change up more code."""
+        async def test():
+            CMD = b'python -c "import sys; print(\'hi\')"'
+            proc = await asyncio.create_subprocess_shell(
+                CMD,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            out, err = await proc.communicate()
+            assert out == b"hi\r\n"
+            assert err == b''
+            assert proc.returncode == 0
+        self.loop.run_until_complete(test())
+
+
     def test_process_double_close(self):
         script = textwrap.dedent("""
             import os

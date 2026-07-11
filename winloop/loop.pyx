@@ -120,6 +120,10 @@ cdef inline run_in_context2(context, method, arg1, arg2):
 # *reuse_address* parameter
 _unset = object()
 
+cdef list split_windows_shell_command(object cmd):
+    if isinstance(cmd, bytes):
+        cmd = cmd.decode("utf-8", "surrogateescape")
+    return shlex_split(cmd)
 
 @cython.no_gc_clear
 cdef class Loop:
@@ -2834,9 +2838,16 @@ cdef class Loop:
                 if not os_path_isabs(comspec):
                     raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
 
-            args = [comspec]
-            args.append('/c')
-            args.append(cmd)
+            args = [comspec, b'/c']
+            
+            # XXX: We don't want to change more code than what is 
+            # currently required and supporting bytes is better
+            # than windows stdlib (subprocesses.Popen disallows bytes)
+            # so a small workaround with the shlex parser was needed.
+            # Originally it was removed but brought back. 
+            # SEE: https://github.com/Vizonex/Winloop/issues/153
+
+            args.extend(split_windows_shell_command(cmd))
 
         return await self.__subprocess_run(protocol_factory, args, shell=True,
                                            **kwargs)
