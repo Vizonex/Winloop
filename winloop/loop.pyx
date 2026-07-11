@@ -2839,12 +2839,12 @@ cdef class Loop:
                     raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
 
             args = [comspec, b'/c']
-            
-            # XXX: We don't want to change more code than what is 
+
+            # XXX: We don't want to change more code than what is
             # currently required and supporting bytes is better
             # than windows stdlib (subprocesses.Popen disallows bytes)
             # so a small workaround with the shlex parser was needed.
-            # Originally it was removed but brought back. 
+            # Originally it was removed but brought back.
             # SEE: https://github.com/Vizonex/Winloop/issues/153
 
             args.extend(split_windows_shell_command(cmd))

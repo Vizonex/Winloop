@@ -946,7 +946,7 @@ class Test_UV_Process(_TestProcess, tb.UVTestCase):
         which because there is a different system involved from regular
         python subprocess's system to prevent the libuv library
         from doing something worse and needing to change up more code.
-        
+
         SEE: https://github.com/Vizonex/Winloop/issues/153
         """
 
@@ -957,13 +957,13 @@ class Test_UV_Process(_TestProcess, tb.UVTestCase):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-      
+
             out, err = await proc.communicate()
             assert out == b"hi\r\n"
             assert err == b''
             assert proc.returncode == 0
         self.loop.run_until_complete(test())
-    
+
     @unittest.skipIf(sys.platform != "win32", "problem is windows related only")
     def test_windows_issue_153_bytes(self):
         """Winloop issue 153 is related to bringing back the shlex parser
