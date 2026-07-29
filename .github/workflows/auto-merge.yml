@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   test:
-    if: ${{ github.actor == 'dependabot[bot]' }}    
+    if: ${{ github.actor == 'dependabot[bot]' }}
     uses: ./.github/workflows/test.yml
     with:
       fail-fast: true
