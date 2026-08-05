@@ -19,11 +19,11 @@ from winloop import _testbase as tb
 class _TestAiodns:
     def test_dns_query(self):
         # This is not allowed to fail...
-        resolver = aiodns.DNSResolver(loop=self.loop)
+        resolver = aiodns.DNSResolver(["8.8.8.8", "8.8.4.4"], loop=self.loop)
 
         async def test():
             async def query(name, query_type):
-                return await resolver.query(name, query_type)
+                return await resolver.query_dns(name, query_type)
 
             await query("google.com", "A")
             await query("httpbin.org", "A")
