@@ -30,6 +30,10 @@ cdef aio_get_event_loop = asyncio.get_event_loop
 cdef aio_CancelledError = asyncio.CancelledError
 cdef aio_InvalidStateError = asyncio.InvalidStateError
 cdef aio_TimeoutError = asyncio.TimeoutError
+
+# TODO: would like to upgrade Future and Task objects as soon as possible!
+# for concept ideas SEE: https://gist.github.com/Vizonex/5196ae5fc7f2287df6a6dec8b37edc37
+
 cdef aio_Future = asyncio.Future
 cdef aio_Task = asyncio.Task
 cdef aio_ensure_future = asyncio.ensure_future
@@ -48,6 +52,7 @@ cdef aio_AbstractChildWatcher = getattr(asyncio, "AbstractChildWatcher", ())
 cdef aio_Transport = asyncio.Transport
 cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
 
+# TODO: deque would run faster if it were to be wrapped directly from C.
 cdef col_deque = collections.deque
 cdef col_Iterable = collections.abc.Iterable
 cdef col_Counter = collections.Counter
@@ -130,7 +135,10 @@ cdef sys_dev_mode = sys.flags.dev_mode
 cdef sys_exc_info = sys.exc_info
 cdef sys_set_coroutine_wrapper = getattr(sys, 'set_coroutine_wrapper', None)
 cdef sys_get_coroutine_wrapper = getattr(sys, 'get_coroutine_wrapper', None)
-cdef sys_getframe = sys._getframe
+
+# NOTE: sys_getframe is now obsolete: Sys_GetFrame In C does a better job.
+# cdef sys_getframe = sys._getframe
+
 cdef sys_version_info = sys.version_info
 cdef sys_getfilesystemencoding = sys.getfilesystemencoding
 cdef str sys_platform = sys.platform
@@ -163,15 +171,21 @@ cdef signal_set_wakeup_fd = signal.set_wakeup_fd
 cdef signal_default_int_handler = signal.default_int_handler
 cdef signal_SIG_DFL = signal.SIG_DFL
 
-cdef time_sleep = time.sleep
+cdef time_sleep = time.sleep 
+# Migration to PyTime_t and away from floats would prevent rounding issues.
+# There has already been some work done with pywepoll that addresses this specific elephant 
+# in the room. https://github.com/Vizonex/pywepoll/blob/ace0885d6115a3f0c4407d7cc5f7128a13d3419a/wepoll/_wepoll.pyx#L27
 cdef time_monotonic = time.monotonic
 
 cdef tb_StackSummary = traceback.StackSummary
+# TODO: tb_walk_stack appears to be optimizable and could all be reasonably be written in C.
 cdef tb_walk_stack = traceback.walk_stack
 cdef tb_format_list = traceback.format_list
 
 cdef warnings_warn = warnings.warn
 
+# TODO: weakref classes here could be rewritten to Cython to prevent bottlenecks when passing
+# between interpreter code and compiled code.
 cdef weakref_WeakValueDictionary = weakref.WeakValueDictionary
 cdef weakref_WeakSet = weakref.WeakSet
 

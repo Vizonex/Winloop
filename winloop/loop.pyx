@@ -832,6 +832,8 @@ cdef class Loop:
         fd = self._fileobj_to_fd(fileobj)
         self._ensure_fd_no_transport(fd)
 
+        # try and except block could possibly be easily removed
+        # in favor of utilizing the PyDict CAPI directly.
         try:
             poll = <UVPoll>(self._polls[fd])
         except KeyError:
@@ -1319,6 +1321,10 @@ cdef class Loop:
             # infinity for a Python application.
             delay = MAX_SLEEP
 
+
+        # XXX: This section of code has been a problem for a while with 
+        # 3.11+ having rounding errors with different tests from uvloop.
+        # Someone is going to have to fix this eventually.
         when = <uint64_t>round(delay * 1000)
         if not args:
             args = None
@@ -1513,6 +1519,18 @@ cdef class Loop:
 
         return future.result()
 
+    # Currently as it stands there is the possibility of bringing the old
+    # ways of libuv and possibly bundling c-ares into the mix.
+
+    # It was removed for some strange reasons but it might prove benefitial
+    # in windows as it would get rid of a bottle-neck with the lru-cache code
+    # and would allow for connections to get whipped up a lot quicker. 
+
+    # More Info: https://github.com/joyent/libuv/issues/518
+
+    # getnameinfo & getaddrinfo would have performance benchmarks from 
+    # using c-ares straight up and may strengthen bencharks with rsloop.
+
     @cython.iterable_coroutine
     async def getaddrinfo(self, object host, object port, *,
                           int family=0, int type=0, int proto=0, int flags=0):
@@ -1525,6 +1543,7 @@ cdef class Loop:
         return await self._getaddrinfo(
             host, port, family, type, proto, flags, 1)
 
+   
     @cython.iterable_coroutine
     async def getnameinfo(self, sockaddr, int flags=0):
         cdef:
@@ -3320,6 +3339,11 @@ cdef void __loop_alloc_buffer(
 cdef inline void __loop_free_buffer(Loop loop):
     loop._recv_buffer_in_use = 0
 
+
+# TODO: rsloop is beating uvloop & winloop in performance because of a constraint
+# with this section of code here, _SyncSocketReaderFuture would benefit
+# from being turned into a cdef extension class as it may possibly enhance 
+# reading and writing functions in general.
 
 class _SyncSocketReaderFuture(aio_Future):
 

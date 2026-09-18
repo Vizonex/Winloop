@@ -1,6 +1,6 @@
 # flake8: noqa
 
-
+# TODO: This could be rewritten in C for better performance.
 cdef inline add_flowcontrol_defaults(high, low, int kb):
     cdef int h, l
     if high is None:

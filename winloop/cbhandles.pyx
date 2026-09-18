@@ -1,3 +1,5 @@
+include "includes/python.pxd"
+
 @cython.no_gc_clear
 @cython.freelist(DEFAULT_FREELIST_SIZE)
 cdef class Handle:
@@ -416,12 +418,18 @@ cdef new_MethodHandle3(Loop loop, str name, method3_t callback, object context,
     return handle
 
 
+
+# TODO: (Vizonex)
+# I'm implementing optimizations for sys._getframe and tb_walk_stack(f) will soon follow.
+# the idea is simple. rsloop is outperforming our benchmarks like no tomorrow.
+# In order to keep up. Some Adjustments must be made to keep up with growing demands.
+
 cdef extract_stack():
     """Replacement for traceback.extract_stack() that only does the
     necessary work for asyncio debug mode.
     """
     try:
-        f = sys_getframe()
+        f = Sys_GetFrame(0)
     # sys._getframe() might raise ValueError if being called without a frame, e.g.
     # from Cython or similar C extensions.
     except ValueError:
