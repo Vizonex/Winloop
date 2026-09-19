@@ -23,6 +23,7 @@ a still a couple differences left.
 #endif
 
 #include "Python.h"
+#include "pythoncapi_compat.h" /* backwards & fowards compatability */
 #include "uv.h"
 
 
