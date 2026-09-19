@@ -1,5 +1,5 @@
-/* 
-There are a few things that will stand out from uvloop unless someone 
+/*
+There are a few things that will stand out from uvloop unless someone
 wants to finally implement all my ideas. For now winloop will remain
 an idea-bag kind of library for suggestions to uvloop as there
 a still a couple differences left.
@@ -23,7 +23,7 @@ a still a couple differences left.
 #endif
 
 #include "Python.h"
-#include "pythoncapi_compat.h" /* backwards & fowards compatability */
+#include "pythoncapi_compat.h" /* backwards & forwards compatibility */
 #include "uv.h"
 
 
@@ -220,9 +220,9 @@ compiler doesn't wind up throwing a fit about it */
 
 
 
-/* equivlent to sys._getframe in CPython. 
- * It is brought here since calling sys._getframe in debug mode 
- * or other scenarios can get costly. 
+/* equivalent to sys._getframe in CPython.
+ * It is brought here since calling sys._getframe in debug mode
+ * or other scenarios can get costly.
  */
 PyObject* Sys_GetFrame(int depth){
     PyFrameObject *f = PyThreadState_GetFrame(PyThreadState_Get());

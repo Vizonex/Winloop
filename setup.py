@@ -15,6 +15,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext

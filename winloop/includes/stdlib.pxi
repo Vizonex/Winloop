@@ -171,9 +171,9 @@ cdef signal_set_wakeup_fd = signal.set_wakeup_fd
 cdef signal_default_int_handler = signal.default_int_handler
 cdef signal_SIG_DFL = signal.SIG_DFL
 
-cdef time_sleep = time.sleep 
+cdef time_sleep = time.sleep
 # Migration to PyTime_t and away from floats would prevent rounding issues.
-# There has already been some work done with pywepoll that addresses this specific elephant 
+# There has already been some work done with pywepoll that addresses this specific elephant
 # in the room. https://github.com/Vizonex/pywepoll/blob/ace0885d6115a3f0c4407d7cc5f7128a13d3419a/wepoll/_wepoll.pyx#L27
 cdef time_monotonic = time.monotonic
 

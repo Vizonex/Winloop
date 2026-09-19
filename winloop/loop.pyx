@@ -1322,7 +1322,7 @@ cdef class Loop:
             delay = MAX_SLEEP
 
 
-        # XXX: This section of code has been a problem for a while with 
+        # XXX: This section of code has been a problem for a while with
         # 3.11+ having rounding errors with different tests from uvloop.
         # Someone is going to have to fix this eventually.
         when = <uint64_t>round(delay * 1000)
@@ -1522,13 +1522,13 @@ cdef class Loop:
     # Currently as it stands there is the possibility of bringing the old
     # ways of libuv and possibly bundling c-ares into the mix.
 
-    # It was removed for some strange reasons but it might prove benefitial
+    # It was removed for some strange reasons but it might prove beneficial
     # in windows as it would get rid of a bottle-neck with the lru-cache code
-    # and would allow for connections to get whipped up a lot quicker. 
+    # and would allow for connections to get whipped up a lot quicker.
 
     # More Info: https://github.com/joyent/libuv/issues/518
 
-    # getnameinfo & getaddrinfo would have performance benchmarks from 
+    # getnameinfo & getaddrinfo would have performance benchmarks from
     # using c-ares straight up and may strengthen bencharks with rsloop.
 
     @cython.iterable_coroutine
@@ -1543,7 +1543,7 @@ cdef class Loop:
         return await self._getaddrinfo(
             host, port, family, type, proto, flags, 1)
 
-   
+
     @cython.iterable_coroutine
     async def getnameinfo(self, sockaddr, int flags=0):
         cdef:
@@ -3342,7 +3342,7 @@ cdef inline void __loop_free_buffer(Loop loop):
 
 # TODO: rsloop is beating uvloop & winloop in performance because of a constraint
 # with this section of code here, _SyncSocketReaderFuture would benefit
-# from being turned into a cdef extension class as it may possibly enhance 
+# from being turned into a cdef extension class as it may possibly enhance
 # reading and writing functions in general.
 
 class _SyncSocketReaderFuture(aio_Future):

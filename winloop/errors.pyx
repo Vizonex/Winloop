@@ -3,7 +3,7 @@
 cdef str __strerr(int errno):
     return strerror(errno).decode()
 
-# TODO: This Function would be a possible Canidate for moving into C.
+# TODO: This Function would be a possible Candidate for moving into C.
 cdef __convert_python_error(int uverr):
     # XXX Won't work for Windows:
     # From libuv docs:
