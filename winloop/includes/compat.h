@@ -1,3 +1,13 @@
+/*
+There are a few things that will stand out from uvloop unless someone
+wants to finally implement all my ideas. For now winloop will remain
+an idea-bag kind of library for suggestions to uvloop as there
+a still a couple differences left.
+
+*/
+#ifndef __COMPAT_H__
+#define __COMPAT_H__
+
 #include <errno.h>
 #include <stddef.h>
 #include <signal.h>
@@ -13,6 +23,7 @@
 #endif
 
 #include "Python.h"
+#include "pythoncapi_compat.h" /* backwards & forwards compatibility */
 #include "uv.h"
 
 
@@ -206,3 +217,29 @@ compiler doesn't wind up throwing a fit about it */
 #define __UVLOOP_STDOUT_BAD 0
 #define __UVLOOP_STDERR_BAD 0
 #endif
+
+
+
+/* equivalent to sys._getframe in CPython.
+ * It is brought here since calling sys._getframe in debug mode
+ * or other scenarios can get costly.
+ */
+PyObject* Sys_GetFrame(int depth){
+    PyFrameObject *f = PyThreadState_GetFrame(PyThreadState_Get());
+    while (depth > 0 && f != NULL) {
+        PyFrameObject *back = PyFrame_GetBack(f);
+        Py_DECREF(f);
+        f = back;
+        --depth;
+    }
+    if (f == NULL) {
+        PyErr_SetString(PyExc_ValueError,
+                        "call stack is not deep enough");
+        return NULL;
+    }
+    return (PyObject*)f;
+}
+
+
+
+#endif // __COMPAT_H__

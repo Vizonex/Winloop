@@ -1,3 +1,3 @@
 cdef extern from "includes/debug.h":
-
-    cdef int UVLOOP_DEBUG
+    # better serves it's purpose as an enum anyways...
+    enum: UVLOOP_DEBUG
