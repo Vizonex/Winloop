@@ -3373,9 +3373,7 @@ cdef class _SyncSocketReaderFuture(Future):
     # XXX: There is no point in fighting the PY39 flags.
     cpdef object cancel(self, msg=None):
         self.__remove_reader()
-
         self.ensure_alive()
-        self.__log_traceback = False
         if self.state != _PENDING:
             return False
         self.state = _CANCELLED
@@ -3404,7 +3402,6 @@ cdef class _SyncSocketWriterFuture(Future):
     cpdef object cancel(self, msg=None):
         self.__remove_writer()
         self.ensure_alive()
-        self.__log_traceback = False
         if self.state != _PENDING:
             return False
         self.state = _CANCELLED
