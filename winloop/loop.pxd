@@ -228,3 +228,20 @@ include "sslproto.pxd"
 include "handles/udp.pxd"
 
 include "server.pxd"
+
+
+cdef class _SyncSocketReaderFuture(Future):
+    cdef:
+        Loop __loop
+        object __sock
+
+    cpdef object __remove_reader(self)
+    cpdef object cancel(self, object msg=*)
+
+cdef class _SyncSocketWriterFuture(Future):
+    cdef:
+        Loop __loop
+        object __sock
+
+    cpdef object __remove_writer(self)
+    cpdef object cancel(self, object msg=*)

@@ -130,7 +130,7 @@ cdef class Future:
             return False
         self.state = _CANCELLED
         self._cancel_message = msg
-        self.__schedule_callbacks()
+        self._schedule_callbacks()
         return True
 
     @property
@@ -139,7 +139,7 @@ cdef class Future:
         return self.__callbacks
 
 
-    cpdef object __schedule_callbacks(self):
+    cpdef object _schedule_callbacks(self):
         """Internal: Ask the event loop to call all callbacks.
 
         The callbacks are scheduled to be called as soon as possible. Also
@@ -148,7 +148,7 @@ cdef class Future:
 
         if not PyList_GET_SIZE(self.__callbacks):
             return
-        callbacks = self._callbacks[:]
+        callbacks = self.__callbacks[:]
         PyList_Clear(self.__callbacks)
         for callback, ctx in callbacks:
             self._loop.call_soon(callback, self, context=ctx)
@@ -242,7 +242,7 @@ cdef class Future:
             raise aio_InvalidStateError(f'{self._state}: {self!r}')
         self._result = result
         self.state = _FINISHED
-        self.__schedule_callbacks()
+        self._schedule_callbacks()
 
     cpdef object set_exception(self, object exception):
         """Mark the future done and set an exception.
@@ -261,7 +261,7 @@ cdef class Future:
         self._exception = exception
         self._exception_tb = (<BaseException>exception).__traceback__
         self.state = _FINISHED
-        self.__schedule_callbacks()
+        self._schedule_callbacks()
         self.__log_traceback = True
 
     def __await__(self):

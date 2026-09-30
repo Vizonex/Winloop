@@ -3356,9 +3356,7 @@ cdef inline void __loop_free_buffer(Loop loop):
 # reading and writing functions in general.
 
 cdef class _SyncSocketReaderFuture(Future):
-    cdef:
-        Loop __loop
-        object __sock
+
     def __init__(self, sock, Loop loop):
         super().__init__(loop=loop)
         self.__sock = sock
@@ -3366,28 +3364,27 @@ cdef class _SyncSocketReaderFuture(Future):
 
     cpdef object __remove_reader(self):
         if self.__sock is not None and self.__sock.fileno() != -1:
-            self.__loop.remove_reader(self.__sock)
+            self.__loop._remove_reader(self.__sock)
             self.__sock = None
 
+    # XXX: There is no point in fighting the PY39 flags
+    # when this can simply be skipped over. PY38 is old
+    # and winloop stopped maintaining it in order to
+    # encourage those who can update to update.
+    cpdef object cancel(self, object msg=None):
+        """Cancel the future and schedule callbacks.
 
-    # XXX: There is no point in fighting the PY39 flags.
-    cpdef object cancel(self, msg=None):
+        If the future is already done or cancelled, return False.  Otherwise,
+        change the future's state to cancelled, schedule the callbacks and
+        return True.
+        """
         self.__remove_reader()
-        self.ensure_alive()
-        if self.state != _PENDING:
-            return False
-        self.state = _CANCELLED
-        self._cancel_message = msg
-        self.__schedule_callbacks()
-        return True
+        return Future.cancel(self, msg)
 
 
 
 
 cdef class _SyncSocketWriterFuture(Future):
-    cdef:
-        Loop __loop
-        object __sock
 
     def __init__(self, sock, Loop loop):
         super().__init__(loop=loop)
@@ -3399,15 +3396,17 @@ cdef class _SyncSocketWriterFuture(Future):
             self.__loop._remove_writer(self.__sock)
             self.__sock = None
 
-    cpdef object cancel(self, msg=None):
+    cpdef object cancel(self, object msg=None):
+        """Cancel the future and schedule callbacks.
+
+        If the future is already done or cancelled, return False.  Otherwise,
+        change the future's state to cancelled, schedule the callbacks and
+        return True.
+        """
         self.__remove_writer()
-        self.ensure_alive()
-        if self.state != _PENDING:
-            return False
-        self.state = _CANCELLED
-        self._cancel_message = msg
-        self.__schedule_callbacks()
-        return True
+        # recast subclass to regain access to anything
+        # private
+        return Future.cancel(self, msg)
 
 
 

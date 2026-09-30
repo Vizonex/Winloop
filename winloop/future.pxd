@@ -25,7 +25,7 @@ cdef class Future:
     cpdef Loop get_loop(self)
     cpdef object _make_cancelled_error(self)
     cpdef object cancel(self, object msg=*)
-    cpdef object __schedule_callbacks(self)
+    cpdef object _schedule_callbacks(self)
     cpdef bint cancelled(self) noexcept
     cpdef bint done(self) noexcept
     cpdef object result(self)
