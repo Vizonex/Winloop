@@ -181,13 +181,13 @@ cdef class Loop:
     cdef _has_writer(self, fd)
     cdef _remove_writer(self, fd)
 
-    cdef _sock_recv(self, fut, sock, n)
-    cdef _sock_recv_into(self, fut, sock, buf)
-    cdef _sock_sendall(self, fut, sock, data)
-    cdef _sock_accept(self, fut, sock)
+    cdef _sock_recv(self, _fut, sock, n)
+    cdef _sock_recv_into(self, _fut, sock, buf)
+    cdef _sock_sendall(self, _fut, sock, data)
+    cdef _sock_accept(self, _fut, sock)
 
     cdef _sock_connect(self, sock, address)
-    cdef _sock_connect_cb(self, fut, sock, address)
+    cdef _sock_connect_cb(self, _fut, sock, address)
 
     cdef _sock_set_reuseport(self, int fd)
 
@@ -206,6 +206,7 @@ cdef class Loop:
 
 
 include "cbhandles.pxd"
+include "future.pxd"
 
 include "handles/handle.pxd"
 include "handles/async_.pxd"
@@ -227,3 +228,20 @@ include "sslproto.pxd"
 include "handles/udp.pxd"
 
 include "server.pxd"
+
+
+cdef class _SyncSocketReaderFuture(Future):
+    cdef:
+        Loop __loop
+        object __sock
+
+    cpdef object __remove_reader(self)
+    cpdef object cancel(self, object msg=*)
+
+cdef class _SyncSocketWriterFuture(Future):
+    cdef:
+        Loop __loop
+        object __sock
+
+    cpdef object __remove_writer(self)
+    cpdef object cancel(self, object msg=*)

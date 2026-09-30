@@ -758,7 +758,9 @@ class _TestBase:
 class TestBaseUV(_TestBase, UVTestCase):
     def test_loop_create_future(self):
         fut = self.loop.create_future()
-        self.assertTrue(isinstance(fut, asyncio.Future))
+        # winloop.loop.Future (Coming soon)
+        # or asyncio.Future
+        self.assertTrue(asyncio.isfuture(fut))
         self.assertIs(fut._loop, self.loop)
         fut.cancel()
 

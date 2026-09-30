@@ -2,8 +2,9 @@
 
 
 import asyncio, asyncio.log, asyncio.base_events, \
-       asyncio.sslproto, asyncio.coroutines, \
-       asyncio.futures, asyncio.transports
+       asyncio.base_futures, asyncio.sslproto, \
+       asyncio.coroutines, asyncio.futures, \
+       asyncio.transports
 import collections.abc
 import concurrent.futures
 import errno
@@ -22,6 +23,7 @@ import shlex
 import threading
 import traceback
 import time
+import types
 import warnings
 import weakref
 
@@ -35,6 +37,7 @@ cdef aio_TimeoutError = asyncio.TimeoutError
 # for concept ideas SEE: https://gist.github.com/Vizonex/5196ae5fc7f2287df6a6dec8b37edc37
 
 cdef aio_Future = asyncio.Future
+cdef aio__future_repr = getattr(asyncio.base_futures, "_future_repr", lambda fut: None)
 cdef aio_Task = asyncio.Task
 cdef aio_ensure_future = asyncio.ensure_future
 cdef aio_gather = asyncio.gather
@@ -182,6 +185,8 @@ cdef tb_StackSummary = traceback.StackSummary
 cdef tb_walk_stack = traceback.walk_stack
 cdef tb_format_list = traceback.format_list
 
+cdef types_GenericAlias = types.GenericAlias
+
 cdef warnings_warn = warnings.warn
 
 # TODO: weakref classes here could be rewritten to Cython to prevent bottlenecks when passing
@@ -198,4 +203,4 @@ del asyncio, concurrent, collections, errno
 del functools, inspect, itertools, socket, os, threading
 del signal, subprocess, ssl
 del time, traceback, warnings, weakref
-del shlex
+del shlex, types
