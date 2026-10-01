@@ -877,6 +877,7 @@ cdef class Loop:
 
         return result
 
+    # TODO: signature of bint or int return except -1 would be better here.
     cdef _has_writer(self, fileobj):
         cdef:
             UVPoll poll
@@ -891,10 +892,12 @@ cdef class Loop:
 
         return poll.is_writing()
 
-    cdef _getaddrinfo(self, object host, object port,
+    cdef Future _getaddrinfo(self, object host, object port,
                       int family, int type,
                       int proto, int flags,
                       int unpack):
+
+        cdef Future fut
 
         if isinstance(port, str):
             port = port.encode()
@@ -909,8 +912,14 @@ cdef class Loop:
             if not isinstance(host, bytes):
                 raise TypeError('host must be a str or bytes')
 
-        fut = self._new_future()
+        # TODO: Use _new_future to return compiled Future objects
+        # in a later update (0.8.0)
+        fut = Future(loop=self)
 
+        # TODO: Sometime before or after 0.8.0,
+        #   Let's Convert this callback to a ctypedef callback
+        #   for added performance.
+        #   example: ctypedef int (*addrinfo_callback)(Future fut, object result) except -1
         def callback(result):
             if AddrInfo.isinstance(result):
                 try:
@@ -933,10 +942,14 @@ cdef class Loop:
         AddrInfoRequest(self, host, port, family, type, proto, flags, callback)
         return fut
 
-    cdef _getnameinfo(self, system.sockaddr *addr, int flags):
+    cdef Future _getnameinfo(self, system.sockaddr *addr, int flags):
         cdef NameInfoRequest nr
-        fut = self._new_future()
+        cdef Future fut
+        fut = Future(loop=self)
 
+        # Ditto of 0.8.0's TODO list:
+        # Something like ctypedef int (*nameinfo_callback)(Future, object) except -1
+        # would be sufficient.
         def callback(result):
             if isinstance(result, tuple):
                 fut.set_result(result)
