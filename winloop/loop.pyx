@@ -920,7 +920,7 @@ cdef class Loop:
         #   Let's Convert this callback to a ctypedef callback
         #   for added performance.
         #   example: ctypedef int (*addrinfo_callback)(Future fut, object result) except -1
-        def callback(result):
+        def callback(fut, result):
             if AddrInfo.isinstance(result):
                 try:
                     if unpack == 0:
@@ -939,7 +939,9 @@ cdef class Loop:
                 if not fut.cancelled():
                     fut.set_exception(result)
 
-        AddrInfoRequest(self, host, port, family, type, proto, flags, callback)
+        # NOTE: ft_partial is needed to hold future for long enough
+        # otherwise 3.14t could freeze.
+        AddrInfoRequest(self, host, port, family, type, proto, flags, ft_partial(callback, fut))
         return fut
 
     cdef Future _getnameinfo(self, system.sockaddr *addr, int flags):
@@ -950,13 +952,13 @@ cdef class Loop:
         # Ditto of 0.8.0's TODO list:
         # Something like ctypedef int (*nameinfo_callback)(Future, object) except -1
         # would be sufficient.
-        def callback(result):
+        def callback(fut, result):
             if isinstance(result, tuple):
                 fut.set_result(result)
             else:
                 fut.set_exception(result)
 
-        nr = NameInfoRequest(self, callback)
+        nr = NameInfoRequest(self, ft_partial(callback, fut))
         nr.query(addr, flags)
         return fut
 
