@@ -159,12 +159,12 @@ cdef class Loop:
     cdef inline _check_closed(self)
     cdef inline _check_thread(self)
 
-    cdef _getaddrinfo(self, object host, object port,
+    cdef Future _getaddrinfo(self, object host, object port,
                       int family, int type,
                       int proto, int flags,
                       int unpack)
 
-    cdef _getnameinfo(self, system.sockaddr *addr, int flags)
+    cdef Future _getnameinfo(self, system.sockaddr *addr, int flags)
 
     cdef _track_transport(self, UVBaseTransport transport)
     cdef _fileobj_to_fd(self, fileobj)
