@@ -337,13 +337,16 @@ cdef class AddrInfo:
 cdef class AddrInfoRequest(UVRequest):
     cdef:
         system.addrinfo hints
+        # TODO: ctypedef callbacks.
         object callback
+        object fut
         uv.uv_getaddrinfo_t _req_data
+
 
     def __cinit__(self, Loop loop,
                   bytes host, bytes port,
                   int family, int type, int proto, int flags,
-                  object callback):
+                  object callback, object fut):
 
         cdef:
             int err
@@ -379,6 +382,7 @@ cdef class AddrInfoRequest(UVRequest):
 
         self.request = <uv.uv_req_t*> &self._req_data
         self.callback = callback
+        self.fut = fut
         self.request.data = <void*>self
 
         err = uv.uv_getaddrinfo(loop.uvloop,
@@ -406,19 +410,22 @@ cdef class AddrInfoRequest(UVRequest):
                 else:
                     ex = convert_error(err)
             except Exception as ex:
-                callback(ex)
+                callback(fut, ex)
             else:
-                callback(ex)
+                callback(fut, ex)
 
 
 cdef class NameInfoRequest(UVRequest):
     cdef:
+        # TODO: ctypedef callbacks.
         object callback
+        object fut
         uv.uv_getnameinfo_t _req_data
 
-    def __cinit__(self, Loop loop, callback):
+    def __cinit__(self, Loop loop, callback, fut):
         self.request = <uv.uv_req_t*> &self._req_data
         self.callback = callback
+        self.fut = fut
         self.request.data = <void*>self
 
     cdef query(self, system.sockaddr *addr, int flags):
@@ -455,15 +462,17 @@ cdef void __on_addrinfo_resolved(
         AddrInfoRequest request = <AddrInfoRequest> resolver.data
         Loop loop = request.loop
         object callback = request.callback
+        object fut = request.fut
         AddrInfo ai
+
 
     try:
         if status < 0:
-            callback(convert_error(status))
+            callback(fut, convert_error(status))
         else:
             ai = AddrInfo()
             ai.set_data(res)
-            callback(ai)
+            callback(fut, ai)
     except (KeyboardInterrupt, SystemExit):
         raise
     except BaseException as ex:
@@ -481,13 +490,14 @@ cdef void __on_nameinfo_resolved(
     cdef:
         NameInfoRequest request = <NameInfoRequest> req.data
         Loop loop = request.loop
+        object fut = request.fut
         object callback = request.callback
 
     try:
         if status < 0:
-            callback(convert_error(status))
+            callback(fut, convert_error(status))
         else:
-            callback(((<bytes>hostname).decode(),
+            callback(fut, ((<bytes>hostname).decode(),
                       (<bytes>service).decode()))
     except (KeyboardInterrupt, SystemExit):
         raise
