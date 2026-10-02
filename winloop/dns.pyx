@@ -334,19 +334,22 @@ cdef class AddrInfo:
         return type(other) is AddrInfo
 
 
+# part of addrinfo's todolist. For now please leave this function here for the library owner/author.
+ctypedef int (*addrinfo_callback)(object fut, object result) except -1
+
 cdef class AddrInfoRequest(UVRequest):
     cdef:
         system.addrinfo hints
         # TODO: ctypedef callbacks.
         object callback
-        object fut
+        AddrInfoFuture fut
         uv.uv_getaddrinfo_t _req_data
 
 
     def __cinit__(self, Loop loop,
                   bytes host, bytes port,
                   int family, int type, int proto, int flags,
-                  object callback, object fut):
+                  object callback):
 
         cdef:
             int err
@@ -382,7 +385,7 @@ cdef class AddrInfoRequest(UVRequest):
 
         self.request = <uv.uv_req_t*> &self._req_data
         self.callback = callback
-        self.fut = fut
+        self.fut = AddrInfoFuture(loop, self)
         self.request.data = <void*>self
 
         err = uv.uv_getaddrinfo(loop.uvloop,
@@ -410,23 +413,33 @@ cdef class AddrInfoRequest(UVRequest):
                 else:
                     ex = convert_error(err)
             except Exception as ex:
-                callback(fut, ex)
+                callback(self.fut, ex)
             else:
-                callback(fut, ex)
+                callback(self.fut, ex)
 
+
+
+
+
+# TODO: Combine UVRequest subclasses and Future objects together.
+# It will mean less callbacks & costly interpreter code required.
+ctypedef int (*nameinfo_callback)(object fut, object exception) except -1
 
 cdef class NameInfoRequest(UVRequest):
     cdef:
         # TODO: ctypedef callbacks.
-        object callback
-        object fut
+        nameinfo_callback callback
+        NameInfoFuture fut
         uv.uv_getnameinfo_t _req_data
 
-    def __cinit__(self, Loop loop, callback, fut):
+    def __cinit__(self, Loop loop):
         self.request = <uv.uv_req_t*> &self._req_data
-        self.callback = callback
-        self.fut = fut
+        self.fut = NameInfoFuture(loop, self)
         self.request.data = <void*>self
+
+    cdef set_callback(self, nameinfo_callback cb):
+        self.callback = cb
+
 
     cdef query(self, system.sockaddr *addr, int flags):
         cdef int err
@@ -437,7 +450,48 @@ cdef class NameInfoRequest(UVRequest):
                                 flags)
         if err < 0:
             self.on_done()
-            self.callback(convert_error(err))
+            self.callback(self.fut, convert_error(err))
+
+
+# XXX: These subclasses are to ensure awaiting these objects does not
+# trigger deadlocks (Example: what if NameInfoRequest is considered as being
+# out of scope)
+
+cdef class NameInfoFuture(Future):
+    cdef:
+        Loop loop
+        NameInfoRequest req
+
+    def __init__(self, Loop loop, NameInfoRequest req):
+        super().__init__(loop=loop)
+        self.req = req
+
+    cpdef object set_result(self, result):
+        return Future.set_result(self, result)
+
+    cpdef object set_exception(self, exc):
+        return Future.set_exception(self, exc)
+
+
+
+cdef class AddrInfoFuture(Future):
+    cdef:
+        Loop loop
+        AddrInfoRequest req
+
+    def __init__(self, Loop loop, AddrInfoRequest req):
+        super().__init__(loop=loop)
+        self.req = req
+
+    cpdef object set_result(self, result):
+        return Future.set_result(self, result)
+
+    cpdef object set_exception(self, exc):
+        return Future.set_exception(self, exc)
+
+    cpdef bint cancelled(self) noexcept:
+        return Future.cancelled(self)
+
 
 
 cdef _intenum_converter(value, enum_klass):
@@ -491,7 +545,7 @@ cdef void __on_nameinfo_resolved(
         NameInfoRequest request = <NameInfoRequest> req.data
         Loop loop = request.loop
         object fut = request.fut
-        object callback = request.callback
+        nameinfo_callback callback = request.callback
 
     try:
         if status < 0:

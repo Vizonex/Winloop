@@ -116,6 +116,19 @@ cdef inline run_in_context2(context, method, arg1, arg2):
         Context_Exit(context)
 
 
+cdef int on_nameinfo_cb(fut, result) except -1:
+    cdef Future _fut = <Future>fut
+
+    # Ensure we can still stop midway through for any reason
+    # cython does automatic returning of -1
+    PyErr_CheckSignals()
+
+    if isinstance(result, tuple):
+        _fut.set_result(result)
+    else:
+        _fut.set_exception(result)
+    return 0
+
 # Used for deprecation and removal of `loop.create_datagram_endpoint()`'s
 # *reuse_address* parameter
 _unset = object()
@@ -892,12 +905,12 @@ cdef class Loop:
 
         return poll.is_writing()
 
-    cdef Future _getaddrinfo(self, object host, object port,
+    cdef _getaddrinfo(self, object host, object port,
                       int family, int type,
                       int proto, int flags,
                       int unpack):
 
-        cdef Future fut
+        cdef AddrInfoRequest fut
 
         if isinstance(port, str):
             port = port.encode()
@@ -912,16 +925,13 @@ cdef class Loop:
             if not isinstance(host, bytes):
                 raise TypeError('host must be a str or bytes')
 
-        # TODO: Use _new_future to return compiled Future objects
-        # in a later update (0.8.0)
-        fut = Future(loop=self)
 
         # TODO: Sometime before or after 0.8.0,
         #   Let's Convert this callback to a ctypedef callback
         #   for added performance.
         #   example: ctypedef int (*addrinfo_callback)(Future fut, object result) except -1
         def callback(_fut, result):
-            cdef Future fut = <Future>_fut
+            cdef AddrInfoFuture fut = <AddrInfoFuture>_fut
             if AddrInfo.isinstance(result):
                 try:
                     if unpack == 0:
@@ -940,27 +950,15 @@ cdef class Loop:
                 if not fut.cancelled():
                     fut.set_exception(result)
 
-        AddrInfoRequest(self, host, port, family, type, proto, flags, callback, fut)
-        return fut
+        fut = AddrInfoRequest(self, host, port, family, type, proto, flags, callback)
+        return fut.fut
 
-    cdef Future _getnameinfo(self, system.sockaddr *addr, int flags):
-        cdef NameInfoRequest nr
-        cdef Future fut
-        fut = Future(loop=self)
-
-        # Ditto of 0.8.0's TODO list:
-        # Something like ctypedef int (*nameinfo_callback)(Future, object) except -1
-        # would be sufficient.
-        def callback(fut, result):
-            cdef Future _fut = <Future>fut
-            if isinstance(result, tuple):
-                _fut.set_result(result)
-            else:
-                _fut.set_exception(result)
-
-        nr = NameInfoRequest(self, callback, fut)
-        nr.query(addr, flags)
-        return fut
+    cdef _getnameinfo(self, system.sockaddr *addr, int flags):
+        cdef NameInfoRequest req
+        req = NameInfoRequest(self)
+        req.set_callback(on_nameinfo_cb)
+        req.query(addr, flags)
+        return req.fut
 
     cdef _sock_recv(self, _fut, sock, n):
         cdef _SyncSocketReaderFuture fut = <_SyncSocketReaderFuture>_fut
@@ -1559,15 +1557,17 @@ cdef class Loop:
     @cython.iterable_coroutine
     async def getaddrinfo(self, object host, object port, *,
                           int family=0, int type=0, int proto=0, int flags=0):
-
+        cdef AddrInfoFuture aif
         addr = __static_getaddrinfo_pyaddr(host, port, family,
                                            type, proto, flags)
         if addr is not None:
             return [addr]
 
-        return await self._getaddrinfo(
+        # recast so that we don't need a dns.pxd file
+        # and we still get compilation benefits.
+        aif = <AddrInfoFuture>self._getaddrinfo(
             host, port, family, type, proto, flags, 1)
-
+        return await aif
 
     @cython.iterable_coroutine
     async def getnameinfo(self, sockaddr, int flags=0):
@@ -1575,6 +1575,7 @@ cdef class Loop:
             AddrInfo ai_cnt
             system.addrinfo *ai
             system.sockaddr_in6 *sin6
+            NameInfoFuture nif
 
         if not isinstance(sockaddr, tuple):
             raise TypeError('getnameinfo() argument 1 must be a tuple')
@@ -1622,7 +1623,8 @@ cdef class Loop:
             sin6.sin6_flowinfo = system.htonl(flowinfo)
             sin6.sin6_scope_id = scope_id
 
-        return await self._getnameinfo(ai.ai_addr, flags)
+        nif = <NameInfoFuture>self._getnameinfo(ai.ai_addr, flags)
+        return await nif
 
     @cython.iterable_coroutine
     async def start_tls(self, transport, protocol, sslcontext, *,
