@@ -4,7 +4,7 @@
 import asyncio, asyncio.log, asyncio.base_events, \
        asyncio.base_futures, asyncio.sslproto, \
        asyncio.coroutines, asyncio.futures, \
-       asyncio.transports
+       asyncio.transports, asyncio.tasks
 import collections.abc
 import concurrent.futures
 import errno
@@ -54,6 +54,13 @@ cdef aio_debug_wrapper = getattr(asyncio.coroutines, 'debug_wrapper', None)
 cdef aio_AbstractChildWatcher = getattr(asyncio, "AbstractChildWatcher", ())
 cdef aio_Transport = asyncio.Transport
 cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
+cdef aio__register_task = asyncio.tasks._register_task
+cdef aio__leave_task = asyncio.tasks._leave_task
+cdef aio__enter_task = asyncio.tasks._enter_task
+cdef aio__unregister_task = asyncio.tasks._unregister_task
+
+
+
 
 # TODO: deque would run faster if it were to be wrapped directly from C.
 cdef col_deque = collections.deque

@@ -31,3 +31,4 @@ cdef extern from "includes/compat.h":
     void _Py_RestoreSignals()
 
     object Sys_GetFrame(int depth)
+    bint Inspect_IsGenerator(object obj) except -1
