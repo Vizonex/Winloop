@@ -288,6 +288,7 @@ if sys.platform == "win32":
                         "User32",
                         "Dbghelp",
                         "Ole32",
+                        "Synchronization" # v1.53.0 needs it.
                     )
                 ],
                 define_macros=[("WIN32_LEAN_AND_MEAN", 1), ("_WIN32_WINNT", "0x0602")],
