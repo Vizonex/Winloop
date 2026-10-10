@@ -1,8 +1,8 @@
 import sys
 
 vi = sys.version_info
-if vi < (3, 8):
-    raise RuntimeError("winloop requires Python 3.8 or greater")
+if vi < (3, 9):
+    raise RuntimeError("winloop requires Python 3.9 or greater")
 
 # Winloop comment: winloop now supports both Windows and non-Windows.
 # Below uvloop's setup.py is merged with winloop's previous setup.py.
