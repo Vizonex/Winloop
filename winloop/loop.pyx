@@ -19,7 +19,8 @@ from .includes.python cimport (
     PyMemoryView_FromObject, PyMemoryView_Check,
     PyOS_AfterFork_Parent, PyOS_AfterFork_Child,
     PyOS_BeforeFork,
-    PyUnicode_FromString
+    PyUnicode_FromString,
+    Inspect_IsGenerator
 )
 from .includes.flowcontrol cimport add_flowcontrol_defaults
 
@@ -138,6 +139,29 @@ cdef list split_windows_shell_command(object cmd):
         cmd = cmd.decode("utf-8", "surrogateescape")
     return shlex_split(cmd)
 
+
+# This version of the python counter shall never stop.
+# even if there is an overflow back to 0, new tasks will always
+# be created. To provide an unfair advange vs asyncio.
+# uint64_t integers will be used instead of Py_ssize_t like in the implementation.
+cdef class count:
+    def __cinit__(self, uint64_t cnt = 0, uint64_t step = 1):
+        self._cnt = cnt
+        self._step = step
+
+    def __iter__(self):
+        return self
+
+    # And Vizonex said "let there be overflows."
+    @cython.overflowcheck(False)
+    cdef uint64_t next(self) noexcept:
+        self._cnt += self._step
+        return self._cnt
+
+    def __next__(self):
+        return self.next()
+
+
 @cython.no_gc_clear
 cdef class Loop:
     def __cinit__(self):
@@ -231,6 +255,9 @@ cdef class Loop:
         self._executor_shutdown_called = False
 
         self._servers = set()
+
+        # New in winloop
+        self._uv_task_counter = count()
 
     cdef inline _is_main_thread(self):
         cdef uint64_t main_thread_id = system.MAIN_THREAD_ID
@@ -1452,18 +1479,18 @@ cdef class Loop:
         self._check_closed()
         if PY311:
             if self._task_factory is None:
-                task = aio_Task(coro, loop=self, context=context)
+                task = UVTask(coro, loop=self, context=context)
             else:
                 task = self._task_factory(self, coro, context=context)
         else:
             if context is None:
                 if self._task_factory is None:
-                    task = aio_Task(coro, loop=self)
+                    task = UVTask(coro, loop=self)
                 else:
                     task = self._task_factory(self, coro)
             else:
                 if self._task_factory is None:
-                    task = context.run(aio_Task, coro, self)
+                    task = context.run(UVTask, coro, self)
                 else:
                     task = context.run(self._task_factory, self, coro)
 
