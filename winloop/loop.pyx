@@ -223,7 +223,7 @@ cdef class Loop:
 
         # A weak set of all asynchronous generators that are
         # being iterated by the loop.
-        self._asyncgens = weakref_WeakSet()
+        self._asyncgens = WeakSet()
 
         # Set to True when `loop.shutdown_asyncgens` is called.
         self._asyncgens_shutdown_called = False
@@ -3453,6 +3453,7 @@ include "sslproto.pyx"
 include "handles/udp.pyx"
 
 include "server.pyx"
+include "weakref_set.pyx"
 
 
 # Used in UVProcess

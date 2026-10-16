@@ -79,7 +79,10 @@ cdef class Loop:
 
         cdef object __weakref__
 
-        object _asyncgens
+        # altered to a cythonized WeakSet in 0.9.0
+        # it's mostly a performance enhancement
+        # that remains unexposed.
+        WeakSet _asyncgens
         bint _asyncgens_shutdown_called
 
         bint _executor_shutdown_called
@@ -228,6 +231,7 @@ include "sslproto.pxd"
 include "handles/udp.pxd"
 
 include "server.pxd"
+include "weakref_set.pxd"
 
 
 cdef class _SyncSocketReaderFuture(Future):

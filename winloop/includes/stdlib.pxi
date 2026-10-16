@@ -60,6 +60,8 @@ cdef col_deque = collections.deque
 cdef col_Iterable = collections.abc.Iterable
 cdef col_Counter = collections.Counter
 cdef col_OrderedDict = collections.OrderedDict
+cdef col_abc_MutableSet = collections.abc.MutableSet
+
 
 cdef cc_ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor
 cdef cc_Future = concurrent.futures.Future
@@ -192,7 +194,10 @@ cdef warnings_warn = warnings.warn
 # TODO: weakref classes here could be rewritten to Cython to prevent bottlenecks when passing
 # between interpreter code and compiled code.
 cdef weakref_WeakValueDictionary = weakref.WeakValueDictionary
-cdef weakref_WeakSet = weakref.WeakSet
+
+# Removed in favor of the new compiler WeakSet which
+# uses compiled code.
+# cdef weakref_WeakSet = weakref.WeakSet
 
 cdef py_inf = float('inf')
 
