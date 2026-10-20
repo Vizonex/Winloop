@@ -146,9 +146,9 @@ cdef class Loop:
     cdef inline _queue_write(self, UVStream stream)
     cdef _exec_queued_writes(self)
 
-    cdef inline _call_soon(self, object callback, object args, object context)
-    cdef inline _append_ready_handle(self, Handle handle)
-    cdef inline _call_soon_handle(self, Handle handle)
+    cdef inline Handle _call_soon(self, object callback, object args, object context)
+    cdef inline int _append_ready_handle(self, Handle handle) except -1
+    cdef inline int _call_soon_handle(self, Handle handle) except -1
 
     cdef _call_later(self, uint64_t delay, object callback, object args,
                      object context)
@@ -159,7 +159,7 @@ cdef class Loop:
 
     cdef inline _new_future(self)
     cdef inline _check_signal(self, sig)
-    cdef inline _check_closed(self)
+    cdef inline int _check_closed(self) except -1
     cdef inline _check_thread(self)
 
     cdef _getaddrinfo(self, object host, object port,
