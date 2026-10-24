@@ -317,7 +317,7 @@ cdef class UVProcess(UVHandle):
             return
         if not system.PLATFORM_IS_WINDOWS:
             raise ValueError('startupinfo is not supported')
-        if startupinfo.dwFlags & ~subprocess.STARTF_USESHOWWINDOW:
+        if startupinfo.dwFlags & ~subprocess_STARTF_USESHOWWINDOW:
             raise ValueError(
                 'startupinfo.dwFlags only supports STARTF_USESHOWWINDOW')
         attribute_list = startupinfo.lpAttributeList
@@ -327,7 +327,7 @@ cdef class UVProcess(UVHandle):
         ):
             raise ValueError(
                 'non-empty startupinfo.lpAttributeList is not supported')
-        if startupinfo.dwFlags & subprocess.STARTF_USESHOWWINDOW:
+        if startupinfo.dwFlags & subprocess_STARTF_USESHOWWINDOW:
             if startupinfo.wShowWindow != subprocess.SW_HIDE:
                 raise ValueError(
                     'startupinfo.wShowWindow only supports SW_HIDE')
