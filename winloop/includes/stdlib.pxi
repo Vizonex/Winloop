@@ -165,6 +165,7 @@ cdef threading_main_thread = threading.main_thread
 cdef int subprocess_PIPE = subprocess.PIPE
 cdef int subprocess_STDOUT = subprocess.STDOUT
 cdef int subprocess_DEVNULL = subprocess.DEVNULL
+cdef int subprocess_STARTF_USESHOWWINDOW = getattr(subprocess, "STARTF_USESHOWWINDOW", 0)
 cdef subprocess_SubprocessError = subprocess.SubprocessError
 
 cdef int signal_SIGABRT = signal.SIGABRT
