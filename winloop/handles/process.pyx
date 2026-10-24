@@ -25,7 +25,8 @@ cdef class UVProcess(UVHandle):
     cdef _init(self, Loop loop, list args, dict env,
                cwd, start_new_session,
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
-               pass_fds, debug_flags, preexec_fn, restore_signals):
+               pass_fds, debug_flags, preexec_fn, restore_signals,
+               startupinfo):
 
         global __forking
 
@@ -58,7 +59,8 @@ cdef class UVProcess(UVHandle):
 
         try:
             self._init_options(args, env, cwd, start_new_session,
-                               _stdin, _stdout, _stderr, force_fork)
+                               _stdin, _stdout, _stderr, force_fork,
+                               startupinfo)
 
             restore_inheritable = set()
             if pass_fds:
@@ -254,10 +256,12 @@ cdef class UVProcess(UVHandle):
         return ret
 
     cdef _init_options(self, list args, dict env, cwd, start_new_session,
-                       _stdin, _stdout, _stderr, bint force_fork):
+                       _stdin, _stdout, _stderr, bint force_fork,
+                       startupinfo):
 
         memset(&self.options, 0, sizeof(uv.uv_process_options_t))
 
+        self._init_startupinfo(startupinfo)
         self._init_env(env)
         self.options.env = self.uv_opt_env
 
@@ -307,6 +311,30 @@ cdef class UVProcess(UVHandle):
         self.options.exit_cb = &__uvprocess_on_exit_callback
 
         self._init_files(_stdin, _stdout, _stderr)
+# Winloop needs startupinfo in order to work with playwright
+# SEE: https://github.com/Vizonex/Winloop/issues/34
+    cdef _init_startupinfo(self, startupinfo):
+        if startupinfo is None:
+            return
+        if not system.PLATFORM_IS_WINDOWS:
+            raise ValueError('startupinfo is not supported')
+        if startupinfo.dwFlags & ~subprocess_STARTF_USESHOWWINDOW:
+            raise ValueError(
+                'startupinfo.dwFlags only supports STARTF_USESHOWWINDOW')
+        attribute_list = startupinfo.lpAttributeList
+        if attribute_list and (
+            attribute_list.get('handle_list')
+            or set(attribute_list) != {'handle_list'}
+        ):
+            raise ValueError(
+                'non-empty startupinfo.lpAttributeList is not supported')
+        if startupinfo.dwFlags & subprocess_STARTF_USESHOWWINDOW:
+            if startupinfo.wShowWindow != subprocess_SW_HIDE:
+                raise ValueError(
+                    'startupinfo.wShowWindow only supports SW_HIDE')
+            # Match STARTF_USESHOWWINDOW with SW_HIDE, without changing
+            # whether the child has a console.
+            self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_GUI
 
     cdef _init_args(self, list args):
         cdef:
@@ -644,7 +672,8 @@ cdef class UVProcessTransport(UVProcess):
                                 waiter,
                                 debug_flags,
                                 preexec_fn,
-                                restore_signals):
+                                restore_signals,
+                                startupinfo):
 
         cdef UVProcessTransport handle
         handle = UVProcessTransport.__new__(UVProcessTransport)
@@ -656,7 +685,8 @@ cdef class UVProcessTransport(UVProcess):
                      pass_fds,
                      debug_flags,
                      preexec_fn,
-                     restore_signals)
+                     restore_signals,
+                     startupinfo)
 
         if handle._init_futs:
             handle._stdio_ready = 0

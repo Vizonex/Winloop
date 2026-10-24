@@ -477,7 +477,8 @@ cdef extern from "uv.h" nogil:
         UV_PROCESS_SETGID = 2,
         UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS = 4,
         UV_PROCESS_DETACHED = 8,
-        UV_PROCESS_WINDOWS_HIDE = 16
+        UV_PROCESS_WINDOWS_HIDE = 16,
+        UV_PROCESS_WINDOWS_HIDE_GUI = 64
 
     ctypedef enum uv_stdio_flags:
         UV_IGNORE = 0x00,
