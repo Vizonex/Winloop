@@ -311,7 +311,8 @@ cdef class UVProcess(UVHandle):
         self.options.exit_cb = &__uvprocess_on_exit_callback
 
         self._init_files(_stdin, _stdout, _stderr)
-
+# Winloop needs startupinfo in order to work with playwright
+# SEE: https://github.com/Vizonex/Winloop/issues/34
     cdef _init_startupinfo(self, startupinfo):
         if startupinfo is None:
             return
