@@ -2825,8 +2825,6 @@ cdef class Loop:
             raise ValueError("universal_newlines must be False")
         if bufsize != 0:
             raise ValueError("bufsize must be 0")
-        if startupinfo is not None:
-            raise ValueError('startupinfo is not supported')
         if creationflags != 0:
             raise ValueError('creationflags is not supported')
 
@@ -2848,7 +2846,8 @@ cdef class Loop:
                                       waiter,
                                       debug_flags,
                                       preexec_fn,
-                                      restore_signals)
+                                      restore_signals,
+                                      startupinfo)
 
         try:
             await waiter
