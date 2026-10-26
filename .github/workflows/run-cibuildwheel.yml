@@ -70,7 +70,7 @@ jobs:
         if: ${{ inputs.prerelease-pythons }}
         run: echo "CIBW_ENABLE=cpython-prerelease" >> $GITHUB_ENV
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.3.1
+        uses: pypa/cibuildwheel@v4.3.4
         with:
           only: ${{ matrix.only }}
           output-dir: dist
