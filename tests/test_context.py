@@ -405,6 +405,7 @@ class _ContextBaseTests(tb.SSLTestCase):
 
         self._run_server_test(test, async_sock=True)
 
+    @unittest.skipIf(getattr(sys, "_is_gil_enabled", True) is False, "Randomly Freezes in Free Threading mode.")
     def test_create_ssl_server_connection_protocol(self):
         async def test(cvar, proto, ssl_sock, **_):
             def resume_reading(transport):
