@@ -35,6 +35,12 @@ to compile this library on your own.
 python setup.py build_ext --inplace
 ```
 
+To link against a libuv you already have (for example from a package manager) instead of the bundled copy, pass `--use-system-libuv`. The build then links dynamically against `uv`, and the headers and library must be on the compiler's search path:
+
+```
+python setup.py build_ext --use-system-libuv --inplace
+```
+
 ## Testing with UV
 The __uv__ package manager is the preferred method for testing __winloop__ and it's author uses `ruff` and `uv` by default.
 
