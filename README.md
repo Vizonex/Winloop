@@ -35,7 +35,7 @@ to compile this library on your own.
 python setup.py build_ext --inplace
 ```
 
-To link against a libuv you already have (for example from a package manager) instead of the bundled copy, pass `--use-system-libuv`. The build then links dynamically against `uv`, and the headers and library must be on the compiler's search path:
+To link against a libuv you already have (for example from a package manager) instead of the bundled copy, pass `--use-system-libuv`. The build asks the linker for `uv` by name, so its headers and library must be on the compiler's include and linker search paths. The option is on by default under MinGW. It has no effect on non-MinGW Windows builds, which always compile the bundled libuv:
 
 ```
 python setup.py build_ext --use-system-libuv --inplace
