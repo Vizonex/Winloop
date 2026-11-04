@@ -38,6 +38,30 @@ class _RedirectFD(contextlib.AbstractContextManager):
 
 
 class _TestProcess:
+    @unittest.skipUnless(sys.platform == "win32", "Windows startupinfo")
+    def test_process_startupinfo(self):
+        async def test():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable,
+                "-c",
+                "import sys; sys.stdout.write(sys.stdin.read())",
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                startupinfo=startupinfo,
+            )
+
+            out, err = await proc.communicate(b"startupinfo")
+            self.assertEqual(out, b"startupinfo")
+            self.assertEqual(err, b"")
+            self.assertEqual(proc.returncode, 0)
+
+        self.loop.run_until_complete(test())
+
     def get_num_fds(self):
         # Winloop comment: use num_handles() as a meaningful
         # substitute for num_fds() on Windows.
@@ -460,7 +484,7 @@ print("OK")
             for i in range(n):
                 try:
                     await asyncio.create_subprocess_exec(
-                        "nonexistant",
+                        "nonexistent",
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                     )
@@ -940,6 +964,73 @@ print(n)"""
 
 
 class Test_UV_Process(_TestProcess, tb.UVTestCase):
+    @unittest.skipUnless(sys.platform == "win32", "Windows startupinfo")
+    def test_process_startupinfo_unsupported_flags(self):
+        async def test():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESTDHANDLES
+
+            with self.assertRaisesRegex(ValueError, "startupinfo.dwFlags"):
+                await asyncio.create_subprocess_exec(
+                    sys.executable, "-c", "pass", startupinfo=startupinfo,
+                )
+
+        self.loop.run_until_complete(test())
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX startupinfo validation")
+    def test_process_startupinfo_posix(self):
+        async def test():
+            with self.assertRaisesRegex(ValueError, "startupinfo"):
+                await asyncio.create_subprocess_exec(
+                    sys.executable, "-c", "pass", startupinfo=object(),
+                )
+
+        self.loop.run_until_complete(test())
+
+    @unittest.skipIf(sys.platform != "win32", "problem is windows related only")
+    def test_windows_issue_153(self):
+        """Winloop issue 153 is related to bringing back the shlex parser
+        which because there is a different system involved from regular
+        python subprocess's system to prevent the libuv library
+        from doing something worse and needing to change up more code.
+
+        SEE: https://github.com/Vizonex/Winloop/issues/153
+        """
+
+        async def test():
+            CMD = 'python -c "import sys; print(\'hi\')"'
+            proc = await asyncio.create_subprocess_shell(
+                CMD,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+
+            out, err = await proc.communicate()
+            assert out == b"hi\r\n"
+            assert err == b''
+            assert proc.returncode == 0
+        self.loop.run_until_complete(test())
+
+    @unittest.skipIf(sys.platform != "win32", "problem is windows related only")
+    def test_windows_issue_153_bytes(self):
+        """Winloop issue 153 is related to bringing back the shlex parser
+        which because there is a different system involved from regular
+        python subprocess's system to prevent the libuv library
+        from doing something worse and needing to change up more code."""
+        async def test():
+            CMD = b'python -c "import sys; print(\'hi\')"'
+            proc = await asyncio.create_subprocess_shell(
+                CMD,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            out, err = await proc.communicate()
+            assert out == b"hi\r\n"
+            assert err == b''
+            assert proc.returncode == 0
+        self.loop.run_until_complete(test())
+
+
     def test_process_double_close(self):
         script = textwrap.dedent("""
             import os

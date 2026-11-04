@@ -101,7 +101,6 @@ cdef class _StreamWriteContext:
             _StreamWriteContext ctx
             int uv_bufs_idx = 0
             size_t py_bufs_len = 0
-            int i
 
             Py_buffer* p_pybufs
             uv.uv_buf_t* p_uvbufs
@@ -355,7 +354,7 @@ cdef class UVStream(UVBaseTransport):
             Py_ssize_t blen
             int saved_errno
             int fd
-        
+
         if system.PLATFORM_IS_WINDOWS:
             # Winloop comment: WSASend below does not work with pipes.
             # For pipes, using Writefile() from Windows fileapi.h would
@@ -445,7 +444,7 @@ cdef class UVStream(UVBaseTransport):
         cdef bint all_sent
 
         if (not self._protocol_paused and
-            (<uv.uv_stream_t*>self._handle).write_queue_size == 0 and 
+            (<uv.uv_stream_t*>self._handle).write_queue_size == 0 and
             self._buffer_size > self._high_water):
             # Fast-path.  If:
             #   - the protocol isn't yet paused,
@@ -693,12 +692,12 @@ cdef class UVStream(UVBaseTransport):
 
     cpdef write(self, object buf):
         self._ensure_alive()
- 
+
         if system.PLATFORM_IS_WINDOWS:
             # Winloop Comment: Winloop gets itself into trouble if this is
-            # is not checked immediately, it's too costly to call the python function 
+            # is not checked immediately, it's too costly to call the python function
             # bring in the flag instead to indicate closure.
-            # SEE: https://github.com/Vizonex/Winloop/issues/84 
+            # SEE: https://github.com/Vizonex/Winloop/issues/84
             if self._closing:
                 raise RuntimeError("Cannot call write() when UVStream is closing")
 

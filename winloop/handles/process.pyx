@@ -25,7 +25,8 @@ cdef class UVProcess(UVHandle):
     cdef _init(self, Loop loop, list args, dict env,
                cwd, start_new_session,
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
-               pass_fds, debug_flags, preexec_fn, restore_signals):
+               pass_fds, debug_flags, preexec_fn, restore_signals,
+               startupinfo):
 
         global __forking
 
@@ -58,7 +59,8 @@ cdef class UVProcess(UVHandle):
 
         try:
             self._init_options(args, env, cwd, start_new_session,
-                               _stdin, _stdout, _stderr, force_fork)
+                               _stdin, _stdout, _stderr, force_fork,
+                               startupinfo)
 
             restore_inheritable = set()
             if pass_fds:
@@ -91,7 +93,7 @@ cdef class UVProcess(UVHandle):
             self._restore_signals = restore_signals
 
             loop.active_process_handler = self
-            
+
 
             if not system.PLATFORM_IS_WINDOWS:
                 __forking = 1
@@ -101,12 +103,12 @@ cdef class UVProcess(UVHandle):
                 PyOS_BeforeFork()
             else:
                 py_gil_state = PyGILState_Ensure()
-            
+
             err = uv.uv_spawn(loop.uvloop,
                           <uv.uv_process_t*>self._handle,
                           &self.options)
-            
-            
+
+
             if not system.PLATFORM_IS_WINDOWS:
                 __forking = 0
                 __forking_loop = None
@@ -115,7 +117,7 @@ cdef class UVProcess(UVHandle):
                 PyOS_AfterFork_Parent()
             else:
                 PyGILState_Release(py_gil_state)
-            
+
             loop.active_process_handler = None
 
 
@@ -254,10 +256,12 @@ cdef class UVProcess(UVHandle):
         return ret
 
     cdef _init_options(self, list args, dict env, cwd, start_new_session,
-                       _stdin, _stdout, _stderr, bint force_fork):
+                       _stdin, _stdout, _stderr, bint force_fork,
+                       startupinfo):
 
         memset(&self.options, 0, sizeof(uv.uv_process_options_t))
 
+        self._init_startupinfo(startupinfo)
         self._init_env(env)
         self.options.env = self.uv_opt_env
 
@@ -307,6 +311,30 @@ cdef class UVProcess(UVHandle):
         self.options.exit_cb = &__uvprocess_on_exit_callback
 
         self._init_files(_stdin, _stdout, _stderr)
+# Winloop needs startupinfo in order to work with playwright
+# SEE: https://github.com/Vizonex/Winloop/issues/34
+    cdef _init_startupinfo(self, startupinfo):
+        if startupinfo is None:
+            return
+        if not system.PLATFORM_IS_WINDOWS:
+            raise ValueError('startupinfo is not supported')
+        if startupinfo.dwFlags & ~subprocess_STARTF_USESHOWWINDOW:
+            raise ValueError(
+                'startupinfo.dwFlags only supports STARTF_USESHOWWINDOW')
+        attribute_list = startupinfo.lpAttributeList
+        if attribute_list and (
+            attribute_list.get('handle_list')
+            or set(attribute_list) != {'handle_list'}
+        ):
+            raise ValueError(
+                'non-empty startupinfo.lpAttributeList is not supported')
+        if startupinfo.dwFlags & subprocess_STARTF_USESHOWWINDOW:
+            if startupinfo.wShowWindow != subprocess_SW_HIDE:
+                raise ValueError(
+                    'startupinfo.wShowWindow only supports SW_HIDE')
+            # Match STARTF_USESHOWWINDOW with SW_HIDE, without changing
+            # whether the child has a console.
+            self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_GUI
 
     cdef _init_args(self, list args):
         cdef:
@@ -439,7 +467,7 @@ cdef class UVProcessTransport(UVProcess):
         else:
             self._pending_calls.append((_CALL_PIPE_DATA_RECEIVED, fd, data))
 
-    
+
 
     cdef _file_redirect_stdio(self, int fd):
         fd = os_dup(fd)
@@ -494,13 +522,13 @@ cdef class UVProcessTransport(UVProcess):
                     'subprocess.STDOUT is supported only by stderr parameter')
             else:
                 io[0] = self._file_redirect_stdio(_stdin)
-        
+
         elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDIN_BAD:
-            
+
             # When a stdio is in a gui-like state without a console.
             # using a standard redirect is not a good idea. This at least
-            # is a better workaround that is a bit cleaner than doing what the 
-            # python standard libary subprocess does with the _get_handles function 
+            # is a better workaround that is a bit cleaner than doing what the
+            # python standard library subprocess does with the _get_handles function
             # on windows. SEE: https://github.com/Vizonex/Winloop/issues/126
 
             io[0] = self._file_devnull()
@@ -559,7 +587,7 @@ cdef class UVProcessTransport(UVProcess):
                 io[2] = self._file_devnull()
             else:
                 io[2] = self._file_redirect_stdio(_stderr)
-        
+
         elif system.PLATFORM_IS_WINDOWS and system.__UVLOOP_STDOUT_BAD:
             io[2] = self._file_devnull()
         else:
@@ -644,7 +672,8 @@ cdef class UVProcessTransport(UVProcess):
                                 waiter,
                                 debug_flags,
                                 preexec_fn,
-                                restore_signals):
+                                restore_signals,
+                                startupinfo):
 
         cdef UVProcessTransport handle
         handle = UVProcessTransport.__new__(UVProcessTransport)
@@ -656,7 +685,8 @@ cdef class UVProcessTransport(UVProcess):
                      pass_fds,
                      debug_flags,
                      preexec_fn,
-                     restore_signals)
+                     restore_signals,
+                     startupinfo)
 
         if handle._init_futs:
             handle._stdio_ready = 0
@@ -817,7 +847,7 @@ cdef __socketpair():
         int err
 
     # Winloop comment: no Unix sockets on Windows, using uv.uv_pipe()
-    # instead of system.socketpair(). Also, see changes to 
+    # instead of system.socketpair(). Also, see changes to
     # libuv/src/win/pipe.c to deal with UV_EPERM = -4048 errors
     # for stdin pipe.
     if system.PLATFORM_IS_WINDOWS:

@@ -231,7 +231,7 @@ cdef extern from "uv.h" nogil:
 
     const char* uv_strerror(int err)
     const char* uv_err_name(int err)
-    
+
     # Needed on windows
     int uv_translate_sys_error(int sys_errno)
 
@@ -477,7 +477,8 @@ cdef extern from "uv.h" nogil:
         UV_PROCESS_SETGID = 2,
         UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS = 4,
         UV_PROCESS_DETACHED = 8,
-        UV_PROCESS_WINDOWS_HIDE = 16
+        UV_PROCESS_WINDOWS_HIDE = 16,
+        UV_PROCESS_WINDOWS_HIDE_GUI = 64
 
     ctypedef enum uv_stdio_flags:
         UV_IGNORE = 0x00,
@@ -496,7 +497,7 @@ cdef extern from "uv.h" nogil:
     ctypedef struct uv_stdio_container_t:
         uv_stdio_flags flags
         uv_stdio_container_data_u data
-    
+
     ctypedef unsigned char uv_uid_t
     ctypedef unsigned char uv_gid_t
 

@@ -580,7 +580,7 @@ class _TestBase:
         self.assertFalse(isinstance(task, MyTask))
         self.loop.run_until_complete(task)
 
-    # NOTE: one of my plans invovles migrating to pytest in 2026...
+    # NOTE: one of my plans involves migrating to pytest in 2026...
     @unittest.skip("Fixing this is on my todo list for 0.2.0")
     def test_set_task_name(self):
         self.loop._process_events = mock.Mock()
@@ -758,7 +758,9 @@ class _TestBase:
 class TestBaseUV(_TestBase, UVTestCase):
     def test_loop_create_future(self):
         fut = self.loop.create_future()
-        self.assertTrue(isinstance(fut, asyncio.Future))
+        # winloop.loop.Future (Coming soon)
+        # or asyncio.Future
+        self.assertTrue(asyncio.isfuture(fut))
         self.assertIs(fut._loop, self.loop)
         fut.cancel()
 

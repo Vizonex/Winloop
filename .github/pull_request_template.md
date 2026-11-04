@@ -1,5 +1,5 @@
-<!-- 
-Template comes from aiolibs that I will so happily borrow for our own use-cases - Vizonex 
+<!--
+Template comes from aiolibs that I will so happily borrow for our own use-cases - Vizonex
 -->
 <!-- Thank you for your contribution! -->
 
@@ -31,7 +31,7 @@ entertain early in the review process. Thank you in advance!
 <!-- Remember to prefix with 'Fixes' if it closes an issue (e.g. 'Fixes #123'). -->
 
 ## Checklist
-<!-- These Are important the more you check off and actually perform the 
+<!-- These Are important the more you check off and actually perform the
 higher the chance your pull request succeeds. -->
 
 - [ ] I think the code is well written

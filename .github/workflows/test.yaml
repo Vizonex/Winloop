@@ -1,6 +1,11 @@
-# NOTE I'm borrowing from pycares & cyares so that we don't have to reinvent the wheel.
 name: Test
-on: [pull_request, push]
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -15,34 +20,30 @@ jobs:
       matrix:
 
         os: [windows-latest, windows-11-arm]
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14', '3.14t']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14', '3.14t', '3.15', '3.15t']
         exclude:
           - os: windows-11-arm  # setup-python action only supports 3.11+
             python-version: '3.10'
           - os: windows-11-arm  # workflow keeps screwing around with us.
             python-version: '3.14t'
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: true
     - name: Setup Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         check-latest: true
         python-version: ${{ matrix.python-version }}
     - name: Install Requirements
       run: python -m pip install --upgrade setuptools wheel pip cython pytest aiohttp aiodns
-    
+
     - name: Compile Winloop
       run: pip install -e .
-    
+
     - name: run-tests
       env:
         COLOR: yes
         PIP_USER: 1
       run: pytest -vv
       shell: bash
-    
-      
-
-    

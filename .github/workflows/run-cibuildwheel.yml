@@ -14,6 +14,9 @@ on:
         default: false
         type: boolean
 
+env:
+  CIBW_VERSION: "4.1.0"
+
 jobs:
   generate-wheels-matrix:
     # Create a matrix of all architectures & versions to build.
@@ -23,15 +26,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       include: ${{ steps.set-matrix.outputs.include }}
+    env:
+      CIBW_SKIP: cp38-*
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install cibuildwheel
       # Nb. keep cibuildwheel version pin consistent with job below
-        run: pipx install cibuildwheel==3.2.1
+        run: pipx install cibuildwheel>=${{ env.CIBW_VERSION }}
       - id: set-matrix
-        # NOTE: We test other oses now besides just windows since winloop and uvloop plan to merge together.
-        # This has more to do with reducing the over all maitenence cost and having people start testing what 
-        # it would be like to have linux, macos and windows all harmonized.
+        # Trimmed out setupmatrix for just windows but I might look at compiling other oses just for fun
+        # to let others test what it would be like if uvloop supported windows. It's very tempting...
         run: |
           MATRIX=$(
             {
@@ -53,12 +57,14 @@ jobs:
     name: Build wheels for ${{ matrix.only }}
     runs-on: ${{ matrix.os }}
     needs: generate-wheels-matrix
+    env:
+      CIBW_SKIP: cp38-*
     strategy:
       fail-fast: ${{ inputs.fail-fast }}
       matrix:
         include: ${{ fromJson(needs.generate-wheels-matrix.outputs.include) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Set up QEMU
@@ -70,7 +76,7 @@ jobs:
         if: ${{ inputs.prerelease-pythons }}
         run: echo "CIBW_ENABLE=cpython-prerelease" >> $GITHUB_ENV
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.3.1
         with:
           only: ${{ matrix.only }}
           output-dir: dist

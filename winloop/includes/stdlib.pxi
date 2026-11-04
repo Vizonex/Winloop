@@ -2,8 +2,9 @@
 
 
 import asyncio, asyncio.log, asyncio.base_events, \
-       asyncio.sslproto, asyncio.coroutines, \
-       asyncio.futures, asyncio.transports
+       asyncio.base_futures, asyncio.sslproto, \
+       asyncio.coroutines, asyncio.futures, \
+       asyncio.transports
 import collections.abc
 import concurrent.futures
 import errno
@@ -18,9 +19,11 @@ import subprocess
 import ssl
 import stat
 import sys
+import shlex
 import threading
 import traceback
 import time
+import types
 import warnings
 import weakref
 
@@ -29,7 +32,12 @@ cdef aio_get_event_loop = asyncio.get_event_loop
 cdef aio_CancelledError = asyncio.CancelledError
 cdef aio_InvalidStateError = asyncio.InvalidStateError
 cdef aio_TimeoutError = asyncio.TimeoutError
+
+# TODO: would like to upgrade Future and Task objects as soon as possible!
+# for concept ideas SEE: https://gist.github.com/Vizonex/5196ae5fc7f2287df6a6dec8b37edc37
+
 cdef aio_Future = asyncio.Future
+cdef aio__future_repr = getattr(asyncio.base_futures, "_future_repr", lambda fut: None)
 cdef aio_Task = asyncio.Task
 cdef aio_ensure_future = asyncio.ensure_future
 cdef aio_gather = asyncio.gather
@@ -47,10 +55,13 @@ cdef aio_AbstractChildWatcher = getattr(asyncio, "AbstractChildWatcher", ())
 cdef aio_Transport = asyncio.Transport
 cdef aio_FlowControlMixin = asyncio.transports._FlowControlMixin
 
+# TODO: deque would run faster if it were to be wrapped directly from C.
 cdef col_deque = collections.deque
 cdef col_Iterable = collections.abc.Iterable
 cdef col_Counter = collections.Counter
 cdef col_OrderedDict = collections.OrderedDict
+cdef col_abc_MutableSet = collections.abc.MutableSet
+
 
 cdef cc_ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor
 cdef cc_Future = concurrent.futures.Future
@@ -101,6 +112,7 @@ cdef int socket_EAI_PROTOCOL   = getattr(socket, 'EAI_PROTOCOL', -1)
 cdef int socket_EAI_SERVICE    = getattr(socket, 'EAI_SERVICE', -1)
 cdef int socket_EAI_SOCKTYPE   = getattr(socket, 'EAI_SOCKTYPE', -1)
 
+cdef shlex_split = shlex.split
 
 cdef str os_name = os.name
 cdef os_path_isabs = os.path.isabs
@@ -119,6 +131,7 @@ cdef os_remove = os.remove
 cdef os_stat = os.stat
 cdef os_unlink = os.unlink
 cdef os_fspath = os.fspath
+cdef os_fsdecode = os.fsdecode
 
 cdef stat_S_ISSOCK = stat.S_ISSOCK
 
@@ -127,7 +140,10 @@ cdef sys_dev_mode = sys.flags.dev_mode
 cdef sys_exc_info = sys.exc_info
 cdef sys_set_coroutine_wrapper = getattr(sys, 'set_coroutine_wrapper', None)
 cdef sys_get_coroutine_wrapper = getattr(sys, 'get_coroutine_wrapper', None)
-cdef sys_getframe = sys._getframe
+
+# NOTE: sys_getframe is now obsolete: Sys_GetFrame In C does a better job.
+# cdef sys_getframe = sys._getframe
+
 cdef sys_version_info = sys.version_info
 cdef sys_getfilesystemencoding = sys.getfilesystemencoding
 cdef str sys_platform = sys.platform
@@ -149,6 +165,8 @@ cdef threading_main_thread = threading.main_thread
 cdef int subprocess_PIPE = subprocess.PIPE
 cdef int subprocess_STDOUT = subprocess.STDOUT
 cdef int subprocess_DEVNULL = subprocess.DEVNULL
+cdef int subprocess_STARTF_USESHOWWINDOW = getattr(subprocess, "STARTF_USESHOWWINDOW", 0)
+cdef int subprocess_SW_HIDE = getattr(subprocess, "SW_HIDE", 0)
 cdef subprocess_SubprocessError = subprocess.SubprocessError
 
 cdef int signal_SIGABRT = signal.SIGABRT
@@ -161,16 +179,27 @@ cdef signal_default_int_handler = signal.default_int_handler
 cdef signal_SIG_DFL = signal.SIG_DFL
 
 cdef time_sleep = time.sleep
+# Migration to PyTime_t and away from floats would prevent rounding issues.
+# There has already been some work done with pywepoll that addresses this specific elephant
+# in the room. https://github.com/Vizonex/pywepoll/blob/ace0885d6115a3f0c4407d7cc5f7128a13d3419a/wepoll/_wepoll.pyx#L27
 cdef time_monotonic = time.monotonic
 
 cdef tb_StackSummary = traceback.StackSummary
+# TODO: tb_walk_stack appears to be optimizable and could all be reasonably be written in C.
 cdef tb_walk_stack = traceback.walk_stack
 cdef tb_format_list = traceback.format_list
 
+cdef types_GenericAlias = types.GenericAlias
+
 cdef warnings_warn = warnings.warn
 
+# TODO: weakref classes here could be rewritten to Cython to prevent bottlenecks when passing
+# between interpreter code and compiled code.
 cdef weakref_WeakValueDictionary = weakref.WeakValueDictionary
-cdef weakref_WeakSet = weakref.WeakSet
+
+# Removed in favor of the new compiler WeakSet which
+# uses compiled code.
+# cdef weakref_WeakSet = weakref.WeakSet
 
 cdef py_inf = float('inf')
 
@@ -181,3 +210,4 @@ del asyncio, concurrent, collections, errno
 del functools, inspect, itertools, socket, os, threading
 del signal, subprocess, ssl
 del time, traceback, warnings, weakref
+del shlex, types

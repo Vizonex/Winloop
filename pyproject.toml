@@ -2,7 +2,7 @@
 name = "winloop"
 description = "Windows version of uvloop"
 authors = [{name = "Vizonex", email="VizonexBusiness@gmail.com"}]
-requires-python = '>=3.8.0'
+requires-python = '>=3.9.0'
 readme = "README.md"
 license = {text = "MIT License"}
 dynamic = ["version"]
@@ -43,14 +43,14 @@ test = [
     'aiohttp>=3.10.5',
     'flake8>=5,<8',
     'psutil',
-    'pycodestyle>=2.9,<2.15',
-    'pyOpenSSL>=23.0,<26.1',
+    'pycodestyle>=2.9,<2.16',
+    'pyOpenSSL>=23.0,<26.5',
     'mypy>=0.800'
 ]
 dev = [
     'packaging',
     'setuptools>=60',
-    'Cython==3.2.4',
+    'Cython==3.3.0',
 ]
 docs = [
     'Sphinx>=4.1.2,<9.2.0',
@@ -63,7 +63,7 @@ requires = [
     "packaging",
     "setuptools>=60",
     "wheel",
-    "Cython==3.2.4",
+    "Cython==3.3.0",
 ]
 build-backend = "setuptools.build_meta"
 

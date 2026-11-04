@@ -1,8 +1,8 @@
 import sys
 
 vi = sys.version_info
-if vi < (3, 8):
-    raise RuntimeError("winloop requires Python 3.8 or greater")
+if vi < (3, 9):
+    raise RuntimeError("winloop requires Python 3.9 or greater")
 
 # Winloop comment: winloop now supports both Windows and non-Windows.
 # Below uvloop's setup.py is merged with winloop's previous setup.py.
@@ -15,6 +15,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
@@ -287,6 +288,7 @@ if sys.platform == "win32":
                         "User32",
                         "Dbghelp",
                         "Ole32",
+                        "Synchronization" # v1.53.0 needs it.
                     )
                 ],
                 define_macros=[("WIN32_LEAN_AND_MEAN", 1), ("_WIN32_WINNT", "0x0602")],
