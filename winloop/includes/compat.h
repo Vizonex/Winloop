@@ -240,6 +240,10 @@ PyObject* Sys_GetFrame(int depth){
     return (PyObject*)f;
 }
 
+/* custom, replaces inspect.isgenerator */
+int Inspect_IsGenerator(PyObject* obj){
+    return PyObject_IsInstance(obj, (PyObject*)&PyGen_Type);
+}
 
 
 #endif // __COMPAT_H__

@@ -28,6 +28,13 @@ ctypedef object (*method1_t)(object, object)
 ctypedef object (*method2_t)(object, object, object)
 ctypedef object (*method3_t)(object, object, object, object)
 
+# Counter system for naming uvtasks
+cdef class count:
+    cdef:
+        uint64_t _cnt
+        uint64_t _step
+
+    cdef uint64_t next(self) noexcept
 
 cdef class Loop:
     cdef:
@@ -42,6 +49,13 @@ cdef class Loop:
         bint _debug
         bint _running
         bint _stopping
+
+        # itertools counter system that allows overflows
+        # because nobody will ever use more than the limit
+        # in a 64bit integer of UVAsync handles.
+        # even if an integer overflows the object naming
+        # shouldn't confuse people.
+        count _uv_task_counter
 
         uint64_t _thread_id
 
