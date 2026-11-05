@@ -35,6 +35,14 @@ to compile this library on your own.
 python setup.py build_ext --inplace
 ```
 
+To link against a libuv you already have (for example from a package manager) instead of the bundled copy, pass `--use-system-libuv`. The build asks the linker for `uv` by name, so its headers and library must be on the compiler's include and linker search paths. The option is on by default under MinGW. It has no effect on non-MinGW Windows builds, which always compile the bundled libuv:
+
+```
+python setup.py build_ext --use-system-libuv --inplace
+```
+
+On Windows with MSVC, `INCLUDE` and `LIB` must point at libuv's include and lib directories. The result links `uv.lib` and needs `uv.dll` at run time. Python 3.8 and later ignore `PATH` when loading an extension's dependencies, so call `os.add_dll_directory` on the libuv `bin` directory before importing winloop, or copy `uv.dll` beside the extension.
+
 ## Testing with UV
 The __uv__ package manager is the preferred method for testing __winloop__ and it's author uses `ruff` and `uv` by default.
 

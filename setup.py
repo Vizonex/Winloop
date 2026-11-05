@@ -212,12 +212,18 @@ class uvloop_build_ext(build_ext):
 
     def build_extensions(self):
         if sys.platform == "win32" and not MINGW:
-            path = pathlib.Path("vendor", "libuv", "src")
-            c_files = [p.as_posix() for p in path.iterdir() if p.suffix == ".c"]
-            c_files += [
-                p.as_posix() for p in (path / "win").iterdir() if p.suffix == ".c"
-            ]
-            self.extensions[-1].sources += c_files
+            if self.use_system_libuv:
+                # MSVC finds uv.h and uv.lib through INCLUDE and LIB.
+                ext = self.extensions[-1]
+                ext.include_dirs = [d for d in ext.include_dirs if not d.startswith("vendor/libuv")]
+                ext.extra_link_args.append("uv.lib")
+            else:
+                path = pathlib.Path("vendor", "libuv", "src")
+                c_files = [p.as_posix() for p in path.iterdir() if p.suffix == ".c"]
+                c_files += [
+                    p.as_posix() for p in (path / "win").iterdir() if p.suffix == ".c"
+                ]
+                self.extensions[-1].sources += c_files
             super().build_extensions()
             return
 
