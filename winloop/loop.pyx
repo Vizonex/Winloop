@@ -30,9 +30,9 @@ from libc cimport errno
 # Winloop Comment: We need some cleaver hacky techniques for
 # preventing slow spawnning processes for MSVC
 from cpython.pystate cimport PyGILState_Ensure, PyGILState_Release
-from cpython cimport PyErr_CheckSignals
-from cpython cimport PyThread_get_thread_ident
-from cpython cimport Py_INCREF, Py_DECREF
+from cpython.exc cimport PyErr_CheckSignals, PyErr_SetObject
+from cpython.pythread cimport PyThread_get_thread_ident
+from cpython.ref cimport Py_INCREF, Py_DECREF
 from cpython cimport (
     PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE,
     Py_buffer, PyBytes_AsString, PyBytes_CheckExact,
@@ -313,6 +313,8 @@ cdef class Loop:
         # to wakeup on ^C (no matter if the SIGINT handler is still the
         # standard Python's one or or user set their own.)
 
+        # TODO: (Vizonex) socket.socketpair should be investigated for additional speedups.
+        # like a CPython implementation.
         self._ssock, self._csock = socket_socketpair()
         try:
             self._ssock.setblocking(False)
@@ -673,20 +675,23 @@ cdef class Loop:
             if len(self._queued_streams) == 0:
                 self.handler_check__exec_writes.stop()
 
-    cdef inline _call_soon(self, object callback, object args, object context):
+    cdef inline Handle _call_soon(self, object callback, object args, object context):
         cdef Handle handle
         handle = new_Handle(self, callback, args, context)
         self._call_soon_handle(handle)
         return handle
 
-    cdef inline _append_ready_handle(self, Handle handle):
+    cdef inline int _append_ready_handle(self, Handle handle) except -1:
         self._check_closed()
+        # __Pyx_PyObject_Append is already optimized so ignore doing anything here...
         self._ready.append(handle)
+        return 0
 
-    cdef inline _call_soon_handle(self, Handle handle):
+    cdef inline int _call_soon_handle(self, Handle handle) except -1:
         self._append_ready_handle(handle)
         if not self.handler_idle.running:
             self.handler_idle.start()
+        return 0
 
     cdef _call_later(self, uint64_t delay, object callback, object args,
                      object context):
@@ -709,9 +714,11 @@ cdef class Loop:
             raise ValueError(
                 'sig {} out of range(1, {})'.format(sig, signal_NSIG))
 
-    cdef inline _check_closed(self):
+    cdef inline int _check_closed(self) except -1:
         if self._closed == 1:
-            raise RuntimeError('Event loop is closed')
+            PyErr_SetObject(RuntimeError, 'Event loop is closed')
+            return -1
+        return 0
 
     cdef inline _check_thread(self):
         if self._thread_id == 0:
