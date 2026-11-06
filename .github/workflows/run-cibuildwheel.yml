@@ -39,7 +39,13 @@ jobs:
         run: |
           MATRIX=$(
             {
-              cibuildwheel --print-build-identifiers --platform windows --archs AMD64 \
+              cibuildwheel --print-build-identifiers --platform linux \
+              | jq -nRc '{"only": inputs, "os": "ubuntu-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform macos --archs arm64 \
+              | jq -nRc '{"only": inputs, "os": "macos-15"}' \
+              && cibuildwheel --print-build-identifiers --platform macos --archs x86_64 \
+              | jq -nRc '{"only": inputs, "os": "macos-15-intel"}' \
+              && cibuildwheel --print-build-identifiers --platform windows --archs AMD64 \
               | jq -nRc '{"only": inputs, "os": "windows-latest"}' \
               && cibuildwheel --print-build-identifiers --platform windows --archs ARM64 \
               | jq -nRc '{"only": inputs, "os": "windows-11-arm"}'
