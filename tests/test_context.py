@@ -6,11 +6,16 @@ import random
 import socket
 import ssl
 import sys
+import sysconfig
 import tempfile
 import unittest
 import weakref
 
 from winloop import _testbase as tb
+
+# Needed for a deadlock bug that is actually unrelated to uvloop/winloop they work
+# just fine. It's actually python's asyncio loop that is at fault.
+is_freethreaded_build = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
 
 
 class _BaseProtocol(asyncio.BaseProtocol):
@@ -406,6 +411,12 @@ class _ContextBaseTests(tb.SSLTestCase):
         self._run_server_test(test, async_sock=True)
 
     def test_create_ssl_server_connection_protocol(self):
+        if isinstance(self, Test_AIO_Context) and is_freethreaded_build:
+            raise unittest.SkipTest(
+                "3.14t and 3.15t are victim to a " \
+                "freezing bug in pure python asyncio."
+            )
+
         async def test(cvar, proto, ssl_sock, **_):
             def resume_reading(transport):
                 cvar.set("resume_reading")
