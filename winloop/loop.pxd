@@ -4,6 +4,7 @@
 from .includes cimport uv
 from .includes cimport system
 
+cimport cython
 from libc.stdint cimport uint64_t, uint32_t, int64_t
 
 
@@ -38,6 +39,9 @@ cdef class Loop:
 
         public slow_callback_duration
 
+        # Held by call_soon_threadsafe() and by _close() while it sets
+        # _closed, so another thread never posts into a closing loop.
+        cython.pymutex _close_lock
         readonly bint _closed
         bint _debug
         bint _running
