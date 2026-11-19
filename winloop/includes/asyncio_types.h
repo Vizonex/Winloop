@@ -164,19 +164,19 @@ typedef enum fut_state {
 /* structs */
 typedef struct FutureObj {
     PyObject_HEAD
-    PyObject* fut_loop;
-    PyObject* fut_callback0;
-    PyObject* fut_context0;
-    PyObject* fut_callbacks;
-    PyObject* fut_exception;
-    PyObject* fut_exception_tb;
-    PyObject* fut_result;
-    PyObject* fut_source_tb;
-    PyObject* fut_cancel_msg;
-    PyObject* fut_cancelled_exc;
+    PyObject *fut_loop;
+    PyObject *fut_callback0;
+    PyObject *fut_context0;
+    PyObject *fut_callbacks;
+    PyObject *fut_exception;
+    PyObject *fut_exception_tb;
+    PyObject *fut_result;
+    PyObject *fut_source_tb;
+    PyObject *fut_cancel_msg;
+    PyObject *fut_cancelled_exc;
     fut_state fut_state;
-    unsigned int fut_log_tb;
-    unsigned int fut_blocking;
+    unsigned fut_log_tb: 1;
+    unsigned fut_blocking: 1;
 } FutureObj;
 
 #endif /* 3.13 */
