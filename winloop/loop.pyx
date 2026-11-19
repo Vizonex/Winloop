@@ -22,6 +22,7 @@ from .includes.python cimport (
     PyUnicode_FromString
 )
 from .includes.flowcontrol cimport add_flowcontrol_defaults
+from .includes.asyncio_types cimport Future as aio_Future
 
 from libc.stdint cimport uint64_t
 from libc.string cimport memset, strerror, memcpy
@@ -732,8 +733,7 @@ cdef class Loop:
                 "Non-thread-safe operation invoked on an event loop other "
                 "than the current one")
 
-    # XXX: still a problem with wrap_future preventing
-    # further progress. Fixing this is a TODO
+
     cdef inline _new_future(self):
         return aio_Future(loop=self)
 

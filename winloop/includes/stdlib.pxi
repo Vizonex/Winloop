@@ -36,7 +36,8 @@ cdef aio_TimeoutError = asyncio.TimeoutError
 # TODO: would like to upgrade Future and Task objects as soon as possible!
 # for concept ideas SEE: https://gist.github.com/Vizonex/5196ae5fc7f2287df6a6dec8b37edc37
 
-cdef aio_Future = asyncio.Future
+# aio_Future is Obsolete replaced with asyncio_types.h
+# cdef aio_Future = asyncio.Future
 cdef aio__future_repr = getattr(asyncio.base_futures, "_future_repr", lambda fut: None)
 cdef aio_Task = asyncio.Task
 cdef aio_ensure_future = asyncio.ensure_future
