@@ -39,7 +39,10 @@ cdef aio_TimeoutError = asyncio.TimeoutError
 # aio_Future is Obsolete replaced with asyncio_types.h
 # cdef aio_Future = asyncio.Future
 cdef aio__future_repr = getattr(asyncio.base_futures, "_future_repr", lambda fut: None)
-cdef aio_Task = asyncio.Task
+
+# Obsolete and replaced with asyncio_types.h
+# cdef aio_Task = asyncio.Task
+
 cdef aio_ensure_future = asyncio.ensure_future
 cdef aio_gather = asyncio.gather
 cdef aio_wait = asyncio.wait

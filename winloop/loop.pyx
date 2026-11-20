@@ -22,7 +22,7 @@ from .includes.python cimport (
     PyUnicode_FromString
 )
 from .includes.flowcontrol cimport add_flowcontrol_defaults
-from .includes.asyncio_types cimport Future as aio_Future
+from .includes.asyncio_types cimport Future as aio_Future, Task as aio_Task
 
 from libc.stdint cimport uint64_t
 from libc.string cimport memset, strerror, memcpy
@@ -75,6 +75,18 @@ cdef _is_sock_dgram(sock_type):
         # Read the comment in `_is_sock_stream`.
         return (sock_type & 0xF) == uv.SOCK_DGRAM
 
+
+# TODO: This will probably be looked at again in the future
+# now that aio_Future is a static cdef extension class
+# winloop.loop.Future will either become obsolete or subclassed
+# following these changes.
+
+# When uvloop and winloop attempt to be merged again it is likely
+# that the aio_Future as a cdef extension will be present but
+# winloop.loop.Future will be removed. aio_Future will then
+# be speed up with it's functions either C-API-like or
+# via PyObject Calls since most functions are one argument.
+# Example of this proving useful is propcache.
 
 cdef isfuture(obj):
     if aio_isfuture is None:
@@ -734,7 +746,7 @@ cdef class Loop:
                 "than the current one")
 
 
-    cdef inline _new_future(self):
+    cdef inline aio_Future _new_future(self):
         return aio_Future(loop=self)
 
     cdef _track_transport(self, UVBaseTransport transport):
@@ -1657,6 +1669,7 @@ cdef class Loop:
         Return a new transport that *protocol* should start using
         immediately.
         """
+        cdef aio_Future waiter
         if not isinstance(sslcontext, ssl_SSLContext):
             raise TypeError(
                 f'sslcontext is expected to be an instance of ssl.SSLContext, '
@@ -3386,10 +3399,8 @@ cdef inline void __loop_free_buffer(Loop loop):
     loop._recv_buffer_in_use = 0
 
 
-# TODO: rsloop is beating uvloop & winloop in performance because of a constraint
-# with this section of code here, _SyncSocketReaderFuture would benefit
-# from being turned into a cdef extension class as it may possibly enhance
-# reading and writing functions in general.
+# TODO: replace with aio_Future and start replacing the old Future object
+# as it is now obsolete
 
 cdef class _SyncSocketReaderFuture(Future):
 
@@ -3418,7 +3429,7 @@ cdef class _SyncSocketReaderFuture(Future):
         return Future.cancel(self, msg)
 
 
-
+# NOTE: Ditto of _SyncSocketReaderFuture's comment
 
 cdef class _SyncSocketWriterFuture(Future):
 
