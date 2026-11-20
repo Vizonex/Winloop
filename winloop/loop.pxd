@@ -1,12 +1,11 @@
 # cython: language_level=3
 
 
-from .includes cimport uv
-from .includes cimport system
-
 cimport cython
-from libc.stdint cimport uint64_t, uint32_t, int64_t
+from libc.stdint cimport int64_t, uint32_t, uint64_t
 
+from .includes cimport system, uv
+from .includes.asyncio_types cimport Future as aio_Future
 
 include "includes/consts.pxi"
 
@@ -161,7 +160,7 @@ cdef class Loop:
 
     cdef inline _is_main_thread(self)
 
-    cdef inline _new_future(self)
+    cdef inline aio_Future _new_future(self)
     cdef inline _check_signal(self, sig)
     cdef inline _check_closed(self)
     cdef inline _check_thread(self)
