@@ -11,6 +11,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache-yellow.svg)](https://opensource.org/licenses/Apache-2-0)
 
+> [!WARNING]
+> Winloop is in the migration phase to uvloop, when that happens winloop will begin the deprecation process to EOL (End Of Life)
+> 
+> SEE: https://github.com/Vizonex/Winloop/issues/124#issuecomment-7138162467 for timeline of events following.
+> 
+> Pull Request: https://github.com/MagicStack/uvloop/pull/794
+> 
+> Developers are wanted to help solve any unaccounted for bugs as uvloop has had different bug fixes compared to winloop leading to larger than visible code differences. Although uvloop's code may look the same but I promise you the behaviors are different. I'll accept help big or small, AI or anybody or anything.
+> Issues related to it's progression are marked as Label: `Winloop's Migration to Uvloop`
+
+
 An alternative library for uvloop compatibility with Windows because let's face it. Windows' Python asyncio standard library is garbage, especially when Windows Defender decides to eat half of your RAM.
 I never really liked the fact that I couldn't make anything run faster especially when you have fiber internet connections in place and you've done all the optimizations you could possibly think of. It always felt disappointing when `libuv` is available for Windows [but Windows was never compatible with uvloop.](https://github.com/MagicStack/uvloop/issues/14#issuecomment-575826367])
 
